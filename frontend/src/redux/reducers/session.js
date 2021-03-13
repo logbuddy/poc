@@ -1,6 +1,7 @@
 const initialState = {
     registeredAccounts: [],
     isLoggedIn: false,
+    finishedRegistration: false,
     loggedInEmail: null
 };
 
@@ -12,6 +13,7 @@ const reducer = (state = initialState, action) => {
             registeredAccounts.push({email: action.email, password: action.password});
             return {
                 ...state,
+                finishedRegistration: true,
                 registeredAccounts
             }
 

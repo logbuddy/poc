@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { registerAccount } from '../redux/actionCreators';
+import {
+    Redirect
+} from 'react-router-dom';
 
 const mapStateToProps = state => ({
-    reduxState: state
+    reduxState: {...state}
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -34,6 +37,10 @@ class RegisterContainer extends Component {
 
     render() {
         return (
+            this.props.reduxState.session.finishedRegistration
+                &&
+            <Redirect to='/login' />
+                ||
             <div className='m-4'>
                 <form onSubmit={this.handleSubmit}>
                     <div className="mb-3">
