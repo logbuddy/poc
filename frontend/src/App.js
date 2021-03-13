@@ -27,13 +27,13 @@ function App() {
             </nav>
 
             <Switch>
-                <Route path='/'>
+                <Route exact path='/'>
                     <div>Home</div>
                 </Route>
-                <Route path='/login'>
+                <Route exact path='/login'>
                     <div>Login</div>
                 </Route>
-                <Route path='/register'>
+                <Route exact path='/register'>
                     <RegisterContainer />
                 </Route>
             </Switch>
