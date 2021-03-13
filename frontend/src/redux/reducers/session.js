@@ -2,7 +2,8 @@ const initialState = {
     registeredAccounts: [],
     isLoggedIn: false,
     finishedRegistration: false,
-    loggedInEmail: null
+    loggedInEmail: null,
+    errorMessage: null
 };
 
 const reducer = (state = initialState, action) => {
@@ -23,13 +24,16 @@ const reducer = (state = initialState, action) => {
                     && action.password === state.registeredAccounts[i].password
                 ) {
                     return {
+                        ...state,
                         isLoggedIn: true,
-                        loggedInEmail: action.email,
-                        ...state
+                        loggedInEmail: action.email
                     }
                 }
             }
-            return state;
+            return {
+                ...state,
+                errorMessage: 'Invalid credentials'
+            }
         default:
             return state
     }

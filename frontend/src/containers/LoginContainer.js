@@ -3,17 +3,18 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { registerAccount } from '../redux/actionCreators';
+import { logIntoAccount } from '../redux/actionCreators';
+import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
 const mapStateToProps = state => ({
     reduxState: {...state}
 });
 
 const mapDispatchToProps = dispatch => ({
-    registerAccount: (email, password) => dispatch(registerAccount(email, password))
+    logIntoAccount: (email, password) => dispatch(logIntoAccount(email, password))
 });
 
-class RegisterContainer extends Component {
+class LoginContainer extends Component {
     constructor(props) {
         super(props);
         this.state = {email: '', password: ''};
@@ -31,7 +32,7 @@ class RegisterContainer extends Component {
     }
 
     handleSubmit(event) {
-        this.props.registerAccount(this.state.email, this.state.password);
+        this.props.logIntoAccount(this.state.email, this.state.password);
         event.preventDefault();
     }
 
@@ -40,13 +41,10 @@ class RegisterContainer extends Component {
             return (<Redirect to='/' />);
         }
 
-        if (this.props.reduxState.session.finishedRegistration) {
-            return (<Redirect to='/login' />);
-        }
-
         return (
             <div className='m-4'>
-                <h1>Registration</h1>
+                <h1>Login</h1>
+                <ErrorMessagePresentational message={this.props.reduxState.session.errorMessage} />
                 <form onSubmit={this.handleSubmit}>
                     <div className="mb-3">
                         <label className='form-label' htmlFor='name'>
@@ -61,7 +59,7 @@ class RegisterContainer extends Component {
                         <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
                     </div>
                     <div className="mb-3">
-                        <button className='btn btn-primary' type='submit'>Register</button>
+                        <button className='btn btn-primary' type='submit'>Log in</button>
                     </div>
                 </form>
                 <hr/>
@@ -71,4 +69,4 @@ class RegisterContainer extends Component {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RegisterContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(LoginContainer);

@@ -5,6 +5,7 @@ import {
     NavLink
 } from 'react-router-dom';
 import RegisterContainer from './containers/RegisterContainer';
+import LoginContainer from './containers/LoginContainer';
 
 function App() {
   return (
@@ -31,7 +32,7 @@ function App() {
                     <div>Home</div>
                 </Route>
                 <Route exact path='/login'>
-                    <div>Login</div>
+                    <LoginContainer />
                 </Route>
                 <Route exact path='/register'>
                     <RegisterContainer />
