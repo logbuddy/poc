@@ -2,7 +2,7 @@ import {
     BrowserRouter as Router,
     Switch,
     Route,
-    Link
+    NavLink
 } from 'react-router-dom';
 import RegisterContainer from './containers/RegisterContainer';
 
@@ -14,13 +14,13 @@ function App() {
                 <div className="container-fluid">
                     <ul className='navbar-nav'>
                         <li className='nav-item p-2'>
-                            <Link to='/'>Home</Link>
+                            <NavLink to='/'>Home</NavLink>
                         </li>
                         <li className='nav-item p-2'>
-                            <Link to='/login'>Log in</Link>
+                            <NavLink to='/login'>Log in</NavLink>
                         </li>
                         <li className='nav-item p-2'>
-                            <Link to='/register'>Register</Link>
+                            <NavLink to='/register'>Register</NavLink>
                         </li>
                     </ul>
                 </div>
