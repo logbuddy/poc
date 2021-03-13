@@ -34,19 +34,26 @@ class RegisterContainer extends Component {
 
     render() {
         return (
-            <div>
+            <div className='m-4'>
                 <form onSubmit={this.handleSubmit}>
-                    <label>
-                        E-Mail:
-                        <input type='text' name='name' value={this.state.email} onChange={this.handleChangeEmail} />
-                    </label>
-                    <label>
-                        Password:
-                        <input type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
-                    </label>
-                    <input type='submit' value='Register' />
+                    <div className="mb-3">
+                        <label className='form-label' htmlFor='name'>
+                            E-Mail:
+                        </label>
+                        <input className='form-control' type='text' name='name' value={this.state.email} onChange={this.handleChangeEmail} />
+                    </div>
+                    <div className="mb-3">
+                        <label className='form-label' htmlFor='password'>
+                            Password:
+                        </label>
+                        <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
+                    </div>
+                    <div className="mb-3">
+                        <button className='btn btn-primary' type='submit'>Register</button>
+                    </div>
                 </form>
-                <pre>{JSON.stringify(this.props)}</pre>
+                <hr/>
+                <pre>{JSON.stringify(this.props, null, 2)}</pre>
             </div>
         );
     }
