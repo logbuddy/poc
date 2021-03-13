@@ -1,0 +1,40 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /game-events",
+  "rawPath": "/game-events",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "*/*",
+    "content-length": "14",
+    "content-type": "application/x-www-form-urlencoded",
+    "host": "rs213s9yml.execute-api.eu-central-1.amazonaws.com",
+    "user-agent": "curl/7.64.1",
+    "x-amzn-trace-id": "Root=1-604b2f31-29c0f2711d443eba1902a56b",
+    "x-herodot-api-key-id": "7b9a8b36-2552-4894-a63f-eaadf029c521",
+    "x-forwarded-for": "37.201.210.70",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https",
+    "x-herodot-gameserver-id": "63614f6a-dcc2-4634-a497-73da3c26c334",
+    "x-herodot-user-id": "4fb59d24-1bb1-4802-9363-ea18f847a5e6"
+  },
+  "requestContext": {
+    "accountId": "878092365830",
+    "apiId": "rs213s9yml",
+    "domainName": "rs213s9yml.execute-api.eu-central-1.amazonaws.com",
+    "domainPrefix": "rs213s9yml",
+    "http": {
+      "method": "POST",
+      "path": "/game-events",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "37.201.210.70",
+      "userAgent": "curl/7.64.1"
+    },
+    "requestId": "cERPujWQliAEMKg=",
+    "routeKey": "POST /game-events",
+    "stage": "$default",
+    "time": "12/Mar/2021:09:06:57 +0000",
+    "timeEpoch": 1615540017377
+  },
+  "body": "W3siY3JlYXRlZEF0IjogIjE2MTU1NDQzNjkyNTEiLCAic291cmNlIjogImZvbyIsICJwYXlsb2FkIjogIkxvcmVtIGlwc3VtLi4uIn0seyJjcmVhdGVkQXQiOiAiMTYxNTU0NDM2OTI2NCIsICJzb3VyY2UiOiAiYmFyIiwgInBheWxvYWQiOiAiSGljIHN1bnQgZHJhY29uZXMhIn1d",
+  "isBase64Encoded": true
+}
