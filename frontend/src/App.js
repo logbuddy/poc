@@ -14,28 +14,28 @@ function App() {
             <nav className='navbar navbar-expand-sm navbar-light bg-light'>
                 <div className="container-fluid">
                     <ul className='navbar-nav'>
-                        <li className='nav-item p-2'>
-                            <NavLink to='/'>Home</NavLink>
+                        <li className='nav-item'>
+                            <NavLink className='nav-link' activeClassName='active' to='/'>Home</NavLink>
                         </li>
-                        <li className='nav-item p-2'>
-                            <NavLink to='/login'>Log in</NavLink>
+                        <li className='nav-item'>
+                            <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
                         </li>
-                        <li className='nav-item p-2'>
-                            <NavLink to='/register'>Register</NavLink>
+                        <li className='nav-item'>
+                            <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>
                         </li>
                     </ul>
                 </div>
             </nav>
 
             <Switch>
-                <Route exact path='/'>
-                    <div>Home</div>
-                </Route>
-                <Route exact path='/login'>
+                <Route path='/login'>
                     <LoginContainer />
                 </Route>
-                <Route exact path='/register'>
+                <Route path='/register'>
                     <RegisterContainer />
+                </Route>
+                <Route exact path='/'>
+                    <div>Home</div>
                 </Route>
             </Switch>
         </div>
