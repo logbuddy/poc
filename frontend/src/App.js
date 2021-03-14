@@ -9,6 +9,7 @@ import {
 import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './containers/RegisterContainer';
 import LoginContainer from './containers/LoginContainer';
+import ServersContainer from "./containers/ServersContainer";
 
 const mapStateToProps = state => ({
     reduxState: {...state}
@@ -49,7 +50,7 @@ class App  extends Component {
                                     this.props.reduxState.session.isLoggedIn
                                     &&
                                     <li className='nav-item'>
-                                        <NavLink className='nav-link' activeClassName='active' to='/servers'>
+                                        <NavLink className='nav-link' activeClassName='active' to='/servers/'>
                                             My servers
                                         </NavLink>
                                     </li>
@@ -76,6 +77,9 @@ class App  extends Component {
                         </Route>
                         <Route path='/register'>
                             <RegisterContainer />
+                        </Route>
+                        <Route path='/servers/'>
+                            <ServersContainer />
                         </Route>
                         <Route exact path='/'>
                             <div className='m-4'>

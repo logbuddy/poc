@@ -15,16 +15,13 @@ const initialState = {
 };
 
 const reducer = (state = initialState, action) => {
-    console.debug(state, action);
     switch (action.type) {
         case 'REGISTER_ACCOUNT_STARTED':
             return {
                 ...state,
                 registration: {
-                    ...state.registration,
-                    isProcessing: true,
-                    justFinishedSuccessfully: false,
-                    errorMessage: null
+                    ...initialState.registration,
+                    isProcessing: true
                 }
             }
 
@@ -32,8 +29,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 registration: {
-                    ...state.registration,
-                    isProcessing: false,
+                    ...initialState.registration,
                     justFinishedSuccessfully: true
                 }
             }
@@ -42,9 +38,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 registration: {
-                    ...state.registration,
-                    isProcessing: false,
-                    justFinishedSuccessfully: false,
+                    ...initialState.registration,
                     errorMessage: action.errorMessage
                 }
             }
@@ -57,10 +51,8 @@ const reducer = (state = initialState, action) => {
                 loggedInEmail: null,
                 webappApiKeyId: null,
                 login: {
-                    ...state.login,
-                    isProcessing: true,
-                    justFinishedSuccessfully: false,
-                    errorMessage: null
+                    ...initialState.login,
+                    isProcessing: true
                 }
             }
 
@@ -73,10 +65,8 @@ const reducer = (state = initialState, action) => {
                 loggedInEmail: action.email,
                 webappApiKeyId: action.webappApiKeyId,
                 login: {
-                    ...state.login,
-                    isProcessing: false,
-                    justFinishedSuccessfully: true,
-                    errorMessage: null
+                    ...initialState.login,
+                    justFinishedSuccessfully: true
                 }
             }
 
@@ -87,8 +77,7 @@ const reducer = (state = initialState, action) => {
                 loggedInEmail: null,
                 webappApiKeyId: null,
                 login: {
-                    isProcessing: false,
-                    justFinishedSuccessfully: false,
+                    ...initialState.login,
                     errorMessage: action.errorMessage
                 }
             }

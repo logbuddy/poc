@@ -7,9 +7,9 @@ AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 const corsHeaders = {
-    "Access-Control-Allow-Headers" : "Content-Type",
+    "Access-Control-Allow-Headers" : "Content-Type,X-Herodot-Webapp-Api-Key-Id",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS,POST"
+    "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
 };
 
 const corsOptionsResponse = {
@@ -198,11 +198,109 @@ const handleCreateWebappApiKey = async (event) => {
     }
 };
 
-const handleInsertGameEventsRequest = async (event) => {
+const handleRetrieveServerList = async (event) => {
+    if (event.routeKey === 'OPTIONS /servers') {
+        return corsOptionsResponse;
+
+    } else {
+
+        const getParamsWebappApiKey = {
+            TableName: 'webapp_api_keys',
+            Key: {
+                id: event.headers['x-herodot-webapp-api-key-id'],
+            }
+        };
+
+        let webappApiKeyFromDb = null;
+        await docClient.get(getParamsWebappApiKey, function(err, data) {
+            if (err) {
+                throw new Error(err);
+            } else {
+                console.debug(data);
+                if (data.hasOwnProperty('Item')) {
+                    webappApiKeyFromDb = data.Item;
+                }
+            }
+        }).promise();
+
+        if (webappApiKeyFromDb === null) {
+            return {
+                statusCode: 403,
+                headers: corsHeaders,
+                body: JSON.stringify('Unknown webapp api key id.')
+            }
+        }
+
+        const queryParamsServers = {
+            TableName: 'servers',
+            KeyConditionExpression: 'users_id = :users_id',
+            ExpressionAttributeValues: {
+                ':users_id': webappApiKeyFromDb.users_id
+            }
+        };
+
+        const serversFromDb = [];
+        const serversFromDbResult = await docClient.query(queryParamsServers, function(err, data) {
+            if (err) {
+                throw new Error(err);
+            } else {
+                console.debug('queryServersResult', data);
+                return data;
+            }
+        }).promise();
+
+        console.debug('res', serversFromDbResult);
+
+        for (let i = 0; i < serversFromDbResult.Items.length; i++) {
+            serversFromDb.push({
+                id: serversFromDbResult.Items[i].id,
+                userId: serversFromDbResult.Items[i].users_id,
+                apiKeyId: serversFromDbResult.Items[i].logging_api_key_id,
+                title: serversFromDbResult.Items[i].title,
+                events: []
+            });
+        }
+
+        for (let i = 0; i < serversFromDb.length; i++) {
+            const queryParamsServerEvents = {
+                TableName: 'server_events',
+                KeyConditionExpression: 'servers_id = :servers_id',
+                ExpressionAttributeValues: {
+                    ':servers_id': serversFromDb[i].id
+                }
+            };
+
+            const serverEventsFromDbResult = await docClient.query(queryParamsServerEvents, function(err, data) {
+                if (err) {
+                    throw new Error(err);
+                } else {
+                    console.debug(data);
+                    return data;
+                }
+            }).promise();
+
+            for (let j = 0; j < serverEventsFromDbResult.Items.length; j++) {
+                serversFromDb[i].events.push({
+                    createdAt: serverEventsFromDbResult.Items[j].server_event_created_at,
+                    source: serverEventsFromDbResult.Items[j].server_event_source,
+                    payload: serverEventsFromDbResult.Items[j].server_event_payload,
+                });
+            }
+        }
+
+        return {
+            statusCode: 200,
+            headers: corsHeaders,
+            body: JSON.stringify(serversFromDb)
+        }
+    }
+};
+
+const handleInsertServerEventsRequest = async (event) => {
 
     const verifyAuthInformation = async (userId, apiKeyId, serverId) => {
         const params = {
-            TableName: 'logging_api_keys',
+            TableName: 'servers',
             KeyConditionExpression: 'users_id = :users_id',
             ExpressionAttributeValues: {
                 ':users_id': userId
@@ -217,8 +315,8 @@ const handleInsertGameEventsRequest = async (event) => {
                 console.log(data);
                 for (let i = 0; i < data.Count; i++) {
                     if (   data.Items[i].users_id === userId
-                        && data.Items[i].servers_id === serverId
-                        && data.Items[i].id === apiKeyId
+                        && data.Items[i].id === serverId
+                        && data.Items[i].logging_api_key_id === apiKeyId
                     ) {
                         console.log(`Item ${i} looks good.`)
                         result = true;
@@ -331,8 +429,14 @@ exports.handler = async (event) => {
         return handleCreateWebappApiKey(event);
     }
 
+    if (   event.routeKey === 'GET /servers'
+        || event.routeKey === 'OPTIONS /servers'
+    ) {
+        return handleRetrieveServerList(event);
+    }
+
     if (event.routeKey === 'POST /server-events') {
-        return handleInsertGameEventsRequest(event);
+        return handleInsertServerEventsRequest(event);
     }
 
     return {

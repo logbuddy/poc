@@ -44,12 +44,12 @@ export const registerAccount = (email, password) => (dispatch) => {
             return response.json();
         })
 
-        .then(responseContentAsJson => {
+        .then(responseContentAsObject => {
             if (!responseWasOk) {
-                console.debug(responseContentAsJson);
-                dispatch(registerAccountFailed(responseContentAsJson));
+                console.debug(responseContentAsObject);
+                dispatch(registerAccountFailed(responseContentAsObject));
             } else {
-                dispatch(registerAccountSucceeded(JSON.parse(responseContentAsJson), email, password));
+                dispatch(registerAccountSucceeded(JSON.parse(responseContentAsObject), email, password));
             }
         })
 
@@ -105,11 +105,11 @@ export const logIntoAccount = (email, password) => (dispatch) => {
             return response.json();
         })
 
-        .then(responseContentAsJson => {
+        .then(responseContentAsObject => {
             if (!responseWasOk) {
-                dispatch(logIntoAccountFailed(responseContentAsJson));
+                dispatch(logIntoAccountFailed(responseContentAsObject));
             } else {
-                dispatch(logIntoAccountSucceeded(responseContentAsJson, email, password));
+                dispatch(logIntoAccountSucceeded(responseContentAsObject, email, password));
             }
         })
 
