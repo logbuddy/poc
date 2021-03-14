@@ -1,21 +1,26 @@
 const initialState = {
-    registeredAccounts: [],
     isLoggedIn: false,
+    processingRegistration: false,
     finishedRegistration: false,
     loggedInEmail: null,
+    loggedInUserId: null,
     errorMessage: null
 };
 
 const reducer = (state = initialState, action) => {
     console.debug(state, action);
     switch (action.type) {
-        case 'REGISTER_ACCOUNT_SUCCEEDED':
-            let registeredAccounts = JSON.parse(JSON.stringify(state.registeredAccounts));
-            registeredAccounts.push({userId: action.userId, email: action.email, password: action.password});
+        case 'REGISTER_ACCOUNT_STARTED':
             return {
                 ...state,
-                finishedRegistration: true,
-                registeredAccounts
+                processingRegistration: true
+            }
+
+        case 'REGISTER_ACCOUNT_SUCCEEDED':
+            return {
+                ...state,
+                processingRegistration: false,
+                finishedRegistration: true
             }
 
         case 'REGISTER_ACCOUNT_FAILED':
@@ -25,21 +30,10 @@ const reducer = (state = initialState, action) => {
             }
 
         case 'LOG_INTO_ACCOUNT':
-            for (let i = 0; i < state.registeredAccounts.length; i++) {
-                if (   action.email === state.registeredAccounts[i].email
-                    && action.password === state.registeredAccounts[i].password
-                ) {
-                    return {
-                        ...state,
-                        isLoggedIn: true,
-                        loggedInEmail: action.email
-                    }
-                }
-            }
             return {
-                ...state,
-                errorMessage: 'Invalid credentials'
+                ...state
             }
+
         default:
             return state
     }

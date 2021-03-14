@@ -63,7 +63,13 @@ class RegisterContainer extends Component {
                         <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
                     </div>
                     <div className="mb-3">
-                        <button className='btn btn-primary' type='submit'>Register</button>
+                        {
+                            this.props.reduxState.session.processingRegistration
+                            &&
+                            <button className='btn btn-warning disabled'>Processing registration...</button>
+                            ||
+                            <button className='btn btn-primary' type='submit'>Register</button>
+                        }
                     </div>
                 </form>
                 <hr/>
