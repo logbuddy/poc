@@ -25,8 +25,15 @@ export const registerAccount = (email, password) => (dispatch) => {
     dispatch(registerAccountStarted());
 
     fetch(
-        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/users?email=${email}&password=${password}`,
-        { method: 'POST', mode: 'cors' }
+        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/users`,
+        {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({email, password})
+        }
     )
         .then(response => {
             console.debug(response);

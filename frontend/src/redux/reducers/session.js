@@ -1,5 +1,3 @@
-import {act} from "@testing-library/react";
-
 const initialState = {
     registeredAccounts: [],
     isLoggedIn: false,

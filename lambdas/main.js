@@ -23,7 +23,12 @@ const handleRegisterAccountRequest = async (event) => {
 
     } else {
 
-        const newUserCredentialsJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+        let newUserCredentialsJson;
+        if (event.isBase64Encoded) {
+            newUserCredentialsJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+        } else {
+            newUserCredentialsJson = event.body;
+        }
         console.debug(newUserCredentialsJson);
 
         const newUserCredentials = JSON.parse(newUserCredentialsJson);
@@ -214,6 +219,8 @@ const handleInsertGameEventsRequest = async (event) => {
 };
 
 exports.handler = async (event) => {
+
+    console.debug('Received event:' + JSON.stringify(event, null, 2));
 
     if (   event.routeKey === 'POST /users'
         || event.routeKey === 'OPTIONS /users'
