@@ -35,6 +35,6 @@
     "time": "12/Mar/2021:09:06:57 +0000",
     "timeEpoch": 1615540017377
   },
-  "body": "W3siY3JlYXRlZEF0IjogIjE2MTU1NDQzNjkyNTEiLCAic291cmNlIjogImZvbyIsICJwYXlsb2FkIjogIkxvcmVtIGlwc3VtLi4uIn0seyJjcmVhdGVkQXQiOiAiMTYxNTU0NDM2OTI2NCIsICJzb3VyY2UiOiAiYmFyIiwgInBheWxvYWQiOiAiSGljIHN1bnQgZHJhY29uZXMhIn1d",
-  "isBase64Encoded": true
+  "body": "{\n  \"userId\": \"4fb59d24-1bb1-4802-9363-ea18f847a5e6\",\n  \"apiKeyId\": \"7b9a8b36-2552-4894-a63f-eaadf029c521\",\n  \"serverId\": \"63614f6a-dcc2-4634-a497-73da3c26c334\",\n  \"events\": [\n    {\"createdAt\": \"1615544369251\", \"source\": \"foo\", \"payload\": \"Lorem ipsum...\"},\n    {\"createdAt\": \"1615544369264\", \"source\": \"bar\", \"payload\": \"Hic sunt dracones!\"}\n  ]\n}\n",
+  "isBase64Encoded": false
 }

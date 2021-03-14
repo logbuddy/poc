@@ -112,9 +112,9 @@ const handleRegisterAccountRequest = async (event) => {
 
 const handleInsertGameEventsRequest = async (event) => {
 
-    const verifyAuthHeaders = async (userId, apiKeyId, gameserverId) => {
+    const verifyAuthInformation = async (userId, apiKeyId, serverId) => {
         const params = {
-            TableName: 'api_keys',
+            TableName: 'logging_api_keys',
             KeyConditionExpression: 'users_id = :users_id',
             ExpressionAttributeValues: {
                 ':users_id': userId
@@ -129,7 +129,7 @@ const handleInsertGameEventsRequest = async (event) => {
                 console.log(data);
                 for (let i = 0; i < data.Count; i++) {
                     if (   data.Items[i].users_id === userId
-                        && data.Items[i].gameservers_id === gameserverId
+                        && data.Items[i].servers_id === serverId
                         && data.Items[i].id === apiKeyId
                     ) {
                         console.log(`Item ${i} looks good.`)
@@ -145,15 +145,30 @@ const handleInsertGameEventsRequest = async (event) => {
         return result;
     };
 
-    const userId = event.headers['x-herodot-user-id'];
-    const apiKeyId = event.headers['x-herodot-api-key-id'];
-    const gameserverId = event.headers['x-herodot-gameserver-id'];
+    console.debug('Request body: ', event.body);
+
+    let requestBodyJson = null;
+    {
+        if (event.isBase64Encoded) {
+            requestBodyJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+        } else {
+            requestBodyJson = event.body;
+        }
+    }
+
+    console.debug('Event body as UTF-8: ', requestBodyJson);
+
+    const requestBodyObject = JSON.parse(requestBodyJson);
+
+    const userId = requestBodyObject['userId'];
+    const apiKeyId = requestBodyObject['apiKeyId'];
+    const serverId = requestBodyObject['serverId'];
 
     console.log('Starting verify...');
-    let verificationSuccessful = await verifyAuthHeaders(
+    let verificationSuccessful = await verifyAuthInformation(
         userId,
         apiKeyId,
-        gameserverId
+        serverId
     );
 
     if (verificationSuccessful) {
@@ -162,33 +177,27 @@ const handleInsertGameEventsRequest = async (event) => {
         console.log('Verification not successful.');
         return {
             statusCode: 400,
-            body: JSON.stringify(`Could not verify request based on auth values userId: ${userId}, apiKeyId: ${apiKeyId}, gameserverId: ${gameserverId}.`)
+            body: JSON.stringify(`Could not verify request based on auth values userId: ${userId}, apiKeyId: ${apiKeyId}, serverId: ${serverId}.`)
         };
     }
 
-    console.debug('Event body: ', event.body);
-
-    const gameserverEventsJson = (Buffer.from(event.body, 'base64')).toString('utf8');
-
-    console.debug('Event body as UTF-8: ', gameserverEventsJson);
-
-    const gameserverEvents = JSON.parse(gameserverEventsJson);
-
     const lambdaEventContent = JSON.stringify(event, null, 2);
 
+    const serverEvents = requestBodyObject.events;
+
     const items = [];
-    for (let i = 0; i < gameserverEvents.length; i++) {
+    for (let i = 0; i < serverEvents.length; i++) {
         items.push({
             PutRequest: {
                 Item: {
-                    'gameservers_id': gameserverId,
+                    'servers_id': serverId,
                     'id': uuidv1(),
                     'received_at': Date.now(),
                     'users_id': userId,
                     'api_keys_id': apiKeyId,
-                    'gameserver_event_created_at': gameserverEvents[i].createdAt,
-                    'gameserver_event_source': gameserverEvents[i].source,
-                    'gameserver_event_payload': gameserverEvents[i].payload,
+                    'server_event_created_at': serverEvents[i].createdAt,
+                    'server_event_source': serverEvents[i].source,
+                    'server_event_payload': serverEvents[i].payload,
                     'lambda_event_full': lambdaEventContent,
                     'lambda_event_headers_x_forwarded_for': event.headers['x-forwarded-for'],
                     'lambda_event_headers_user_agent': event.headers['user-agent'],
@@ -199,7 +208,7 @@ const handleInsertGameEventsRequest = async (event) => {
 
     const params = {
         RequestItems: {
-            'gameserver_events': items
+            'server_events': items
         }
     };
 

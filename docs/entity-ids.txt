@@ -1,4 +1,4 @@
 user-id: 4fb59d24-1bb1-4802-9363-ea18f847a5e6
-gameserver-id: 63614f6a-dcc2-4634-a497-73da3c26c334
-api-key-id: 7b9a8b36-2552-4894-a63f-eaadf029c521
-api-key-id-2: 8721cad9-ceed-44fd-812e-8c3f5efed8ba
+server-id: 63614f6a-dcc2-4634-a497-73da3c26c334
+logging-api-key-id: 7b9a8b36-2552-4894-a63f-eaadf029c521
+logging-api-key-id-2: 8721cad9-ceed-44fd-812e-8c3f5efed8ba
