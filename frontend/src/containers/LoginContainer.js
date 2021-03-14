@@ -43,6 +43,11 @@ class LoginContainer extends Component {
 
         return (
             <div className='m-4'>
+                {
+                    this.props.reduxState.session.justFinishedRegistration
+                    &&
+                    <div className='alert alert-success'>Registration finished successfully. Please log in.</div>
+                }
                 <h1>Login</h1>
                 <ErrorMessagePresentational message={this.props.reduxState.session.errorMessage} />
                 <form onSubmit={this.handleSubmit}>
@@ -62,8 +67,6 @@ class LoginContainer extends Component {
                         <button className='btn btn-primary' type='submit'>Log in</button>
                     </div>
                 </form>
-                <hr/>
-                <pre>{JSON.stringify(this.props, null, 2)}</pre>
             </div>
         );
     }

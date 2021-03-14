@@ -41,7 +41,7 @@ class RegisterContainer extends Component {
             return (<Redirect to='/' />);
         }
 
-        if (this.props.reduxState.session.finishedRegistration) {
+        if (this.props.reduxState.session.justFinishedRegistration) {
             return (<Redirect to='/login' />);
         }
 
@@ -72,8 +72,6 @@ class RegisterContainer extends Component {
                         }
                     </div>
                 </form>
-                <hr/>
-                <pre>{JSON.stringify(this.props, null, 2)}</pre>
             </div>
         );
     }

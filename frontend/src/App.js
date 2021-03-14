@@ -15,7 +15,9 @@ function App() {
                 <div className="container-fluid">
                     <ul className='navbar-nav'>
                         <li className='nav-item'>
-                            <NavLink className='nav-link' activeClassName='active' to='/'>Home</NavLink>
+                            <NavLink className='nav-link' activeClassName='active' to='/'>
+                                <strong>Home</strong>
+                            </NavLink>
                         </li>
                         <li className='nav-item'>
                             <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
@@ -35,7 +37,11 @@ function App() {
                     <RegisterContainer />
                 </Route>
                 <Route exact path='/'>
-                    <div>Home</div>
+                    <div className='m-4'>
+                        <h1>
+                            Welcome to the GameLoggers PoC.
+                        </h1>
+                    </div>
                 </Route>
             </Switch>
         </div>

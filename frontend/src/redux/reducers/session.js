@@ -1,7 +1,7 @@
 const initialState = {
     isLoggedIn: false,
     processingRegistration: false,
-    finishedRegistration: false,
+    justFinishedRegistration: false,
     loggedInEmail: null,
     loggedInUserId: null,
     errorMessage: null
@@ -20,7 +20,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 processingRegistration: false,
-                finishedRegistration: true
+                justFinishedRegistration: true
             }
 
         case 'REGISTER_ACCOUNT_FAILED':
@@ -29,9 +29,10 @@ const reducer = (state = initialState, action) => {
                 errorMessage: action.errorMessage
             }
 
-        case 'LOG_INTO_ACCOUNT':
+        case 'LOG_INTO_ACCOUNT_STARTED':
             return {
-                ...state
+                ...state,
+                justFinishedRegistration: false
             }
 
         default:
