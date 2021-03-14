@@ -48,7 +48,7 @@ class RegisterContainer extends Component {
         return (
             <div className='m-4'>
                 <h1>Registration</h1>
-                <ErrorMessagePresentational message={this.props.reduxState.session.errorMessage} />
+                <ErrorMessagePresentational message={this.props.reduxState.session.registration.errorMessage} />
                 <form onSubmit={this.handleSubmit}>
                     <div className="mb-3">
                         <label className='form-label' htmlFor='name'>
@@ -64,9 +64,12 @@ class RegisterContainer extends Component {
                     </div>
                     <div className="mb-3">
                         {
-                            this.props.reduxState.session.processingRegistration
+                            this.props.reduxState.session.registration.isProcessing
                             &&
                             <button className='btn btn-warning disabled'>Processing registration...</button>
+                        }
+                        {
+                            this.props.reduxState.session.registration.isProcessing
                             ||
                             <button className='btn btn-primary' type='submit'>Register</button>
                         }

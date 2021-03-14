@@ -44,12 +44,12 @@ class LoginContainer extends Component {
         return (
             <div className='m-4'>
                 {
-                    this.props.reduxState.session.justFinishedRegistration
+                    this.props.reduxState.session.registration.justFinishedSuccessfully
                     &&
                     <div className='alert alert-success'>Registration finished successfully. Please log in.</div>
                 }
                 <h1>Login</h1>
-                <ErrorMessagePresentational message={this.props.reduxState.session.errorMessage} />
+                <ErrorMessagePresentational message={this.props.reduxState.session.login.errorMessage} />
                 <form onSubmit={this.handleSubmit}>
                     <div className="mb-3">
                         <label className='form-label' htmlFor='name'>
@@ -64,7 +64,16 @@ class LoginContainer extends Component {
                         <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
                     </div>
                     <div className="mb-3">
-                        <button className='btn btn-primary' type='submit'>Log in</button>
+                        {
+                            this.props.reduxState.session.login.isProcessing
+                            &&
+                            <button className='btn btn-warning disabled'>Processing login...</button>
+                        }
+                        {
+                            this.props.reduxState.session.login.isProcessing
+                            ||
+                            <button className='btn btn-primary' type='submit'>Log in</button>
+                        }
                     </div>
                 </form>
             </div>

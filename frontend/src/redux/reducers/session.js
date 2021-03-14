@@ -1,10 +1,17 @@
 const initialState = {
     isLoggedIn: false,
-    processingRegistration: false,
-    justFinishedRegistration: false,
     loggedInEmail: null,
     webappApiKeyId: null,
-    errorMessage: null
+    registration: {
+        isProcessing: false,
+        justFinishedSuccessfully: false,
+        errorMessage: null
+    },
+    login: {
+        isProcessing: false,
+        justFinishedSuccessfully: false,
+        errorMessage: null
+    }
 };
 
 const reducer = (state = initialState, action) => {
@@ -13,27 +20,48 @@ const reducer = (state = initialState, action) => {
         case 'REGISTER_ACCOUNT_STARTED':
             return {
                 ...state,
-                processingRegistration: true
+                registration: {
+                    ...state.registration,
+                    isProcessing: true,
+                    justFinishedSuccessfully: false,
+                    errorMessage: null
+                }
             }
 
         case 'REGISTER_ACCOUNT_SUCCEEDED':
             return {
                 ...state,
-                processingRegistration: false,
-                justFinishedRegistration: true
+                registration: {
+                    ...state.registration,
+                    isProcessing: false,
+                    justFinishedSuccessfully: true
+                }
             }
 
         case 'REGISTER_ACCOUNT_FAILED':
             return {
                 ...state,
-                errorMessage: action.errorMessage
+                registration: {
+                    ...state.registration,
+                    isProcessing: false,
+                    justFinishedSuccessfully: false,
+                    errorMessage: action.errorMessage
+                }
             }
+
 
         case 'LOG_INTO_ACCOUNT_STARTED':
             return {
                 ...state,
                 isLoggedIn: false,
-                justFinishedRegistration: false
+                loggedInEmail: null,
+                webappApiKeyId: null,
+                login: {
+                    ...state.login,
+                    isProcessing: true,
+                    justFinishedSuccessfully: false,
+                    errorMessage: null
+                }
             }
 
         case 'LOG_INTO_ACCOUNT_SUCCEEDED':
@@ -41,7 +69,26 @@ const reducer = (state = initialState, action) => {
                 ...state,
                 isLoggedIn: true,
                 loggedInEmail: action.email,
-                webappApiKeyId: action.webappApiKeyId
+                webappApiKeyId: action.webappApiKeyId,
+                login: {
+                    ...state.login,
+                    isProcessing: false,
+                    justFinishedSuccessfully: true,
+                    errorMessage: null
+                }
+            }
+
+        case 'LOG_INTO_ACCOUNT_FAILED':
+            return {
+                ...state,
+                isLoggedIn: false,
+                loggedInEmail: null,
+                webappApiKeyId: null,
+                login: {
+                    isProcessing: false,
+                    justFinishedSuccessfully: false,
+                    errorMessage: action.errorMessage
+                }
             }
 
         default:
