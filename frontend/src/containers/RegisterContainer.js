@@ -4,6 +4,7 @@ import {
     Redirect
 } from 'react-router-dom';
 import { registerAccount } from '../redux/actionCreators';
+import ErrorMessagePresentational from "../presentationals/ErrorMessagePresentational";
 
 const mapStateToProps = state => ({
     reduxState: {...state}
@@ -47,6 +48,7 @@ class RegisterContainer extends Component {
         return (
             <div className='m-4'>
                 <h1>Registration</h1>
+                <ErrorMessagePresentational message={this.props.reduxState.session.errorMessage} />
                 <form onSubmit={this.handleSubmit}>
                     <div className="mb-3">
                         <label className='form-label' htmlFor='name'>

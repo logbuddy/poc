@@ -24,13 +24,22 @@ export const registerAccount = (email, password) => (dispatch) => {
 
     dispatch(registerAccountStarted());
 
-    fetch(`https://api.github.com?email=${email}&password=${password}`)
-        .then(data => data.json())
-        .then(dataAsJson => {
-            dispatch(registerAccountSucceeded('4fb59d24-1bb1-4802-9363-ea18f847a5e6', email, password))
+    fetch(`http://httpstat.us/200?email=${email}&password=${password}`)
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                console.debug('here!');
+                throw new Error(response.statusText);
+            }
+            return response.json();
         })
+
+        .then(responseContentAsJson => {
+            dispatch(registerAccountSucceeded('4fb59d24-1bb1-4802-9363-ea18f847a5e6', email, password));
+        })
+
         .catch(function(error) {
-            dispatch(registerAccountFailed(error.message()));
+            dispatch(registerAccountFailed(error.toString()));
         });
 };
 
