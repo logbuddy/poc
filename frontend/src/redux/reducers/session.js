@@ -3,7 +3,7 @@ const initialState = {
     processingRegistration: false,
     justFinishedRegistration: false,
     loggedInEmail: null,
-    loggedInUserId: null,
+    webappApiKeyId: null,
     errorMessage: null
 };
 
@@ -32,7 +32,16 @@ const reducer = (state = initialState, action) => {
         case 'LOG_INTO_ACCOUNT_STARTED':
             return {
                 ...state,
+                isLoggedIn: false,
                 justFinishedRegistration: false
+            }
+
+        case 'LOG_INTO_ACCOUNT_SUCCEEDED':
+            return {
+                ...state,
+                isLoggedIn: true,
+                loggedInEmail: action.email,
+                webappApiKeyId: action.webappApiKeyId
             }
 
         default:

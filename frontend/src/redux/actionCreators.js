@@ -38,14 +38,13 @@ export const registerAccount = (email, password) => (dispatch) => {
         .then(response => {
             console.debug(response);
             if (!response.ok) {
-                console.debug('here!');
                 throw new Error(response.statusText);
             }
             return response.json();
         })
 
         .then(responseContentAsJson => {
-            dispatch(registerAccountSucceeded('4fb59d24-1bb1-4802-9363-ea18f847a5e6', email, password));
+            dispatch(registerAccountSucceeded(JSON.parse(responseContentAsJson), email, password));
         })
 
         .catch(function(error) {
@@ -53,10 +52,57 @@ export const registerAccount = (email, password) => (dispatch) => {
         });
 };
 
-export function logIntoAccount(email, password) {
+
+export function logIntoAccountStarted() {
     return {
-        type: 'LOG_INTO_ACCOUNT',
+        type: 'LOG_INTO_ACCOUNT_STARTED'
+    };
+}
+
+export function logIntoAccountFailed(errorMessage) {
+    return {
+        type: 'LOG_INTO_ACCOUNT_SUCCEEDED',
+        errorMessage
+    };
+}
+
+export function logIntoAccountSucceeded(apiKeyId, email, password) {
+    return {
+        type: 'LOG_INTO_ACCOUNT_SUCCEEDED',
+        webappApiKeyId: apiKeyId,
         email,
         password
     };
 }
+
+export const logIntoAccount = (email, password) => (dispatch) => {
+
+    dispatch(logIntoAccountStarted());
+
+    fetch(
+        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/webapp-api-keys`,
+        {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({email, password})
+        }
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsJson => {
+            dispatch(logIntoAccountSucceeded(JSON.parse(responseContentAsJson), email, password));
+        })
+
+        .catch(function(error) {
+            dispatch(logIntoAccountFailed(error.toString()));
+        });
+};

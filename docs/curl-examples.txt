@@ -1,15 +1,12 @@
 curl \
     -v \
     -X POST \
-    "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/game-events" \
-    -H "X-Herodot-User-Id: 4fb59d24-1bb1-4802-9363-ea18f847a5e6" \
-    -H "X-Herodot-Api-Key-Id: 7b9a8b36-2552-4894-a63f-eaadf029c521" \
-    -H "X-Herodot-Gameserver-Id: 63614f6a-dcc2-4634-a497-73da3c26c334" \
-    -d '[{"createdAt": "1615544369251", "source": "foo", "payload": "Lorem ipsum..."},{"createdAt": "1615544369264", "source": "bar", "payload": "Hic sunt dracones!"}]'
+    "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events" \
+    -d "{\n  \"userId\": \"4fb59d24-1bb1-4802-9363-ea18f847a5e6\",\n  \"apiKeyId\": \"7b9a8b36-2552-4894-a63f-eaadf029c521\",\n  \"serverId\": \"63614f6a-dcc2-4634-a497-73da3c26c334\",\n  \"events\": [\n    {\"createdAt\": \"1615544369251\", \"source\": \"foo\", \"payload\": \"Lorem ipsum...\"},\n    {\"createdAt\": \"1615544369264\", \"source\": \"bar\", \"payload\": \"Hic sunt dracones!\"}\n  ]\n}\n"
 
 
 curl \
     -v \
     -X POST \
-    "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/users" \
-    -d '{}'
+    "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/webapp-api-keys" \
+    -d '{"email": "manuel", "password":"test123"}'

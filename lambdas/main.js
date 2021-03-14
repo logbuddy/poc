@@ -1,25 +1,27 @@
 const AWS = require('aws-sdk');
-const {'v1': uuidv1} = require('uuid');
+const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
 
 const AWS_REGION = 'eu-central-1';
 
 AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
+const corsHeaders = {
+    "Access-Control-Allow-Headers" : "Content-Type",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "OPTIONS,POST"
+};
+
+const corsOptionsResponse = {
+    statusCode: 200,
+    headers: corsHeaders,
+    body: ''
+};
+
 const handleRegisterAccountRequest = async (event) => {
 
-    const corsHeaders = {
-        "Access-Control-Allow-Headers" : "Content-Type",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "OPTIONS,POST"
-    };
-
     if (event.routeKey === 'OPTIONS /users') {
-        return {
-            statusCode: 200,
-            headers: corsHeaders,
-            body: ''
-        };
+        return corsOptionsResponse;
 
     } else {
 
@@ -105,6 +107,92 @@ const handleRegisterAccountRequest = async (event) => {
                 statusCode: 201,
                 headers: corsHeaders,
                 body: JSON.stringify(userId)
+            };
+        }
+    }
+};
+
+const handleCreateWebappApiKey = async (event) => {
+    if (event.routeKey === 'OPTIONS /webapp-api-keys') {
+        return corsOptionsResponse;
+
+    } else {
+
+        let credentialsFromRequestJson;
+        if (event.isBase64Encoded) {
+            credentialsFromRequestJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+        } else {
+            credentialsFromRequestJson = event.body;
+        }
+        console.debug(credentialsFromRequestJson);
+
+        const credentialsFromRequest = JSON.parse(credentialsFromRequestJson);
+
+        const getParams = {
+            TableName: 'credentials',
+            Key: {
+                email: credentialsFromRequest.email,
+            }
+        };
+
+        let credentialsFromDb = null;
+        await docClient.get(getParams, function(err, data) {
+            if (err) {
+                throw new Error(err);
+            } else {
+                console.debug(data);
+                if (data.hasOwnProperty('Item')) {
+                    credentialsFromDb = data.Item;
+                }
+            }
+        }).promise();
+
+        if (credentialsFromDb !== null) {
+
+            const bcrypt = require('bcrypt');
+
+            const passwordIsValid = await bcrypt.compare(credentialsFromRequest.password, credentialsFromDb['password_hash']);
+
+            if (!passwordIsValid) {
+                return {
+                    statusCode: 403,
+                    headers: corsHeaders,
+                    body: JSON.stringify('Invalid credentials.')
+                };
+            }
+
+            const apiKeyId = uuidv4();
+            const putParamsApiKeys = {
+                TableName: 'webapp_api_keys',
+                Item: {
+                    id: apiKeyId,
+                    users_id: credentialsFromDb['users_id']
+                }
+            };
+
+            let response = null;
+            await docClient.put(putParamsApiKeys, function(err) {
+                if (err) {
+                    response = {
+                        statusCode: 500,
+                        headers: corsHeaders,
+                        body: JSON.stringify(`Error: ${err}`)
+                    }
+                } else {
+                    response = {
+                        statusCode: 201,
+                        headers: corsHeaders,
+                        body: JSON.stringify(apiKeyId)
+                    }
+                }
+            }).promise();
+
+            return response;
+        } else {
+            return {
+                statusCode: 404,
+                headers: corsHeaders,
+                body: JSON.stringify(`User ${credentialsFromRequest.email} does not exist.`)
             };
         }
     }
@@ -237,7 +325,13 @@ exports.handler = async (event) => {
         return handleRegisterAccountRequest(event);
     }
 
-    if (event.routeKey === 'POST /game-events') {
+    if (   event.routeKey === 'POST /webapp-api-keys'
+        || event.routeKey === 'OPTIONS /webapp-api-keys'
+    ) {
+        return handleCreateWebappApiKey(event);
+    }
+
+    if (event.routeKey === 'POST /server-events') {
         return handleInsertGameEventsRequest(event);
     }
 
