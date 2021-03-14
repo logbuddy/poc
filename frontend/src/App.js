@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
     BrowserRouter as Router,
@@ -6,6 +6,7 @@ import {
     Route,
     NavLink
 } from 'react-router-dom';
+import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './containers/RegisterContainer';
 import LoginContainer from './containers/LoginContainer';
 
@@ -14,29 +15,58 @@ const mapStateToProps = state => ({
 });
 
 class App  extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <Router>
                 <div>
                     <nav className='navbar navbar-expand-sm navbar-light bg-light'>
                         <div className="container-fluid">
-                            <ul className='navbar-nav'>
+                            <ul className='navbar-nav mr-auto'>
                                 <li className='nav-item'>
                                     <NavLink className='nav-link' activeClassName='active' to='/'>
                                         <strong>Home</strong>
                                     </NavLink>
                                 </li>
-                                <li className='nav-item'>
-                                    <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
-                                </li>
-                                <li className='nav-item'>
-                                    <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>
-                                </li>
+
+                                {
+                                    this.props.reduxState.session.isLoggedIn
+                                    ||
+                                    <Fragment>
+                                        <li className='nav-item'>
+                                            <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
+                                        </li>
+                                        {
+                                            this.props.reduxState.session.registration.justFinishedSuccessfully
+                                            ||
+                                            <li className='nav-item'>
+                                                <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>
+                                            </li>
+                                        }
+                                    </Fragment>
+                                }
+
+                                {
+                                    this.props.reduxState.session.isLoggedIn
+                                    &&
+                                    <li className='nav-item'>
+                                        <NavLink className='nav-link' activeClassName='active' to='/servers'>
+                                            My servers
+                                        </NavLink>
+                                    </li>
+                                }
                             </ul>
+
+                            {
+                                this.props.reduxState.session.isLoggedIn
+                                &&
+                                <ul className="navbar-nav ml-auto">
+                                    <li className='nav-item text-end btn btn-outline-dark disabled'>
+                                        <PersonCircle />
+                                        &nbsp;
+                                        {this.props.reduxState.session.loggedInEmail}
+                                    </li>
+                                </ul>
+                            }
                         </div>
                     </nav>
 
@@ -61,4 +91,4 @@ class App  extends Component {
     }
 }
 
-export default connect()(App);
+export default connect(mapStateToProps)(App);

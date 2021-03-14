@@ -109,11 +109,12 @@ export const logIntoAccount = (email, password) => (dispatch) => {
             if (!responseWasOk) {
                 dispatch(logIntoAccountFailed(responseContentAsJson));
             } else {
-                dispatch(logIntoAccountSucceeded(JSON.parse(responseContentAsJson), email, password));
+                dispatch(logIntoAccountSucceeded(responseContentAsJson, email, password));
             }
         })
 
         .catch(function(error) {
+            console.error(error)
             dispatch(logIntoAccountFailed(error.toString()));
         });
 };

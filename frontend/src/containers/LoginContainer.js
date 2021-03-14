@@ -38,7 +38,7 @@ class LoginContainer extends Component {
 
     render() {
         if (this.props.reduxState.session.isLoggedIn) {
-            return (<Redirect to='/' />);
+            return (<Redirect to='/servers/' />);
         }
 
         return (

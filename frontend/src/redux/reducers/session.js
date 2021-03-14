@@ -65,6 +65,8 @@ const reducer = (state = initialState, action) => {
             }
 
         case 'LOG_INTO_ACCOUNT_SUCCEEDED':
+            document.cookie = `loggedInEmail=${action.email};path=/`;
+            document.cookie = `webappApiKeyId=${action.webappApiKeyId};path=/`;
             return {
                 ...state,
                 isLoggedIn: true,
@@ -97,3 +99,4 @@ const reducer = (state = initialState, action) => {
 }
 
 export default reducer;
+export { initialState };
