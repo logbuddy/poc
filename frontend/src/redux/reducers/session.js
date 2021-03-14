@@ -1,3 +1,5 @@
+import {act} from "@testing-library/react";
+
 const initialState = {
     registeredAccounts: [],
     isLoggedIn: false,
@@ -9,13 +11,19 @@ const initialState = {
 const reducer = (state = initialState, action) => {
     console.debug(state, action);
     switch (action.type) {
-        case 'REGISTER_ACCOUNT':
+        case 'REGISTER_ACCOUNT_SUCCEEDED':
             let registeredAccounts = JSON.parse(JSON.stringify(state.registeredAccounts));
-            registeredAccounts.push({email: action.email, password: action.password});
+            registeredAccounts.push({userId: action.userId, email: action.email, password: action.password});
             return {
                 ...state,
                 finishedRegistration: true,
                 registeredAccounts
+            }
+
+        case 'REGISTER_ACCOUNT_FAILED':
+            return {
+                ...state,
+                errorMessage: action.errorMessage
             }
 
         case 'LOG_INTO_ACCOUNT':
