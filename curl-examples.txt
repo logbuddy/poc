@@ -6,3 +6,10 @@ curl \
     -H "X-Herodot-Api-Key-Id: 7b9a8b36-2552-4894-a63f-eaadf029c521" \
     -H "X-Herodot-Gameserver-Id: 63614f6a-dcc2-4634-a497-73da3c26c334" \
     -d '[{"createdAt": "1615544369251", "source": "foo", "payload": "Lorem ipsum..."},{"createdAt": "1615544369264", "source": "bar", "payload": "Hic sunt dracones!"}]'
+
+
+curl \
+    -v \
+    -X POST \
+    "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/users" \
+    -d '{}'

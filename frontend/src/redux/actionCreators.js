@@ -24,7 +24,10 @@ export const registerAccount = (email, password) => (dispatch) => {
 
     dispatch(registerAccountStarted());
 
-    fetch(`http://httpstat.us/200?email=${email}&password=${password}`)
+    fetch(
+        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/users?email=${email}&password=${password}`,
+        { method: 'POST', mode: 'cors' }
+    )
         .then(response => {
             console.debug(response);
             if (!response.ok) {
