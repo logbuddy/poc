@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React, {Component, Fragment} from 'react';
 import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { Server } from 'react-bootstrap-icons';
+import { Cpu, Square, ArrowClockwise } from 'react-bootstrap-icons';
 import { retrieveServerList } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
@@ -18,6 +18,11 @@ const mapDispatchToProps = dispatch => ({
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
+        this.handleRefreshClicked = this.handleRefreshClicked.bind(this);
+    }
+
+    handleRefreshClicked() {
+        this.props.retrieveServerList();
     }
 
     componentDidMount() {
@@ -34,7 +39,7 @@ class ServersContainer extends Component {
             const serverEventElements = [];
             for (let j=0; j < this.props.reduxState.servers.serverList[i].events.length; j++) {
                 serverEventElements.push(
-                    <tr>
+                    <tr key={j}>
                         <td>
                             <span className='badge bg-secondary'>
                                 {this.props.reduxState.servers.serverList[i].events[j].createdAt}
@@ -50,11 +55,11 @@ class ServersContainer extends Component {
                 );
             }
             serverListElements.push(
-                <div className='card mt-4'>
+                <div key={i} className={`card mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
                     <div className='card-header'>
                         <h4>
                             <span className='text-success'>
-                                <Server />
+                                <Cpu />
                             </span>
                             &nbsp;
                             {this.props.reduxState.servers.serverList[i].title}
@@ -79,23 +84,26 @@ class ServersContainer extends Component {
 
         return (
             <div className='m-4'>
-                <h1>My servers</h1>
+                <div className='text-end'>
+                    <Fragment>
+                        {
+                            this.props.reduxState.servers.retrieveServerList.isProcessing
+                            &&
+                            <Square className={`${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'spinning' : 'spinning not-spinning'}`} />
+                        }
+                        {
+                            this.props.reduxState.servers.retrieveServerList.isProcessing
+                            ||
+                            <a onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></a>
+                        }
+                    </Fragment>
+                </div>
+
                 <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerList.errorMessage} />
 
-                {
-                    this.props.reduxState.servers.retrieveServerList.isProcessing
-                    &&
-                    <div className='card mt-4'>
-                        <div className='card-header'>
-                            <h4>Please wait</h4>
-                        </div>
-                        <div className='card-body'>
-                            <span className='small'>
-                                <pre>Retrieving server list...</pre>
-                            </span>
-                        </div>
-                    </div>
-                }
+                <h1>
+                    My servers
+                </h1>
 
                 {serverListElements}
             </div>

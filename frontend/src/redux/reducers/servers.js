@@ -48,7 +48,7 @@ export const retrieveServerList = () => (dispatch, getState) => {
             if (!responseWasOk) {
                 dispatch(retrieveServerListFailed(responseContentAsObject));
             } else {
-                dispatch(retrieveServerListSucceeded(responseContentAsObject));
+                setTimeout(() => dispatch(retrieveServerListSucceeded(responseContentAsObject)), 1000);
             }
         })
 
