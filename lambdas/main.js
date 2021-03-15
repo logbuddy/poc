@@ -64,7 +64,7 @@ const handleRegisterAccountRequest = async (event) => {
 
             const bcrypt = require('bcrypt');
 
-            const hash = await bcrypt.hash(newUserCredentials.password, 10);
+            const hash = await bcrypt.hash(newUserCredentials.password, 8);
             const userId = uuidv1();
 
             console.log('Hash: ', hash);
