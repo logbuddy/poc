@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
-    BrowserRouter as Router,
+    HashRouter as Router,
     Switch,
     Route,
     NavLink
