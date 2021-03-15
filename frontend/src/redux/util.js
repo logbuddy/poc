@@ -6,7 +6,7 @@ export const apiFetch = (path, method, webappApiKeyId = null, body = null) => {
     };
 
     if (webappApiKeyId !== null) {
-        headers['X-Herodot-Webapp-Api-Key-Id'] = webappApiKeyId + '3';
+        headers['X-Herodot-Webapp-Api-Key-Id'] = webappApiKeyId;
     }
 
     return fetch(
