@@ -9,7 +9,7 @@ import {
 import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './containers/RegisterContainer';
 import LoginContainer from './containers/LoginContainer';
-import ServersContainer from "./containers/ServersContainer";
+import ServersContainer from './containers/ServersContainer';
 
 const mapStateToProps = state => ({
     reduxState: {...state}
