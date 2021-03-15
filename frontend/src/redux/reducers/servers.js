@@ -7,23 +7,23 @@ const initialState = {
     serverList: []
 };
 
-const retrieveServerListStarted = () => ({
-    type: 'RETRIEVE_SERVER_LIST_STARTED'
+const retrieveServerListStartedEvent = () => ({
+    type: 'RETRIEVE_SERVER_LIST_STARTED_EVENT'
 });
 
-const retrieveServerListFailed = (errorMessage) => ({
-    type: 'RETRIEVE_SERVER_LIST_FAILED',
+const retrieveServerListFailedEvent = (errorMessage) => ({
+    type: 'RETRIEVE_SERVER_LIST_FAILED_EVENT',
     errorMessage
 });
 
-const retrieveServerListSucceeded = (serverList) => ({
-    type: 'RETRIEVE_SERVER_LIST_SUCCEEDED',
+const retrieveServerListSucceededEvent = (serverList) => ({
+    type: 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT',
     serverList
 });
 
-export const retrieveServerList = () => (dispatch, getState) => {
+export const retrieveServerListCommand = () => (dispatch, getState) => {
 
-    dispatch(retrieveServerListStarted());
+    dispatch(retrieveServerListStartedEvent());
 
     let responseWasOk = true;
     fetch(
@@ -46,21 +46,21 @@ export const retrieveServerList = () => (dispatch, getState) => {
 
         .then(responseContentAsObject => {
             if (!responseWasOk) {
-                dispatch(retrieveServerListFailed(responseContentAsObject));
+                dispatch(retrieveServerListFailedEvent(responseContentAsObject));
             } else {
-                setTimeout(() => dispatch(retrieveServerListSucceeded(responseContentAsObject)), 1000);
+                setTimeout(() => dispatch(retrieveServerListSucceededEvent(responseContentAsObject)), 1000);
             }
         })
 
         .catch(function(error) {
             console.error(error)
-            dispatch(retrieveServerListFailed(error.toString()));
+            dispatch(retrieveServerListFailedEvent(error.toString()));
         });
 };
 
 const reducer = (state = initialState, action) => {
     switch (action.type) {
-        case 'RETRIEVE_SERVER_LIST_STARTED':
+        case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
             return {
                 ...state,
                 retrieveServerList: {
@@ -69,7 +69,7 @@ const reducer = (state = initialState, action) => {
                 }
             };
 
-        case 'RETRIEVE_SERVER_LIST_SUCCEEDED':
+        case 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT':
             return {
                 ...state,
                 retrieveServerList: {
@@ -79,7 +79,7 @@ const reducer = (state = initialState, action) => {
                 serverList: action.serverList
             };
 
-        case 'RETRIEVE_SERVER_LIST_FAILED':
+        case 'RETRIEVE_SERVER_LIST_FAILED_EVENT':
             return {
                 ...state,
                 retrieveServerList: {
@@ -95,4 +95,4 @@ const reducer = (state = initialState, action) => {
 }
 
 export default reducer;
-export { initialState, retrieveServerListStarted, retrieveServerListFailed, retrieveServerListSucceeded };
+export { initialState, retrieveServerListStartedEvent, retrieveServerListFailedEvent, retrieveServerListSucceededEvent };

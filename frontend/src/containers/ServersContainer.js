@@ -4,7 +4,7 @@ import {
     Redirect
 } from 'react-router-dom';
 import { Cpu, Square, ArrowClockwise } from 'react-bootstrap-icons';
-import { retrieveServerList } from '../redux/reducers/servers';
+import { retrieveServerListCommand } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
 const mapStateToProps = state => ({
@@ -12,7 +12,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    retrieveServerList: () => dispatch(retrieveServerList())
+    retrieveServerList: () => dispatch(retrieveServerListCommand())
 });
 
 class ServersContainer extends Component {
