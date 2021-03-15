@@ -49,7 +49,7 @@ class ServersContainer extends Component {
                             {this.props.reduxState.servers.serverList[i].events[j].source}
                         </td>
                         <td>
-                            <code>{this.props.reduxState.servers.serverList[i].events[j].payload}</code>
+                            <code className='word-wrap-anywhere'>{this.props.reduxState.servers.serverList[i].events[j].payload}</code>
                         </td>
                     </tr>
                 );
