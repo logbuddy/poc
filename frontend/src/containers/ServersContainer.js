@@ -103,7 +103,7 @@ class ServersContainer extends Component {
                         {
                             this.props.reduxState.servers.retrieveServerList.isProcessing
                             ||
-                            <a onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></a>
+                            <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
                         }
                     </Fragment>
                 </div>
