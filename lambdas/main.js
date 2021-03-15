@@ -270,14 +270,19 @@ const handleRetrieveServerList = async (event) => {
                 }
             };
 
-            const serverEventsFromDbResult = await docClient.query(queryParamsServerEvents, function(err, data) {
-                if (err) {
-                    throw new Error(err);
-                } else {
-                    console.debug(data);
-                    return data;
-                }
-            }).promise();
+            // See https://github.com/aws/aws-sdk-js/issues/2700#issuecomment-512243758
+            // for an explanation why we don't use docClient.query().promise()
+            const serverEventsFromDbResultPromise = new Promise((resolve, reject) => {
+                docClient.query(queryParamsServerEvents, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(data);
+                    }
+                });
+            });
+
+            const serverEventsFromDbResult = await serverEventsFromDbResultPromise;
 
             for (let j = 0; j < serverEventsFromDbResult.Items.length; j++) {
                 serversFromDb[i].events.push({
