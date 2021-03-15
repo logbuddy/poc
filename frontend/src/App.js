@@ -84,7 +84,7 @@ class App  extends Component {
                         <Route exact path='/'>
                             <div className='m-4'>
                                 <h1>
-                                    Welcome to the GameLoggers PoC.
+                                    Welcome to the ServerLogger proof-of-concept application.
                                 </h1>
                             </div>
                         </Route>
