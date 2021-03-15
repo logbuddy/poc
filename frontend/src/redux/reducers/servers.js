@@ -6,6 +6,11 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
+    createServer: {
+        isProcessing: false,
+        justFinishedSuccessfully: false,
+        errorMessage: null
+    },
     serverList: []
 };
 
@@ -42,13 +47,58 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
             if (!responseWasOk) {
                 dispatch(retrieveServerListFailedEvent(responseContentAsObject));
             } else {
-                setTimeout(() => dispatch(retrieveServerListSucceededEvent(responseContentAsObject)), 1000);
+                dispatch(retrieveServerListSucceededEvent(responseContentAsObject));
             }
         })
 
         .catch(function(error) {
             console.error(error)
             dispatch(retrieveServerListFailedEvent(error.toString()));
+        });
+};
+
+
+const createServerStartedEvent = () => ({
+    type: 'CREATE_SERVER_STARTED_EVENT'
+});
+
+const createServerFailedEvent = (errorMessage) => ({
+    type: 'CREATE_SERVER_FAILED_EVENT',
+    errorMessage
+});
+
+const createServerSucceededEvent = (server) => ({
+    type: 'CREATE_SERVER_SUCCEEDED_EVENT',
+    server
+});
+
+
+export const createServerCommand = (title) => (dispatch, getState) => {
+
+    dispatch(createServerStartedEvent());
+
+    let responseWasOk = true;
+    apiFetch('/servers', 'POST', getState().session.webappApiKeyId, JSON.stringify({title}))
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsObject => {
+            if (!responseWasOk) {
+                dispatch(createServerFailedEvent(responseContentAsObject));
+            } else {
+                dispatch(createServerSucceededEvent(responseContentAsObject));
+                dispatch(retrieveServerListCommand());
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(createServerFailedEvent(error.toString()));
         });
 };
 
@@ -82,6 +132,35 @@ const reducer = (state = initialState, action) => {
                     errorMessage: action.errorMessage
                 },
                 serverList: initialState.serverList
+            };
+
+
+        case 'CREATE_SERVER_STARTED_EVENT':
+            return {
+                ...state,
+                createServer: {
+                    ...initialState.createServer,
+                    isProcessing: true
+                }
+            };
+
+        case 'CREATE_SERVER_SUCCEEDED_EVENT':
+            return {
+                ...state,
+                createServer: {
+                    ...initialState.createServer,
+                    justFinishedSuccessfully: true
+                },
+                serverList: [...state.serverList, action.server]
+            };
+
+        case 'CREATE_SERVER_FAILED_EVENT':
+            return {
+                ...state,
+                createServer: {
+                    ...initialState.createServer,
+                    errorMessage: action.errorMessage
+                }
             };
 
         default:

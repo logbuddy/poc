@@ -1,10 +1,10 @@
-import React, {Component, Fragment} from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
 import { Cpu, Square, ArrowClockwise } from 'react-bootstrap-icons';
-import { retrieveServerListCommand } from '../redux/reducers/servers';
+import { createServerCommand, retrieveServerListCommand } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
 const mapStateToProps = state => ({
@@ -12,17 +12,30 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    retrieveServerList: () => dispatch(retrieveServerListCommand())
+    retrieveServerList: () => dispatch(retrieveServerListCommand()),
+    createServer: (title) => dispatch(createServerCommand(title))
 });
 
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
+        this.state = { createServerTitle: '' };
         this.handleRefreshClicked = this.handleRefreshClicked.bind(this);
+        this.handleChangeCreateServerTitle = this.handleChangeCreateServerTitle.bind(this);
+        this.handleCreateServerClicked = this.handleCreateServerClicked.bind(this);
     }
 
     handleRefreshClicked() {
         this.props.retrieveServerList();
+    }
+
+    handleChangeCreateServerTitle(event) {
+        this.setState({ createServerTitle: event.target.value });
+    }
+
+    handleCreateServerClicked() {
+        this.props.createServer(this.state.createServerTitle);
+        this.setState({ createServerTitle: '' });
     }
 
     componentDidMount() {
@@ -113,6 +126,36 @@ class ServersContainer extends Component {
                 <h1>
                     My servers
                 </h1>
+
+                <form className='row row-cols-lg-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
+                    <div className='col-12'>
+                        <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
+                        <div className='input-group'>
+                            <div className='input-group-text'>New server</div>
+                            <input
+                                type='text'
+                                className='form-control'
+                                id='create-server-title'
+                                placeholder='Name of new server'
+                                value={this.state.createServerTitle}
+                                onChange={this.handleChangeCreateServerTitle}
+                            />
+                        </div>
+                    </div>
+
+                    <div className='col-12'>
+                        {
+                            this.props.reduxState.servers.createServer.isProcessing
+                            &&
+                            <button className='btn btn-warning disabled'>Adding...</button>
+                        }
+                        {
+                            this.props.reduxState.servers.createServer.isProcessing
+                            ||
+                            <button type='submit' className={`btn btn-primary ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
+                        }
+                    </div>
+                </form>
 
                 {serverListElements}
             </div>

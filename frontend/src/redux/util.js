@@ -6,11 +6,11 @@ export const apiFetch = (path, method, webappApiKeyId = null, body = null) => {
     };
 
     if (webappApiKeyId !== null) {
-        headers['X-Herodot-Webapp-Api-Key-Id'] = webappApiKeyId;
+        headers['X-Herodot-Webapp-Api-Key-Id'] = webappApiKeyId + '3';
     }
 
     return fetch(
-        `${config.backendApiBaseUri}/${path}`,
+        `${config.backendApiBaseUri}${path}`,
         {
             method,
             mode: 'cors',

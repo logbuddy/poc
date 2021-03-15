@@ -52,16 +52,16 @@ class LoginContainer extends Component {
                 <ErrorMessagePresentational message={this.props.reduxState.session.login.errorMessage} />
                 <form onSubmit={this.handleSubmit}>
                     <div className="mb-3">
-                        <label className='form-label' htmlFor='name'>
+                        <label className='form-label' htmlFor='email'>
                             E-Mail:
                         </label>
-                        <input className='form-control' type='text' name='name' value={this.state.email} onChange={this.handleChangeEmail} />
+                        <input className='form-control' type='text' id='email' value={this.state.email} onChange={this.handleChangeEmail} />
                     </div>
                     <div className="mb-3">
                         <label className='form-label' htmlFor='password'>
                             Password:
                         </label>
-                        <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
+                        <input className='form-control' type='password' id='password' value={this.state.password} onChange={this.handleChangePassword} />
                     </div>
                     <div className="mb-3">
                         {

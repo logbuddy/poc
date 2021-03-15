@@ -18,6 +18,51 @@ const corsOptionsResponse = {
     body: ''
 };
 
+const authenticateWebappRequest = async (eventHeaders) => {
+    console.debug('About to authenticate webapp request with api key id', eventHeaders['x-herodot-webapp-api-key-id']);
+    const getParamsWebappApiKey = {
+        TableName: 'webapp_api_keys',
+        Key: {
+            id: eventHeaders['x-herodot-webapp-api-key-id'],
+        }
+    };
+
+    const getWebappApiKeyResultPromise = new Promise((resolve, reject) => {
+        docClient.get(getParamsWebappApiKey, function(err, data) {
+            if (err) {
+                reject(err);
+            } else {
+                console.debug(data);
+                if (data.hasOwnProperty('Item')) {
+                    resolve(data.Item);
+                } else {
+                    reject(new Error('Missing property "Item".'));
+                }
+            }
+        });
+    });
+
+    let getWebappApiKeyResult;
+    try {
+        console.debug('About to await getWebappApiKeyResultPromise');
+        getWebappApiKeyResult = await getWebappApiKeyResultPromise;
+    } catch (e) {
+        console.error('await getWebappApiKeyResultPromise exception', e);
+        getWebappApiKeyResult = null;
+    }
+
+    console.debug('getWebappApiKeyResult', getWebappApiKeyResult);
+
+    return getWebappApiKeyResult;
+};
+
+const unknownWebappApiKeyIdResponse = {
+    statusCode: 403,
+    headers: corsHeaders,
+    body: JSON.stringify('Unknown webapp api key id.')
+};
+
+
 const handleRegisterAccountRequest = async (event) => {
 
     if (event.routeKey === 'OPTIONS /users') {
@@ -31,7 +76,7 @@ const handleRegisterAccountRequest = async (event) => {
         } else {
             newUserCredentialsJson = event.body;
         }
-        console.debug(newUserCredentialsJson);
+        console.debug('newUserCredentialsJson', newUserCredentialsJson);
 
         const newUserCredentials = JSON.parse(newUserCredentialsJson);
 
@@ -47,7 +92,7 @@ const handleRegisterAccountRequest = async (event) => {
             if (err) {
                 console.error(err);
             } else {
-                console.debug(data);
+                console.debug('getCredentials result', data);
                 if (data.hasOwnProperty('Item')) {
                     userExists = true;
                 }
@@ -83,7 +128,7 @@ const handleRegisterAccountRequest = async (event) => {
                 if (err) {
                     console.error(err);
                 } else {
-                    console.debug(data);
+                    console.debug('putCredentialsResult', data);
                 }
             }).promise();
 
@@ -99,7 +144,7 @@ const handleRegisterAccountRequest = async (event) => {
                 if (err) {
                     console.error(err);
                 } else {
-                    console.debug(data);
+                    console.debug('putUsersResult', data);
                 }
             }).promise();
 
@@ -124,7 +169,7 @@ const handleCreateWebappApiKey = async (event) => {
         } else {
             credentialsFromRequestJson = event.body;
         }
-        console.debug(credentialsFromRequestJson);
+        console.debug('credentialsFromRequestJson', credentialsFromRequestJson);
 
         const credentialsFromRequest = JSON.parse(credentialsFromRequestJson);
 
@@ -140,7 +185,7 @@ const handleCreateWebappApiKey = async (event) => {
             if (err) {
                 throw new Error(err);
             } else {
-                console.debug(data);
+                console.debug('getCredentialsResult', data);
                 if (data.hasOwnProperty('Item')) {
                     credentialsFromDb = data.Item;
                 }
@@ -204,38 +249,17 @@ const handleRetrieveServerList = async (event) => {
 
     } else {
 
-        const getParamsWebappApiKey = {
-            TableName: 'webapp_api_keys',
-            Key: {
-                id: event.headers['x-herodot-webapp-api-key-id'],
-            }
-        };
+        const webappApiKey = await authenticateWebappRequest(event.headers);
 
-        let webappApiKeyFromDb = null;
-        await docClient.get(getParamsWebappApiKey, function(err, data) {
-            if (err) {
-                throw new Error(err);
-            } else {
-                console.debug(data);
-                if (data.hasOwnProperty('Item')) {
-                    webappApiKeyFromDb = data.Item;
-                }
-            }
-        }).promise();
-
-        if (webappApiKeyFromDb === null) {
-            return {
-                statusCode: 403,
-                headers: corsHeaders,
-                body: JSON.stringify('Unknown webapp api key id.')
-            }
+        if (webappApiKey === null) {
+            return unknownWebappApiKeyIdResponse;
         }
 
         const queryParamsServers = {
             TableName: 'servers',
             KeyConditionExpression: 'users_id = :users_id',
             ExpressionAttributeValues: {
-                ':users_id': webappApiKeyFromDb.users_id
+                ':users_id': webappApiKey.users_id
             }
         };
 
@@ -299,6 +323,87 @@ const handleRetrieveServerList = async (event) => {
             body: JSON.stringify(serversFromDb)
         }
     }
+};
+
+const handleCreateServer = async (event) => {
+        let credentialsFromRequestJson;
+        if (event.isBase64Encoded) {
+            credentialsFromRequestJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+        } else {
+            credentialsFromRequestJson = event.body;
+        }
+        console.debug('credentialsFromRequestJson', credentialsFromRequestJson);
+
+        const credentialsFromRequest = JSON.parse(credentialsFromRequestJson);
+
+        const getParams = {
+            TableName: 'credentials',
+            Key: {
+                email: credentialsFromRequest.email,
+            }
+        };
+
+        let credentialsFromDb = null;
+        await docClient.get(getParams, function(err, data) {
+            if (err) {
+                throw new Error(err);
+            } else {
+                console.debug('getCredentialsResult', data);
+                if (data.hasOwnProperty('Item')) {
+                    credentialsFromDb = data.Item;
+                }
+            }
+        }).promise();
+
+        if (credentialsFromDb !== null) {
+
+            const bcrypt = require('bcrypt');
+
+            const passwordIsValid = await bcrypt.compare(credentialsFromRequest.password, credentialsFromDb['password_hash']);
+
+            if (!passwordIsValid) {
+                return {
+                    statusCode: 403,
+                    headers: corsHeaders,
+                    body: JSON.stringify('Invalid credentials.')
+                };
+            }
+
+            const apiKeyId = uuidv4();
+            const putParamsApiKeys = {
+                TableName: 'webapp_api_keys',
+                Item: {
+                    id: apiKeyId,
+                    users_id: credentialsFromDb['users_id']
+                }
+            };
+
+            let response = null;
+            await docClient.put(putParamsApiKeys, function(err) {
+                if (err) {
+                    response = {
+                        statusCode: 500,
+                        headers: corsHeaders,
+                        body: JSON.stringify(`Error: ${err}`)
+                    }
+                } else {
+                    response = {
+                        statusCode: 201,
+                        headers: corsHeaders,
+                        body: JSON.stringify(apiKeyId)
+                    }
+                }
+            }).promise();
+
+            return response;
+        } else {
+            return {
+                statusCode: 404,
+                headers: corsHeaders,
+                body: JSON.stringify(`User ${credentialsFromRequest.email} does not exist.`)
+            };
+        }
+
 };
 
 const handleInsertServerEventsRequest = async (event) => {
@@ -438,6 +543,10 @@ exports.handler = async (event) => {
         || event.routeKey === 'OPTIONS /servers'
     ) {
         return handleRetrieveServerList(event);
+    }
+
+    if (event.routeKey === 'POST /servers') {
+        return handleCreateServer(event);
     }
 
     if (event.routeKey === 'POST /server-events') {
