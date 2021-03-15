@@ -1,3 +1,5 @@
+import { apiFetch } from '../util';
+
 const initialState = {
     retrieveServerList: {
         isProcessing: false,
@@ -27,16 +29,7 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
     dispatch(retrieveServerListStartedEvent());
 
     let responseWasOk = true;
-    fetch(
-        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/servers`,
-        {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-                'X-Herodot-Webapp-Api-Key-Id': getState().session.webappApiKeyId
-            },
-        }
-    )
+    apiFetch('/servers', 'GET', getState().session.webappApiKeyId)
         .then(response => {
             console.debug(response);
             if (!response.ok) {

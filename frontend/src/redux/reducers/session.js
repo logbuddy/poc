@@ -1,3 +1,5 @@
+import { apiFetch } from '../util';
+
 const initialState = {
     isLoggedIn: false,
     loggedInEmail: null,
@@ -36,17 +38,7 @@ export const registerAccountCommand = (email, password) => (dispatch) => {
     dispatch(registerAccountStartedEvent());
 
     let responseWasOk = true;
-    fetch(
-        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/users`,
-        {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({email, password})
-        }
-    )
+    apiFetch('/users', 'POST', null, JSON.stringify({email, password}))
         .then(response => {
             console.debug(response);
             if (!response.ok) {
@@ -91,17 +83,7 @@ export const logIntoAccountCommand = (email, password) => (dispatch) => {
     dispatch(logIntoAccountStartedEvent());
 
     let responseWasOk = true;
-    fetch(
-        `https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/webapp-api-keys`,
-        {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({email, password})
-        }
-    )
+    apiFetch('/webapp-api-keys', 'POST', null, JSON.stringify({email, password}))
         .then(response => {
             console.debug(response);
             if (!response.ok) {
