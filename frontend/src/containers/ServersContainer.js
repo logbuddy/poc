@@ -66,17 +66,26 @@ class ServersContainer extends Component {
                         </h4>
                     </div>
                     <div className='card-body'>
-                        <span className='small'>
+                        <h5>Information</h5>
+                        <div className='small'>
                             <pre>serverId: {this.props.reduxState.servers.serverList[i].id}</pre>
                             <pre>userId: {this.props.reduxState.servers.serverList[i].userId}</pre>
                             <pre>apiKeyId: {this.props.reduxState.servers.serverList[i].apiKeyId}</pre>
-                        </span>
-                        <hr/>
-                        <table className='table table-light table-borderless table-striped'>
-                            <tbody>
-                                {serverEventElements}
-                            </tbody>
-                        </table>
+                        </div>
+
+                        {
+                            serverEventElements.length > 0
+                            &&
+                            <Fragment>
+                                <hr/>
+                                <h5>Events</h5>
+                                <table className='table table-light table-borderless table-striped'>
+                                    <tbody>
+                                    {serverEventElements}
+                                    </tbody>
+                                </table>
+                            </Fragment>
+                        }
                     </div>
                 </div>
             );
