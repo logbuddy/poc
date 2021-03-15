@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { Cpu, Square, ArrowClockwise } from 'react-bootstrap-icons';
+import { Cpu, Square, ArrowClockwise, Clipboard } from 'react-bootstrap-icons';
 import { createServerCommand, retrieveServerListCommand } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
@@ -67,6 +67,20 @@ class ServersContainer extends Component {
                     </tr>
                 );
             }
+
+            const curlSampleCommand = `curl \\
+  -X POST \\
+  "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events" \\
+  -d '{ "userId": "${this.props.reduxState.servers.serverList[i].userId}",
+        "apiKeyId": "${this.props.reduxState.servers.serverList[i].apiKeyId}",
+        "serverId": "${this.props.reduxState.servers.serverList[i].id}",
+        "events": [{
+                     "createdAt": "2021-03-15T17:40:02Z",
+                     "source":
+                     "curl",
+                     "payload": "This is a test."
+                   }]}'`;
+
             serverListElements.push(
                 <div key={i} className={`card mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
                     <div className='card-header'>
@@ -80,11 +94,58 @@ class ServersContainer extends Component {
                     </div>
                     <div className='card-body'>
                         <h5>Information</h5>
-                        <div className='small'>
-                            <pre>serverId: {this.props.reduxState.servers.serverList[i].id}</pre>
-                            <pre>userId: {this.props.reduxState.servers.serverList[i].userId}</pre>
-                            <pre>apiKeyId: {this.props.reduxState.servers.serverList[i].apiKeyId}</pre>
+
+                        <div className='row mt-2 mb-2'>
+                            <div className='col-12'>
+                                <div className='input-group'>
+                                    <div className='input-group-text w-6em'>serverId</div>
+                                    <input
+                                        type='text'
+                                        className='form-control text-black-50 code'
+                                        value={this.props.reduxState.servers.serverList[i].id}
+                                        disabled={false}
+                                    />
+                                    <div className='input-group-text'><Clipboard /></div>
+                                </div>
+                            </div>
                         </div>
+
+                        <div className='row mt-2 mb-2'>
+                            <div className='col-12'>
+                                <div className='input-group'>
+                                    <div className='input-group-text w-6em'>userId</div>
+                                    <input
+                                        type='text'
+                                        className='form-control text-black-50 code'
+                                        value={this.props.reduxState.servers.serverList[i].userId}
+                                        disabled={false}
+                                    />
+                                    <div className='input-group-text'><Clipboard /></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className='row mt-2 mb-2'>
+                            <div className='col-12'>
+                                <div className='input-group'>
+                                    <div className='input-group-text w-6em'>apiKeyId</div>
+                                    <input
+                                        type='text'
+                                        className='form-control text-black-50 code'
+                                        value={this.props.reduxState.servers.serverList[i].apiKeyId}
+                                        disabled={false}
+                                    />
+                                    <div className='input-group-text'><Clipboard /></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr/>
+
+                        <h5>Sample <i>curl</i> command</h5>
+                        <code><pre>{curlSampleCommand}</pre>
+
+                        </code>
 
                         {
                             serverEventElements.length > 0

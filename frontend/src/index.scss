@@ -8,6 +8,18 @@
   opacity: .25;
 }
 
+.w-6em {
+  width: 6em;
+};
+
+code {
+  color: $success;
+}
+
+.code {
+  font-family: var(--bs-font-monospace);
+}
+
 .word-wrap-anywhere {
   word-wrap: anywhere;
   word-break: break-all;
