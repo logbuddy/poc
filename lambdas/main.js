@@ -30,6 +30,7 @@ const authenticateWebappRequest = async (eventHeaders) => {
     const getWebappApiKeyResultPromise = new Promise((resolve, reject) => {
         docClient.get(getParamsWebappApiKey, function(err, data) {
             if (err) {
+                console.error(err);
                 reject(err);
             } else {
                 console.debug(data);
@@ -87,17 +88,21 @@ const handleRegisterAccountRequest = async (event) => {
             }
         };
 
-        let userExists = false;
-        await docClient.get(getParams, function(err, data) {
-            if (err) {
-                console.error(err);
-            } else {
-                console.debug('getCredentials result', data);
-                if (data.hasOwnProperty('Item')) {
-                    userExists = true;
+        const userExists = await new Promise((resolve, reject) => {
+            docClient.get(getParams, function(err, data) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                } else {
+                    console.debug('getCredentials result', data);
+                    if (data.hasOwnProperty('Item')) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
                 }
-            }
-        }).promise();
+            });
+        });
 
         if (userExists) {
             return {
@@ -124,13 +129,17 @@ const handleRegisterAccountRequest = async (event) => {
                 }
             };
 
-            await docClient.put(putParamsCredentials, function(err, data) {
-                if (err) {
-                    console.error(err);
-                } else {
-                    console.debug('putCredentialsResult', data);
-                }
-            }).promise();
+            await new Promise((resolve, reject) => {
+                docClient.put(putParamsCredentials, function(err, data) {
+                    if (err) {
+                        console.error(err);
+                        reject(err);
+                    } else {
+                        console.debug('putCredentialsResult', data);
+                        resolve(data);
+                    }
+                });
+            });
 
             const putParamsUsers = {
                 TableName: 'users',
@@ -140,13 +149,17 @@ const handleRegisterAccountRequest = async (event) => {
                 }
             };
 
-            await docClient.put(putParamsUsers, function(err, data) {
-                if (err) {
-                    console.error(err);
-                } else {
-                    console.debug('putUsersResult', data);
-                }
-            }).promise();
+            await new Promise((resolve, reject) => {
+                docClient.put(putParamsUsers, function(err, data) {
+                    if (err) {
+                        console.error(err);
+                        reject(err);
+                    } else {
+                        console.debug('putUsersResult', data);
+                        resolve(data);
+                    }
+                });
+            });
 
             return {
                 statusCode: 201,
@@ -180,17 +193,22 @@ const handleCreateWebappApiKey = async (event) => {
             }
         };
 
-        let credentialsFromDb = null;
-        await docClient.get(getParams, function(err, data) {
-            if (err) {
-                throw new Error(err);
-            } else {
-                console.debug('getCredentialsResult', data);
-                if (data.hasOwnProperty('Item')) {
-                    credentialsFromDb = data.Item;
+
+        const credentialsFromDb = await new Promise((resolve, reject) => {
+            docClient.get(getParams, function(err, data) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                } else {
+                    console.debug('getCredentialsResult', data);
+                    if (data.hasOwnProperty('Item')) {
+                        resolve(data.Item);
+                    } else {
+                        resolve(null);
+                    }
                 }
-            }
-        }).promise();
+            });
+        });
 
         if (credentialsFromDb !== null) {
 
@@ -215,22 +233,24 @@ const handleCreateWebappApiKey = async (event) => {
                 }
             };
 
-            let response = null;
-            await docClient.put(putParamsApiKeys, function(err) {
-                if (err) {
-                    response = {
-                        statusCode: 500,
-                        headers: corsHeaders,
-                        body: JSON.stringify(`Error: ${err}`)
+            const response = await new Promise((resolve, reject) => {
+                docClient.put(putParamsApiKeys, function(err) {
+                    if (err) {
+                        console.error(err);
+                        resolve({
+                            statusCode: 500,
+                            headers: corsHeaders,
+                            body: JSON.stringify(`Error: ${err}`)
+                        });
+                    } else {
+                        resolve({
+                            statusCode: 201,
+                            headers: corsHeaders,
+                            body: JSON.stringify(apiKeyId)
+                        });
                     }
-                } else {
-                    response = {
-                        statusCode: 201,
-                        headers: corsHeaders,
-                        body: JSON.stringify(apiKeyId)
-                    }
-                }
-            }).promise();
+                });
+            });
 
             return response;
         } else {
@@ -264,14 +284,17 @@ const handleRetrieveServerList = async (event) => {
         };
 
         const serversFromDb = [];
-        const serversFromDbResult = await docClient.query(queryParamsServers, function(err, data) {
-            if (err) {
-                throw new Error(err);
-            } else {
-                console.debug('queryServersResult', data);
-                return data;
-            }
-        }).promise();
+        const serversFromDbResult = await new Promise((resolve, reject) => {
+            docClient.query(queryParamsServers, function(err, data) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                } else {
+                    console.debug('queryServersResult', data);
+                    resolve(data);
+                }
+            });
+        });
 
         console.debug('res', serversFromDbResult);
 
@@ -288,6 +311,8 @@ const handleRetrieveServerList = async (event) => {
         for (let i = 0; i < serversFromDb.length; i++) {
             const queryParamsServerEvents = {
                 TableName: 'server_events',
+                Limit: 100,
+                ScanIndexForward: false,
                 KeyConditionExpression: 'servers_id = :servers_id',
                 ExpressionAttributeValues: {
                     ':servers_id': serversFromDb[i].id
@@ -299,6 +324,7 @@ const handleRetrieveServerList = async (event) => {
             const serverEventsFromDbResultPromise = new Promise((resolve, reject) => {
                 docClient.query(queryParamsServerEvents, (err, data) => {
                     if (err) {
+                        console.error(err);
                         reject(err);
                     } else {
                         resolve(data);
@@ -343,17 +369,21 @@ const handleCreateServer = async (event) => {
             }
         };
 
-        let credentialsFromDb = null;
-        await docClient.get(getParams, function(err, data) {
-            if (err) {
-                throw new Error(err);
-            } else {
-                console.debug('getCredentialsResult', data);
-                if (data.hasOwnProperty('Item')) {
-                    credentialsFromDb = data.Item;
+        const credentialsFromDb = await new Promise((resolve, reject) => {
+            docClient.get(getParams, function(err, data) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                } else {
+                    console.debug('getCredentialsResult', data);
+                    if (data.hasOwnProperty('Item')) {
+                        resolve(data.Item);
+                    } else {
+                        reject(null);
+                    }
                 }
-            }
-        }).promise();
+            })
+        });
 
         if (credentialsFromDb !== null) {
 
@@ -378,22 +408,23 @@ const handleCreateServer = async (event) => {
                 }
             };
 
-            let response = null;
-            await docClient.put(putParamsApiKeys, function(err) {
-                if (err) {
-                    response = {
-                        statusCode: 500,
-                        headers: corsHeaders,
-                        body: JSON.stringify(`Error: ${err}`)
+            const response = await new Promise((resolve, reject) => {
+                docClient.put(putParamsApiKeys, function(err) {
+                    if (err) {
+                        console.error(err);
+                        resolve({
+                            statusCode: 500,
+                            headers: corsHeaders,
+                            body: JSON.stringify(`Error: ${err}`)
+                        });
+                    } else {
+                        resolve({
+                            statusCode: 201,
+                            headers: corsHeaders,
+                            body: JSON.stringify(apiKeyId)
+                        });
                     }
-                } else {
-                    response = {
-                        statusCode: 201,
-                        headers: corsHeaders,
-                        body: JSON.stringify(apiKeyId)
-                    }
-                }
-            }).promise();
+                })});
 
             return response;
         } else {
@@ -417,27 +448,28 @@ const handleInsertServerEventsRequest = async (event) => {
             }
         };
 
-        let result = false;
-        await docClient.query(params, function(err, data) {
-            if (err) {
-                throw new Error(err);
-            } else {
-                console.log(data);
-                for (let i = 0; i < data.Count; i++) {
-                    if (   data.Items[i].users_id === userId
-                        && data.Items[i].id === serverId
-                        && data.Items[i].logging_api_key_id === apiKeyId
-                    ) {
-                        console.log(`Item ${i} looks good.`)
-                        result = true;
-                        return;
-                    } else {
-                        console.log(`Item ${i} does not look good.`)
+        const result = await new Promise((resolve, reject) => {
+            docClient.query(params, function(err, data) {
+                if (err) {
+                    console.error(err);
+                    reject(err);
+                } else {
+                    console.log(data);
+                    for (let i = 0; i < data.Count; i++) {
+                        if (   data.Items[i].users_id === userId
+                            && data.Items[i].id === serverId
+                            && data.Items[i].logging_api_key_id === apiKeyId
+                        ) {
+                            console.log(`Item ${i} looks good.`)
+                            resolve(true);
+                        } else {
+                            console.log(`Item ${i} does not look good.`)
+                        }
                     }
+                    resolve(false);
                 }
-            }
-        }).promise();
-
+            })
+        });
         return result;
     };
 
@@ -487,7 +519,7 @@ const handleInsertServerEventsRequest = async (event) => {
             PutRequest: {
                 Item: {
                     'servers_id': serverId,
-                    'id': uuidv1(),
+                    'sort_value': `${serverEvents[i].createdAt} ${uuidv1()}`,
                     'received_at': Date.now(),
                     'users_id': userId,
                     'api_keys_id': apiKeyId,
@@ -509,13 +541,25 @@ const handleInsertServerEventsRequest = async (event) => {
     };
 
     console.log('Starting write to DDB...');
-    await docClient.batchWrite(params, function(err, data) {
+    await new Promise((resolve, reject) => {
+        docClient.batchWrite(params, function(err, data) {
+            if (err) {
+                console.error(err);
+                reject(err);
+            } else {
+                console.log('Success', data);
+                resolve(data);
+            }
+        });
+    });
+
+    docClient.batchWrite(params, function(err, data) {
         if (err) {
             throw new Error(err);
         } else {
             console.log('Success', data);
         }
-    }).promise();
+    });
 
     return {
         statusCode: 201,
