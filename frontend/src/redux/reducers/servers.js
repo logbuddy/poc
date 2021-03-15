@@ -7,6 +7,7 @@ const initialState = {
     serverList: []
 };
 
+
 const retrieveServerListStartedEvent = () => ({
     type: 'RETRIEVE_SERVER_LIST_STARTED_EVENT'
 });
@@ -58,6 +59,7 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
         });
 };
 
+
 const reducer = (state = initialState, action) => {
     switch (action.type) {
         case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
@@ -95,4 +97,4 @@ const reducer = (state = initialState, action) => {
 }
 
 export default reducer;
-export { initialState, retrieveServerListStartedEvent, retrieveServerListFailedEvent, retrieveServerListSucceededEvent };
+export { initialState };

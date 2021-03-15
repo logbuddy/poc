@@ -14,27 +14,22 @@ const initialState = {
     }
 };
 
-function registerAccountStartedEvent() {
-    return {
-        type: 'REGISTER_ACCOUNT_STARTED_EVENT'
-    };
-}
 
-function registerAccountFailedEvent(errorMessage) {
-    return {
-        type: 'REGISTER_ACCOUNT_FAILED_EVENT',
-        errorMessage
-    };
-}
+const registerAccountStartedEvent = () => ({
+    type: 'REGISTER_ACCOUNT_STARTED_EVENT'
+});
 
-function registerAccountSucceededEvent(userId, email, password) {
-    return {
-        type: 'REGISTER_ACCOUNT_SUCCEEDED_EVENT',
-        userId,
-        email,
-        password
-    };
-}
+const registerAccountFailedEvent = (errorMessage) => ({
+    type: 'REGISTER_ACCOUNT_FAILED_EVENT',
+    errorMessage
+});
+
+const registerAccountSucceededEvent = (userId, email, password) => ({
+    type: 'REGISTER_ACCOUNT_SUCCEEDED_EVENT',
+    userId,
+    email,
+    password
+});
 
 export const registerAccountCommand = (email, password) => (dispatch) => {
 
@@ -75,27 +70,21 @@ export const registerAccountCommand = (email, password) => (dispatch) => {
 };
 
 
-export function logIntoAccountStartedEvent() {
-    return {
-        type: 'LOG_INTO_ACCOUNT_STARTED_EVENT'
-    };
-}
+const logIntoAccountStartedEvent = () => ({
+    type: 'LOG_INTO_ACCOUNT_STARTED_EVENT'
+});
 
-export function logIntoAccountFailedEvent(errorMessage) {
-    return {
-        type: 'LOG_INTO_ACCOUNT_FAILED_EVENT',
-        errorMessage
-    };
-}
+const logIntoAccountFailedEvent = (errorMessage) => ({
+    type: 'LOG_INTO_ACCOUNT_FAILED_EVENT',
+    errorMessage
+});
 
-export function logIntoAccountSucceededEvent(apiKeyId, email, password) {
-    return {
-        type: 'LOG_INTO_ACCOUNT_SUCCEEDED_EVENT',
-        webappApiKeyId: apiKeyId,
-        email,
-        password
-    };
-}
+const logIntoAccountSucceededEvent = (apiKeyId, email, password) => ({
+    type: 'LOG_INTO_ACCOUNT_SUCCEEDED_EVENT',
+    webappApiKeyId: apiKeyId,
+    email,
+    password
+});
 
 export const logIntoAccountCommand = (email, password) => (dispatch) => {
 
