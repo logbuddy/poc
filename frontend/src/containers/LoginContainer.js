@@ -3,15 +3,15 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { logIntoAccount } from '../redux/actionCreators';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
+import {logIntoAccountCommand} from '../redux/reducers/session';
 
 const mapStateToProps = state => ({
     reduxState: {...state}
 });
 
 const mapDispatchToProps = dispatch => ({
-    logIntoAccount: (email, password) => dispatch(logIntoAccount(email, password))
+    logIntoAccount: (email, password) => dispatch(logIntoAccountCommand(email, password))
 });
 
 class LoginContainer extends Component {

@@ -3,15 +3,15 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { registerAccount } from '../redux/actionCreators';
 import ErrorMessagePresentational from "../presentationals/ErrorMessagePresentational";
+import {registerAccountCommand} from '../redux/reducers/session';
 
 const mapStateToProps = state => ({
     reduxState: {...state}
 });
 
 const mapDispatchToProps = dispatch => ({
-    registerAccount: (email, password) => dispatch(registerAccount(email, password))
+    registerAccount: (email, password) => dispatch(registerAccountCommand(email, password))
 });
 
 class RegisterContainer extends Component {
