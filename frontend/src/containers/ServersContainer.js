@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { Cpu, Square, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc } from 'react-bootstrap-icons';
+import { Cpu, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc } from 'react-bootstrap-icons';
 import {
     createServerCommand,
     retrieveServerListCommand,
