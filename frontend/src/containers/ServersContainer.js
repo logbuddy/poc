@@ -90,9 +90,9 @@ class ServersContainer extends Component {
                         {
                             elementName === 'latestEvents'
                             &&
-                            <div className='small float-end text-success mb-2'>
-                                Polling for new entries...
-                                <Disc className='spinning' />
+                            <div className='small float-end text-black-50 mb-2'>
+                                Polling for new entries
+                                <Disc className='spinning text-success' />
                             </div>
                         }
                     </h5>
@@ -272,7 +272,7 @@ class ServersContainer extends Component {
                         {
                             this.props.reduxState.servers.retrieveServerList.isProcessing
                             &&
-                            <Square className={`${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'spinning' : 'spinning not-spinning'}`} />
+                            <Disc className={`text-success ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'spinning' : 'spinning not-spinning'}`} />
                         }
                         {
                             this.props.reduxState.servers.retrieveServerList.isProcessing
