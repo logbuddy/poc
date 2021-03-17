@@ -33,3 +33,18 @@ tail -n0 -F "/var/tmp/test.log" | while read LINE; do
                         "payload": "'"$(echo $LINE | sed "s/\"/'/g")"'"
                       }]}';
 done
+
+
+tail -n0 -F "/var/tmp/build-and-deploy.simplecd.log" | while read LINE; do
+  (echo "$LINE" | grep -e "$3") && curl \
+     -X POST \
+     "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events" \
+     -d '{ "userId": "b133a070-84c0-11eb-be0e-f5efb73abf98",
+           "apiKeyId": "8ffcb319-ce31-45f0-ac00-1f70b04a42c0",
+           "serverId": "41c968a2-de7e-418a-b142-dafcf5c97ea4",
+           "events": [{
+                        "createdAt": "'"$(date +"%Y-%m-%dT%H:%M:%S%z")"'",
+                        "source": "simplecd",
+                        "payload": "'"$(echo $LINE | sed "s/\"/'/g")"'"
+                      }]}';
+done
