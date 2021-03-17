@@ -21,6 +21,15 @@ curl \
 
 
 tail -n0 -F "/var/tmp/test.log" | while read LINE; do
-  (echo "$LINE" | grep -e "$3") && curl -X POST --silent --data-urlencode \
-    "payload={\"text\": \"$(echo $LINE | sed "s/\"/'/g")\"}" "$2";
+  (echo "$LINE" | grep -e "$3") && curl \
+     -X POST \
+     "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events" \
+     -d '{ "userId": "b133a070-84c0-11eb-be0e-f5efb73abf98",
+           "apiKeyId": "22195011-1b55-479e-a372-1471b11173f5",
+           "serverId": "927c5049-ea5f-4cb9-8e58-f45a88849ea0",
+           "events": [{
+                        "createdAt": "'"$(date +"%Y-%m-%dT%H:%M:%S%z")"'",
+                        "source": "log watch '"$(hostname)"'",
+                        "payload": "'"$(echo $LINE | sed "s/\"/'/g")"'"
+                      }]}';
 done
