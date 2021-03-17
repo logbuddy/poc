@@ -18,6 +18,21 @@ const corsOptionsResponse = {
     body: ''
 };
 
+const getRequestBodyParsedAsJson = (event) => {
+    let requestBodyJson = null;
+    {
+        if (event.isBase64Encoded) {
+            requestBodyJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+        } else {
+            requestBodyJson = event.body;
+        }
+    }
+
+    console.debug('Event body as UTF-8: ', requestBodyJson);
+
+    return JSON.parse(requestBodyJson);
+};
+
 const authenticateWebappRequest = async (eventHeaders) => {
     console.debug('About to authenticate webapp request with api key id', eventHeaders['x-herodot-webapp-api-key-id']);
     const getParamsWebappApiKey = {
@@ -352,89 +367,52 @@ const handleRetrieveServerList = async (event) => {
 };
 
 const handleCreateServer = async (event) => {
-        let credentialsFromRequestJson;
-        if (event.isBase64Encoded) {
-            credentialsFromRequestJson = (Buffer.from(event.body, 'base64')).toString('utf8');
-        } else {
-            credentialsFromRequestJson = event.body;
-        }
-        console.debug('credentialsFromRequestJson', credentialsFromRequestJson);
 
-        const credentialsFromRequest = JSON.parse(credentialsFromRequestJson);
+    const webappApiKey = await authenticateWebappRequest(event.headers);
 
-        const getParams = {
-            TableName: 'credentials',
-            Key: {
-                email: credentialsFromRequest.email,
-            }
-        };
+    if (webappApiKey === null) {
+        return unknownWebappApiKeyIdResponse
+    }
 
-        const credentialsFromDb = await new Promise((resolve, reject) => {
-            docClient.get(getParams, function(err, data) {
+    const requestBodyParsedAsJson = getRequestBodyParsedAsJson(event);
+
+    const serverId = uuidv4();
+    const loggingApiKeyId = uuidv4();
+
+    await new Promise((resolve, reject) => {
+        docClient.put(
+            {
+                TableName: 'servers',
+                Item: {
+                    id: serverId,
+                    users_id: webappApiKey.users_id,
+                    logging_api_key_id: loggingApiKeyId,
+                    title: requestBodyParsedAsJson.title
+                }
+            },
+            (err, data) => {
                 if (err) {
                     console.error(err);
                     reject(err);
                 } else {
-                    console.debug('getCredentialsResult', data);
-                    if (data.hasOwnProperty('Item')) {
-                        resolve(data.Item);
-                    } else {
-                        reject(null);
-                    }
+                    console.debug('docClient.put.servers', data);
+                    resolve(data);
                 }
-            })
-        });
-
-        if (credentialsFromDb !== null) {
-
-            const bcrypt = require('bcrypt');
-
-            const passwordIsValid = await bcrypt.compare(credentialsFromRequest.password, credentialsFromDb['password_hash']);
-
-            if (!passwordIsValid) {
-                return {
-                    statusCode: 403,
-                    headers: corsHeaders,
-                    body: JSON.stringify('Invalid credentials.')
-                };
             }
+        );
+    });
 
-            const apiKeyId = uuidv4();
-            const putParamsApiKeys = {
-                TableName: 'webapp_api_keys',
-                Item: {
-                    id: apiKeyId,
-                    users_id: credentialsFromDb['users_id']
-                }
-            };
-
-            const response = await new Promise((resolve, reject) => {
-                docClient.put(putParamsApiKeys, function(err) {
-                    if (err) {
-                        console.error(err);
-                        resolve({
-                            statusCode: 500,
-                            headers: corsHeaders,
-                            body: JSON.stringify(`Error: ${err}`)
-                        });
-                    } else {
-                        resolve({
-                            statusCode: 201,
-                            headers: corsHeaders,
-                            body: JSON.stringify(apiKeyId)
-                        });
-                    }
-                })});
-
-            return response;
-        } else {
-            return {
-                statusCode: 404,
-                headers: corsHeaders,
-                body: JSON.stringify(`User ${credentialsFromRequest.email} does not exist.`)
-            };
-        }
-
+    return {
+        statusCode: 201,
+        headers: corsHeaders,
+        body: JSON.stringify({
+            id: serverId,
+            userId: webappApiKey.users_id,
+            apiKeyId: loggingApiKeyId,
+            title: requestBodyParsedAsJson.title,
+            events: []
+        })
+    };
 };
 
 const handleInsertServerEventsRequest = async (event) => {

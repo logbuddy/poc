@@ -3,8 +3,13 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { Cpu, Square, ArrowClockwise, Clipboard } from 'react-bootstrap-icons';
-import { createServerCommand, retrieveServerListCommand } from '../redux/reducers/servers';
+import { Cpu, Square, ArrowClockwise, Clipboard, ChevronRight, ChevronDown } from 'react-bootstrap-icons';
+import {
+    createServerCommand,
+    retrieveServerListCommand,
+    flippedServerListElementOpenEvent,
+    flippedServerListElementCloseEvent
+} from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
 const mapStateToProps = state => ({
@@ -13,7 +18,9 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     retrieveServerList: () => dispatch(retrieveServerListCommand()),
-    createServer: (title) => dispatch(createServerCommand(title))
+    createServer: (title) => dispatch(createServerCommand(title)),
+    flippedElementOpen: (serverId, elementName) => dispatch(flippedServerListElementOpenEvent(serverId, elementName)),
+    flippedElementClose: (serverId, elementName) => dispatch(flippedServerListElementCloseEvent(serverId, elementName))
 });
 
 class ServersContainer extends Component {
@@ -23,6 +30,8 @@ class ServersContainer extends Component {
         this.handleRefreshClicked = this.handleRefreshClicked.bind(this);
         this.handleChangeCreateServerTitle = this.handleChangeCreateServerTitle.bind(this);
         this.handleCreateServerClicked = this.handleCreateServerClicked.bind(this);
+        this.handleFlipElementOpenClicked = this.handleFlipElementOpenClicked.bind(this);
+        this.handleFlipElementCloseClicked = this.handleFlipElementCloseClicked.bind(this);
     }
 
     handleRefreshClicked() {
@@ -38,6 +47,14 @@ class ServersContainer extends Component {
         this.setState({ createServerTitle: '' });
     }
 
+    handleFlipElementOpenClicked(serverId, elementName) {
+        this.props.flippedElementOpen(serverId, elementName)
+    }
+
+    handleFlipElementCloseClicked(serverId, elementName) {
+        this.props.flippedElementClose(serverId, elementName)
+    }
+
     componentDidMount() {
         this.props.retrieveServerList();
     }
@@ -46,6 +63,43 @@ class ServersContainer extends Component {
         if (!this.props.reduxState.session.isLoggedIn) {
             return (<Redirect to='/login' />);
         }
+
+        const createFlipElement = (serverId, elementName) => {
+            const elementNameToHeadline = {
+                information: 'Information',
+                sampleCurlCommand: 'Sample curl command',
+                latestEvents: 'Latest events',
+            };
+            if (isFlippedOpen(serverId, elementName)) {
+                const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
+                return <h5 className='mt-2 clickable' onClick={() => handleFlipElementCloseClicked(serverId, elementName)}>
+                    { elementNameToHeadline[elementName] }
+                    &nbsp;
+                    <span className='align-text-top'>
+                        <ChevronDown />
+                    </span>
+                </h5>
+            } else {
+                const handleFlipElementOpenClicked = this.handleFlipElementOpenClicked;
+                return <div className='clickable' onClick={() => handleFlipElementOpenClicked(serverId, elementName)}>
+                    { elementNameToHeadline[elementName] }
+                    &nbsp;
+                    <span className='small align-text-bottom'>
+                        <ChevronRight />
+                    </span>
+                </div>;
+            }
+        };
+
+        const isFlippedOpen = (serverId, elementName) => {
+            const openedServerIds = this.props.reduxState.servers.serverListOpenElements[elementName];
+            for (let i = 0; i < openedServerIds.length; i++) {
+                if (openedServerIds[i] === serverId) {
+                    return true;
+                }
+            }
+            return false;
+        };
 
         const serverListElements = [];
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
@@ -68,7 +122,7 @@ class ServersContainer extends Component {
                 );
             }
 
-            const curlSampleCommand = `curl \\
+            const sampleCurlCommand = `curl \\
   -X POST \\
   "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events" \\
   -d '{ "userId": "${this.props.reduxState.servers.serverList[i].userId}",
@@ -93,71 +147,89 @@ class ServersContainer extends Component {
                         </h4>
                     </div>
                     <div className='card-body'>
-                        <h5>Information</h5>
+                        { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'information') }
 
-                        <div className='row mt-2 mb-2'>
-                            <div className='col-12'>
-                                <div className='input-group'>
-                                    <div className='input-group-text w-6em'>serverId</div>
-                                    <input
-                                        type='text'
-                                        className='form-control text-black-50 code'
-                                        value={this.props.reduxState.servers.serverList[i].id}
-                                        disabled={false}
-                                    />
-                                    <div className='input-group-text'><Clipboard /></div>
+                        {
+                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'information')
+                            &&
+                            <Fragment>
+                                <div className='row mt-2 mb-2'>
+                                    <div className='col-12'>
+                                        <div className='input-group'>
+                                            <div className='input-group-text w-6em'>serverId</div>
+                                            <input
+                                                type='text'
+                                                className='form-control text-black-50 code'
+                                                value={this.props.reduxState.servers.serverList[i].id}
+                                                disabled={false}
+                                            />
+                                            <div className='input-group-text'><Clipboard /></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className='row mt-2 mb-2'>
-                            <div className='col-12'>
-                                <div className='input-group'>
-                                    <div className='input-group-text w-6em'>userId</div>
-                                    <input
-                                        type='text'
-                                        className='form-control text-black-50 code'
-                                        value={this.props.reduxState.servers.serverList[i].userId}
-                                        disabled={false}
-                                    />
-                                    <div className='input-group-text'><Clipboard /></div>
+                                <div className='row mt-2 mb-2'>
+                                    <div className='col-12'>
+                                        <div className='input-group'>
+                                            <div className='input-group-text w-6em'>userId</div>
+                                            <input
+                                                type='text'
+                                                className='form-control text-black-50 code'
+                                                value={this.props.reduxState.servers.serverList[i].userId}
+                                                disabled={false}
+                                            />
+                                            <div className='input-group-text'><Clipboard /></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className='row mt-2 mb-2'>
-                            <div className='col-12'>
-                                <div className='input-group'>
-                                    <div className='input-group-text w-6em'>apiKeyId</div>
-                                    <input
-                                        type='text'
-                                        className='form-control text-black-50 code'
-                                        value={this.props.reduxState.servers.serverList[i].apiKeyId}
-                                        disabled={false}
-                                    />
-                                    <div className='input-group-text'><Clipboard /></div>
+                                <div className='row mt-2 mb-2'>
+                                    <div className='col-12'>
+                                        <div className='input-group'>
+                                            <div className='input-group-text w-6em'>apiKeyId</div>
+                                            <input
+                                                type='text'
+                                                className='form-control text-black-50 code'
+                                                value={this.props.reduxState.servers.serverList[i].apiKeyId}
+                                                disabled={false}
+                                            />
+                                            <div className='input-group-text'><Clipboard /></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <hr/>
+                                <hr/>
+                            </Fragment>
+                        }
 
-                        <h5>Sample <i>curl</i> command</h5>
-                        <code><pre>{curlSampleCommand}</pre>
 
-                        </code>
+                        { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand') }
+
+                        {
+                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
+                            &&
+                            <Fragment>
+                                <code><pre>{sampleCurlCommand}</pre></code>
+                                <hr/>
+                            </Fragment>
+                        }
+
 
                         {
                             serverEventElements.length > 0
                             &&
                             <Fragment>
-                                <hr/>
-                                <h5>Events</h5>
-                                <table className='table table-light table-borderless table-striped'>
-                                    <tbody>
-                                    {serverEventElements}
-                                    </tbody>
-                                </table>
+                                { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'latestEvents') }
+
+                                {
+                                    isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                                    &&
+                                    <table className='table table-light table-borderless table-striped'>
+                                        <tbody>
+                                        {serverEventElements}
+                                        </tbody>
+                                    </table>
+                                }
                             </Fragment>
                         }
                     </div>

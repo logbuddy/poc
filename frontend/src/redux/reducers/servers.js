@@ -11,7 +11,12 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    serverList: []
+    serverList: [],
+    serverListOpenElements: {
+        information: [],
+        sampleCurlCommand: [],
+        latestEvents: []
+    }
 };
 
 
@@ -92,7 +97,6 @@ export const createServerCommand = (title) => (dispatch, getState) => {
                 dispatch(createServerFailedEvent(responseContentAsObject));
             } else {
                 dispatch(createServerSucceededEvent(responseContentAsObject));
-                dispatch(retrieveServerListCommand());
             }
         })
 
@@ -101,6 +105,19 @@ export const createServerCommand = (title) => (dispatch, getState) => {
             dispatch(createServerFailedEvent(error.toString()));
         });
 };
+
+
+export const flippedServerListElementOpenEvent = (serverId, elementName) => ({
+    type: 'FLIPPED_SERVER_LIST_ELEMENT_OPEN_EVENT',
+    serverId,
+    elementName
+});
+
+export const flippedServerListElementCloseEvent = (serverId, elementName) => ({
+    type: 'FLIPPED_SERVER_LIST_ELEMENT_CLOSE_EVENT',
+    serverId,
+    elementName
+});
 
 
 const reducer = (state = initialState, action) => {
@@ -151,7 +168,18 @@ const reducer = (state = initialState, action) => {
                     ...initialState.createServer,
                     justFinishedSuccessfully: true
                 },
-                serverList: [...state.serverList, action.server]
+                serverList: [ action.server, ...state.serverList ],
+                serverListOpenElements: {
+                    ...state.serverListOpenElements,
+                    information: [
+                        ...state.serverListOpenElements.information,
+                        action.server.id
+                    ],
+                    sampleCurlCommand: [
+                        ...state.serverListOpenElements.sampleCurlCommand,
+                        action.server.id
+                    ]
+                }
             };
 
         case 'CREATE_SERVER_FAILED_EVENT':
@@ -161,6 +189,67 @@ const reducer = (state = initialState, action) => {
                     ...initialState.createServer,
                     errorMessage: action.errorMessage
                 }
+            };
+
+        case 'FLIPPED_SERVER_LIST_ELEMENT_OPEN_EVENT':
+            let updatedStateOpenEvent = { ...state.serverListOpenElements };
+            if (action.elementName === 'information') {
+                updatedStateOpenEvent = {
+                    ...updatedStateOpenEvent,
+                    information: [
+                        ...updatedStateOpenEvent.information,
+                        action.serverId
+                    ]
+                };
+            }
+            if (action.elementName === 'sampleCurlCommand') {
+                updatedStateOpenEvent = {
+                    ...updatedStateOpenEvent,
+                    sampleCurlCommand: [
+                        ...updatedStateOpenEvent.sampleCurlCommand,
+                        action.serverId
+                    ]
+                };
+            }
+            if (action.elementName === 'latestEvents') {
+                updatedStateOpenEvent = {
+                    ...updatedStateOpenEvent,
+                    latestEvents: [
+                        ...updatedStateOpenEvent.latestEvents,
+                        action.serverId
+                    ]
+                };
+            }
+
+            return {
+                ...state,
+                serverListOpenElements: updatedStateOpenEvent
+            };
+
+        case 'FLIPPED_SERVER_LIST_ELEMENT_CLOSE_EVENT':
+            let updatedStateCloseEvent = { ...state.serverListOpenElements };
+            if (action.elementName === 'information') {
+                updatedStateCloseEvent = {
+                    ...updatedStateCloseEvent,
+                    information: updatedStateCloseEvent.information.filter(serverId => serverId !== action.serverId)
+                };
+            }
+            if (action.elementName === 'sampleCurlCommand') {
+                updatedStateCloseEvent = {
+                    ...updatedStateCloseEvent,
+                    sampleCurlCommand: updatedStateCloseEvent.sampleCurlCommand.filter(serverId => serverId !== action.serverId)
+                };
+            }
+            if (action.elementName === 'latestEvents') {
+                updatedStateCloseEvent = {
+                    ...updatedStateCloseEvent,
+                    latestEvents: updatedStateCloseEvent.latestEvents.filter(serverId => serverId !== action.serverId)
+                };
+            }
+
+            return {
+                ...state,
+                serverListOpenElements: updatedStateCloseEvent
             };
 
         default:
