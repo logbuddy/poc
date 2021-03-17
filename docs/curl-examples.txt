@@ -16,3 +16,11 @@ curl \
     -X GET \
     --header 'X-Herodot-Webapp-Api-Key-Id: e9e6627d-1351-42cf-90c5-b40c56d64b47' \
     "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/yet-unseen-server-events?serverId=63614f6a-dcc2-4634-a497-73da3c26c334&latestSeenSortValue=2021-03-16T17%3A57%3A11Z%200928bce5-8681-11eb-bfbc-39717243376d"
+
+
+
+
+tail -n0 -F "/var/tmp/test.log" | while read LINE; do
+  (echo "$LINE" | grep -e "$3") && curl -X POST --silent --data-urlencode \
+    "payload={\"text\": \"$(echo $LINE | sed "s/\"/'/g")\"}" "$2";
+done

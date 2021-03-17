@@ -403,7 +403,8 @@ const handleCreateServer = async (event) => {
             userId: webappApiKey.users_id,
             apiKeyId: loggingApiKeyId,
             title: requestBodyParsedAsJson.title,
-            events: []
+            latestEventSortValue: null,
+            latestEvents: []
         })
     };
 };
@@ -416,6 +417,8 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         return unknownWebappApiKeyIdResponse
     }
 
+    let serverId;
+    let latestSeenSortValue;
     if (   !event.queryStringParameters.hasOwnProperty('serverId')
         || !event.queryStringParameters.hasOwnProperty('latestSeenSortValue')
     ) {
@@ -428,6 +431,12 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
                 actualQueryStringParameters: event.queryStringParameters
             }, null, 2)
         };
+    } else {
+        serverId = event.queryStringParameters.serverId;
+        latestSeenSortValue = event.queryStringParameters.latestSeenSortValue;
+        if (latestSeenSortValue === 'null') {
+            latestSeenSortValue = null;
+        }
     }
 
     const serverBelongsToUser = await new Promise((resolve, reject) => {
@@ -444,7 +453,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
             } else {
                 console.log(data);
                 for (let i = 0; i < data.Count; i++) {
-                    if (data.Items[i].id === event.queryStringParameters.serverId) {
+                    if (data.Items[i].id === serverId) {
                         resolve(true);
                     }
                 }
@@ -458,22 +467,36 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
             statusCode: 403,
             headers: corsHeaders,
             body: JSON.stringify({
-                message: `Server ${event.queryStringParameters.serverId} does not belong to user ${webappApiKey.users_id}.`,
+                message: `Server ${serverId} does not belong to user ${webappApiKey.users_id}.`,
             }, null, 2)
         };
     }
 
     const yetUnseenServerEvents = await new Promise((resolve, reject) => {
-        docClient.query({
+        let params;
+        if (latestSeenSortValue !== null) {
+            params = {
                 TableName: 'server_events',
                 Limit: 100,
                 ScanIndexForward: false,
                 KeyConditionExpression: 'servers_id = :servers_id AND sort_value > :latest_seen_sort_value',
                 ExpressionAttributeValues: {
-                    ':servers_id': event.queryStringParameters.serverId,
-                    ':latest_seen_sort_value': event.queryStringParameters.latestSeenSortValue
+                    ':servers_id': serverId,
+                    ':latest_seen_sort_value': latestSeenSortValue
                 }
-            }, (err, data) => {
+            };
+        } else {
+            params = {
+                TableName: 'server_events',
+                Limit: 100,
+                ScanIndexForward: false,
+                KeyConditionExpression: 'servers_id = :servers_id',
+                ExpressionAttributeValues: {
+                    ':servers_id': serverId
+                }
+            };
+        }
+        docClient.query(params, (err, data) => {
                 if (err) {
                     console.error(err);
                     reject(err);

@@ -104,6 +104,16 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
                 dispatch(retrieveYetUnseenServerEventsFailedEvent(serverId, responseContentAsArray));
             } else {
                 dispatch(retrieveYetUnseenServerEventsSucceededEvent(serverId, responseContentAsArray));
+                if (getState().servers.serverListOpenElements.latestEvents.includes(serverId)) {
+                    setTimeout(() => {
+                        const serverList = getState().servers.serverList;
+                        for (let i = 0; i < serverList.length; i++) {
+                            if (serverList[i].id === serverId) {
+                                dispatch(retrieveYetUnseenServerEventsCommand(serverId, serverList[i].latestEventSortValue));
+                            }
+                        }
+                    }, 2000);
+                }
             }
         })
 
@@ -145,6 +155,7 @@ export const createServerCommand = (title) => (dispatch, getState) => {
 
         .then(responseContentAsObject => {
             if (!responseWasOk) {
+                console.debug('responseContentAsObject', responseContentAsObject);
                 dispatch(createServerFailedEvent(responseContentAsObject));
             } else {
                 dispatch(createServerSucceededEvent(responseContentAsObject));

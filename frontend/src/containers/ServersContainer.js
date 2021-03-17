@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import {
     Redirect
 } from 'react-router-dom';
-import { Cpu, Square, ArrowClockwise, Clipboard, ChevronRight, ChevronDown } from 'react-bootstrap-icons';
+import { Cpu, Square, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc } from 'react-bootstrap-icons';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -29,7 +29,6 @@ class ServersContainer extends Component {
         super(props);
         this.state = { createServerTitle: '' };
         this.handleRefreshClicked = this.handleRefreshClicked.bind(this);
-        this.handleRetrieveYetUnseenServerEventsClicked = this.handleRetrieveYetUnseenServerEventsClicked.bind(this);
         this.handleChangeCreateServerTitle = this.handleChangeCreateServerTitle.bind(this);
         this.handleCreateServerClicked = this.handleCreateServerClicked.bind(this);
         this.handleFlipElementOpenClicked = this.handleFlipElementOpenClicked.bind(this);
@@ -41,10 +40,6 @@ class ServersContainer extends Component {
         this.props.retrieveServerList();
     }
 
-    handleRetrieveYetUnseenServerEventsClicked(serverId, latestSeenSortValue) {
-        this.props.retrieveYetUnseenServerEvents(serverId, latestSeenSortValue);
-    }
-
     handleChangeCreateServerTitle(event) {
         this.setState({ createServerTitle: event.target.value });
     }
@@ -54,26 +49,16 @@ class ServersContainer extends Component {
         this.setState({ createServerTitle: '' });
     }
 
-    handleFlipElementOpenClicked(serverId, elementName) {
-        this.props.flippedElementOpen(serverId, elementName);
-        this.retrieveYetUnseenServerEventsTimers[serverId] = setInterval(
-            () => {
-                for (let i = 0; i < this.props.reduxState.servers.serverList.length; i++) {
-                    if (this.props.reduxState.servers.serverList[i].id === serverId) {
-                        this.props.retrieveYetUnseenServerEvents(
-                            this.props.reduxState.servers.serverList[i].id,
-                            this.props.reduxState.servers.serverList[i].latestEventSortValue
-                        );
-                    }
-                }
-            },
-            1000
+    handleFlipElementOpenClicked(server, elementName) {
+        this.props.flippedElementOpen(server.id, elementName);
+        this.props.retrieveYetUnseenServerEvents(
+            server.id,
+            server.latestEventSortValue
         );
     }
 
-    handleFlipElementCloseClicked(serverId, elementName) {
-        this.props.flippedElementClose(serverId, elementName);
-        clearInterval(this.retrieveYetUnseenServerEventsTimers[serverId]);
+    handleFlipElementCloseClicked(server, elementName) {
+        this.props.flippedElementClose(server.id, elementName);
     }
 
     componentDidMount() {
@@ -87,24 +72,34 @@ class ServersContainer extends Component {
             return (<Redirect to='/login' />);
         }
 
-        const createFlipElement = (serverId, elementName) => {
+        const createFlipElement = (server, elementName) => {
             const elementNameToHeadline = {
                 information: 'Information',
                 sampleCurlCommand: 'Sample curl command',
                 latestEvents: 'Latest events',
             };
-            if (isFlippedOpen(serverId, elementName)) {
+            if (isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
-                return <h5 className='mt-2 clickable' onClick={() => handleFlipElementCloseClicked(serverId, elementName)}>
-                    { elementNameToHeadline[elementName] }
-                    &nbsp;
-                    <span className='align-text-top'>
-                        <ChevronDown />
-                    </span>
-                </h5>
+                return <Fragment>
+                    <h5 className='mt-2 clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
+                        { elementNameToHeadline[elementName] }
+                        &nbsp;
+                        <span className='align-text-top'>
+                            <ChevronDown />
+                        </span>
+                        {
+                            elementName === 'latestEvents'
+                            &&
+                            <div className='small float-end text-success mb-2'>
+                                Polling for new entries...
+                                <Disc className='spinning' />
+                            </div>
+                        }
+                    </h5>
+                </Fragment>
             } else {
                 const handleFlipElementOpenClicked = this.handleFlipElementOpenClicked;
-                return <div className='clickable' onClick={() => handleFlipElementOpenClicked(serverId, elementName)}>
+                return <div className='clickable' onClick={() => handleFlipElementOpenClicked(server, elementName)}>
                     { elementNameToHeadline[elementName] }
                     &nbsp;
                     <span className='small align-text-bottom'>
@@ -115,13 +110,7 @@ class ServersContainer extends Component {
         };
 
         const isFlippedOpen = (serverId, elementName) => {
-            const openedServerIds = this.props.reduxState.servers.serverListOpenElements[elementName];
-            for (let i = 0; i < openedServerIds.length; i++) {
-                if (openedServerIds[i] === serverId) {
-                    return true;
-                }
-            }
-            return false;
+            return this.props.reduxState.servers.serverListOpenElements[elementName].includes(serverId);
         };
 
         const serverListElements = [];
@@ -158,10 +147,9 @@ class ServersContainer extends Component {
         "apiKeyId": "${this.props.reduxState.servers.serverList[i].apiKeyId}",
         "serverId": "${this.props.reduxState.servers.serverList[i].id}",
         "events": [{
-                     "createdAt": "2021-03-15T17:40:02Z",
-                     "source":
-                     "curl",
-                     "payload": "This is a test."
+                     "createdAt": "'"$(date +"%Y-%m-%dT%H:%M:%S%z")"'",
+                     "source": "uptime on '"$(hostname)"'",
+                     "payload": "'"$(uptime)"'"
                    }]}'`;
 
             serverListElements.push(
@@ -176,7 +164,7 @@ class ServersContainer extends Component {
                         </h4>
                     </div>
                     <div className='card-body'>
-                        { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'information') }
+                        { createFlipElement(this.props.reduxState.servers.serverList[i], 'information') }
 
                         {
                             isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'information')
@@ -226,52 +214,51 @@ class ServersContainer extends Component {
                                         </div>
                                     </div>
                                 </div>
-
-                                <hr/>
                             </Fragment>
                         }
 
-
-                        { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand') }
 
                         {
                             isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
                             &&
-                            <Fragment>
-                                <code><pre>{sampleCurlCommand}</pre></code>
-                                <hr/>
-                            </Fragment>
+                            <hr/>
+                        }
+                        { createFlipElement(this.props.reduxState.servers.serverList[i], 'sampleCurlCommand') }
+
+                        {
+                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
+                            &&
+                            <code><pre>{sampleCurlCommand}</pre></code>
                         }
 
 
                         {
+                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            &&
+                            <hr/>
+                        }
+
+                        { createFlipElement(this.props.reduxState.servers.serverList[i], 'latestEvents') }
+
+                        {
+                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            &&
                             serverEventElements.length > 0
                             &&
-                            <Fragment>
-                                { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'latestEvents') }
-
-                                <Fragment>
-                                    <span
-                                        className='clickable'
-                                        onClick={() => this.handleRetrieveYetUnseenServerEventsClicked(
-                                            this.props.reduxState.servers.serverList[i].id,
-                                            this.props.reduxState.servers.serverList[i].latestEventSortValue
-                                        )}
-                                    >
-                                        <ArrowClockwise /> {this.props.reduxState.servers.serverList[i].latestEventSortValue}
-                                    </span>
-                                </Fragment>
-
-                                {
-                                    isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
-                                    &&
-                                    <table className='table table-light table-borderless table-striped'>
-                                        <tbody>
-                                        {serverEventElements}
-                                        </tbody>
-                                    </table>
-                                }
-                            </Fragment>
+                            <table className='table table-light table-borderless table-striped'>
+                                <tbody>
+                                {serverEventElements}
+                                </tbody>
+                            </table>
+                        }
+                        {
+                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            &&
+                            serverEventElements.length === 0
+                            &&
+                            <div className='alert alert-secondary'>
+                                No events yet.
+                            </div>
                         }
                     </div>
                 </div>
