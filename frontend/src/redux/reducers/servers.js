@@ -6,6 +6,7 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
+    retrieveYetUnseenServerEvents: [],
     createServer: {
         isProcessing: false,
         justFinishedSuccessfully: false,
@@ -59,6 +60,56 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
         .catch(function(error) {
             console.error(error)
             dispatch(retrieveServerListFailedEvent(error.toString()));
+        });
+};
+
+
+const retrieveYetUnseenServerEventsStartedEvent = (serverId) => ({
+    type: 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_STARTED_EVENT',
+    serverId
+});
+
+const retrieveYetUnseenServerEventsFailedEvent = (serverId, errorMessage) => ({
+    type: 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_FAILED_EVENT',
+    serverId,
+    errorMessage
+});
+
+const retrieveYetUnseenServerEventsSucceededEvent = (serverId, yetUnseenServerEvents) => ({
+    type: 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_SUCCEEDED_EVENT',
+    serverId,
+    yetUnseenServerEvents
+});
+
+export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortValue) => (dispatch, getState) => {
+
+    dispatch(retrieveYetUnseenServerEventsStartedEvent(serverId));
+
+    let responseWasOk = true;
+    apiFetch(
+        `/yet-unseen-server-events?serverId=${encodeURIComponent(serverId)}&latestSeenSortValue=${encodeURIComponent(latestSeenSortValue)}`,
+        'GET',
+        getState().session.webappApiKeyId
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsArray => {
+            if (!responseWasOk) {
+                dispatch(retrieveYetUnseenServerEventsFailedEvent(serverId, responseContentAsArray));
+            } else {
+                dispatch(retrieveYetUnseenServerEventsSucceededEvent(serverId, responseContentAsArray));
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(retrieveYetUnseenServerEventsFailedEvent(serverId, error.toString()));
         });
 };
 
@@ -121,6 +172,24 @@ export const flippedServerListElementCloseEvent = (serverId, elementName) => ({
 
 
 const reducer = (state = initialState, action) => {
+
+    const withYetUnseenServerEventsUpdatedServerList = (serverId, yetUnseenServerEvents) => {
+        const serverList = [ ...state.serverList ];
+        for (let i = 0; i < yetUnseenServerEvents.length; i++) {
+            yetUnseenServerEvents[i].hasBeenAddedByYetUnseenLogic = true;
+        }
+        for (let i = 0; i < serverList.length; i++) {
+            if (serverId === serverList[i].id) {
+                for (let j = 0; j < serverList[i].latestEvents.length; j++) {
+                    serverList[i].latestEvents[j].hasBeenAddedByYetUnseenLogic = false;
+                }
+                serverList[i].latestEvents = yetUnseenServerEvents.concat(serverList[i].latestEvents).slice(0, 999);
+                serverList[i].latestEventSortValue = yetUnseenServerEvents[0].sortValue;
+            }
+        }
+        return serverList;
+    };
+
     switch (action.type) {
         case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
             return {
@@ -150,6 +219,17 @@ const reducer = (state = initialState, action) => {
                 },
                 serverList: initialState.serverList
             };
+
+
+        case 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_SUCCEEDED_EVENT':
+            if (action.yetUnseenServerEvents.length > 0) {
+                return {
+                    ...state,
+                    serverList: withYetUnseenServerEventsUpdatedServerList(action.serverId, action.yetUnseenServerEvents)
+                };
+            } else {
+                return state;
+            }
 
 
         case 'CREATE_SERVER_STARTED_EVENT':
@@ -190,6 +270,7 @@ const reducer = (state = initialState, action) => {
                     errorMessage: action.errorMessage
                 }
             };
+
 
         case 'FLIPPED_SERVER_LIST_ELEMENT_OPEN_EVENT':
             let updatedStateOpenEvent = { ...state.serverListOpenElements };

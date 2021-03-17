@@ -8,7 +8,7 @@ import {
     createServerCommand,
     retrieveServerListCommand,
     flippedServerListElementOpenEvent,
-    flippedServerListElementCloseEvent
+    flippedServerListElementCloseEvent, retrieveYetUnseenServerEventsCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
@@ -18,6 +18,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     retrieveServerList: () => dispatch(retrieveServerListCommand()),
+    retrieveYetUnseenServerEvents: (serverId, latestSeenSortValue) => dispatch(retrieveYetUnseenServerEventsCommand(serverId, latestSeenSortValue)),
     createServer: (title) => dispatch(createServerCommand(title)),
     flippedElementOpen: (serverId, elementName) => dispatch(flippedServerListElementOpenEvent(serverId, elementName)),
     flippedElementClose: (serverId, elementName) => dispatch(flippedServerListElementCloseEvent(serverId, elementName))
@@ -28,14 +29,20 @@ class ServersContainer extends Component {
         super(props);
         this.state = { createServerTitle: '' };
         this.handleRefreshClicked = this.handleRefreshClicked.bind(this);
+        this.handleRetrieveYetUnseenServerEventsClicked = this.handleRetrieveYetUnseenServerEventsClicked.bind(this);
         this.handleChangeCreateServerTitle = this.handleChangeCreateServerTitle.bind(this);
         this.handleCreateServerClicked = this.handleCreateServerClicked.bind(this);
         this.handleFlipElementOpenClicked = this.handleFlipElementOpenClicked.bind(this);
         this.handleFlipElementCloseClicked = this.handleFlipElementCloseClicked.bind(this);
+        this.retrieveYetUnseenServerEventsTimers = [];
     }
 
     handleRefreshClicked() {
         this.props.retrieveServerList();
+    }
+
+    handleRetrieveYetUnseenServerEventsClicked(serverId, latestSeenSortValue) {
+        this.props.retrieveYetUnseenServerEvents(serverId, latestSeenSortValue);
     }
 
     handleChangeCreateServerTitle(event) {
@@ -48,16 +55,32 @@ class ServersContainer extends Component {
     }
 
     handleFlipElementOpenClicked(serverId, elementName) {
-        this.props.flippedElementOpen(serverId, elementName)
+        this.props.flippedElementOpen(serverId, elementName);
+        this.retrieveYetUnseenServerEventsTimers[serverId] = setInterval(
+            () => {
+                for (let i = 0; i < this.props.reduxState.servers.serverList.length; i++) {
+                    if (this.props.reduxState.servers.serverList[i].id === serverId) {
+                        this.props.retrieveYetUnseenServerEvents(
+                            this.props.reduxState.servers.serverList[i].id,
+                            this.props.reduxState.servers.serverList[i].latestEventSortValue
+                        );
+                    }
+                }
+            },
+            1000
+        );
     }
 
     handleFlipElementCloseClicked(serverId, elementName) {
-        this.props.flippedElementClose(serverId, elementName)
+        this.props.flippedElementClose(serverId, elementName);
+        clearInterval(this.retrieveYetUnseenServerEventsTimers[serverId]);
     }
 
     componentDidMount() {
         this.props.retrieveServerList();
     }
+
+    componentWillUnmount() {}
 
     render() {
         if (!this.props.reduxState.session.isLoggedIn) {
@@ -104,19 +127,25 @@ class ServersContainer extends Component {
         const serverListElements = [];
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const serverEventElements = [];
-            for (let j=0; j < this.props.reduxState.servers.serverList[i].events.length; j++) {
+            for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
+                let rowClassName = '';
+                if (   this.props.reduxState.servers.serverList[i].latestEvents[j].hasOwnProperty('hasBeenAddedByYetUnseenLogic')
+                    && this.props.reduxState.servers.serverList[i].latestEvents[j].hasBeenAddedByYetUnseenLogic === true
+                ) {
+                    rowClassName = 'fade-in';
+                }
                 serverEventElements.push(
-                    <tr key={j}>
+                    <tr key={j} className={rowClassName}>
                         <td>
                             <span className='badge bg-secondary'>
-                                {this.props.reduxState.servers.serverList[i].events[j].createdAt}
+                                {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
                             </span>
                         </td>
                         <td>
-                            {this.props.reduxState.servers.serverList[i].events[j].source}
+                            {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
                         </td>
                         <td>
-                            <code className='word-wrap-anywhere'>{this.props.reduxState.servers.serverList[i].events[j].payload}</code>
+                            <code className='word-wrap-anywhere'>{this.props.reduxState.servers.serverList[i].latestEvents[j].payload}</code>
                         </td>
                     </tr>
                 );
@@ -220,6 +249,18 @@ class ServersContainer extends Component {
                             &&
                             <Fragment>
                                 { createFlipElement(this.props.reduxState.servers.serverList[i].id, 'latestEvents') }
+
+                                <Fragment>
+                                    <span
+                                        className='clickable'
+                                        onClick={() => this.handleRetrieveYetUnseenServerEventsClicked(
+                                            this.props.reduxState.servers.serverList[i].id,
+                                            this.props.reduxState.servers.serverList[i].latestEventSortValue
+                                        )}
+                                    >
+                                        <ArrowClockwise /> {this.props.reduxState.servers.serverList[i].latestEventSortValue}
+                                    </span>
+                                </Fragment>
 
                                 {
                                     isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')

@@ -2,7 +2,7 @@ curl \
     -v \
     -X POST \
     "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events" \
-    -d '{  "userId": "b133a070-84c0-11eb-be0e-f5efb73abf98",  "apiKeyId": "7b9a8b36-2552-4894-a63f-eaadf029c521",  "serverId": "63614f6a-dcc2-4634-a497-73da3c26c334",  "events": [    {"createdAt": "1615544369251", "source": "foo", "payload": "Lorem ipsum..."},    {"createdAt": "2009-03-11T16:02:12Z", "source": "curl test", "payload": "Hic sunt dracones"}  ]}'
+    -d '{  "userId": "b133a070-84c0-11eb-be0e-f5efb73abf98",  "apiKeyId": "7b9a8b36-2552-4894-a63f-eaadf029c521",  "serverId": "63614f6a-dcc2-4634-a497-73da3c26c334",  "events": [    {"createdAt": "1615544369251", "source": "foo", "payload": "Lorem ipsum..."},    {"createdAt": "2021-03-17T13:29:23Z", "source": "curl test", "payload": "Hic sunt dracones fade 3483498"}  ]}'
 
 
 curl \
@@ -10,3 +10,9 @@ curl \
     -X POST \
     "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/webapp-api-keys" \
     -d '{"email": "manuel", "password":"test123"}'
+
+curl \
+    -v \
+    -X GET \
+    --header 'X-Herodot-Webapp-Api-Key-Id: e9e6627d-1351-42cf-90c5-b40c56d64b47' \
+    "https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/yet-unseen-server-events?serverId=63614f6a-dcc2-4634-a497-73da3c26c334&latestSeenSortValue=2021-03-16T17%3A57%3A11Z%200928bce5-8681-11eb-bfbc-39717243376d"
