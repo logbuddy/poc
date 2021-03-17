@@ -426,7 +426,7 @@ const handleInsertServerEventsRequest = async (event) => {
             }
         };
 
-        const result = await new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             docClient.query(params, function(err, data) {
                 if (err) {
                     console.error(err);
@@ -448,7 +448,6 @@ const handleInsertServerEventsRequest = async (event) => {
                 }
             })
         });
-        return result;
     };
 
     console.debug('Request body: ', event.body);
