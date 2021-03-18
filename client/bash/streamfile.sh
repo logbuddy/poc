@@ -12,14 +12,7 @@ controlTimeout="$7"
 grepFilter="$8"
 
 controlFilePath="$(mktemp)"
-controlFileEntry="--- ServerLogger.com streamfile.sh control file entry ---"
-
-echo "Control file path: $controlFilePath"
-
-while true; do
-  sleep "$controlTimeout"
-  echo "$controlFileEntry" >> "$controlFilePath"
-done &
+controlFileLine="--- ServerLogger.com streamfile.sh control file entry ---"
 
 source="${source:0:256}"
 
@@ -27,15 +20,38 @@ i=0
 eventsBuffer=()
 eventsString=""
 
+grepCommand="grep ''"
+if [ "$grepFilter" != "" ]
+then
+  grepCommand="grep -v '$grepFilter'"
+  echo "Filtering lines through: $grepCommand"
+fi
 
-tail -n0 -F -q "$filePath" "$controlFilePath" | grep -v "$grepFilter" | while read -r line; do
+while true; do
+  sleep "$controlTimeout"
+  echo "$controlFileLine" >> "$controlFilePath"
+done &
+
+tail -n0 -F -q "$filePath" "$controlFilePath" | while read -r line; do
+
   line="${line:0:512}"
-  if [ "$line" != "$controlFileEntry" ]
+
+  if [ "$line" != "$controlFileLine" ]
+  then
+    line=$(echo "$line" |eval "$grepCommand")
+  fi
+
+  if [ "$line" = "" ]
+  then
+    continue
+  fi
+
+  if [ "$line" != "$controlFileLine" ]
   then
     eventsBuffer[${#eventsBuffer[@]}]='{"source":"'"$source"'", "createdAt":"'"$(date +"%Y-%m-%dT%H:%M:%S%z")"'", "payload":"'"$(echo $line | sed "s/\"/\\\\\"/g")"'"}'
   fi
 
-  if [ "$i" = "$bufferSize" ] || [ "$line" = "$controlFileEntry" ]
+  if [ "$i" = "$bufferSize" ] || [ "$line" = "$controlFileLine" ]
   then
     j=0
     for eventString in "${eventsBuffer[@]}"
@@ -64,6 +80,7 @@ $eventString"
 
         i=0
         eventsBuffer=()
+        echo ""
         echo ""
     fi
 
