@@ -604,18 +604,21 @@ const handleInsertServerEventsRequest = async (event) => {
 
     const items = [];
     for (let i = 0; i < serverEvents.length; i++) {
+        const createdAt = serverEvents[i].createdAt.substring(0, 256);
+        const source = serverEvents[i].createdAt.substring(0, 256);
+        const payload = serverEvents[i].createdAt.substring(0, 512);
         items.push({
             PutRequest: {
                 Item: {
                     'id': uuidv4(),
                     'servers_id': serverId,
-                    'sort_value': `${serverEvents[i].createdAt} ${uuidv1()}`,
+                    'sort_value': `${createdAt} ${uuidv1()}`,
                     'received_at': Date.now(),
                     'users_id': userId,
                     'api_keys_id': apiKeyId,
-                    'server_event_created_at': serverEvents[i].createdAt,
-                    'server_event_source': serverEvents[i].source,
-                    'server_event_payload': serverEvents[i].payload,
+                    'server_event_created_at': createdAt,
+                    'server_event_source': source,
+                    'server_event_payload': payload,
                     'lambda_event_full': lambdaEventContent,
                     'lambda_event_headers_x_forwarded_for': event.headers['x-forwarded-for'],
                     'lambda_event_headers_user_agent': event.headers['user-agent'],
@@ -625,35 +628,30 @@ const handleInsertServerEventsRequest = async (event) => {
     }
 
     console.log('Starting write to DDB...');
-    await new Promise((resolve, reject) => {
-        docClient.batchWrite({
-                RequestItems: {
-                    'server_events': items
-                }
-            },
-            (err, data) => {
-                if (err) {
-                    console.error(err);
-                    reject(err);
-                } else {
-                    console.log('Success', data);
-                    resolve(data);
-                }
-            });
-    });
 
-    docClient.batchWrite({
-            RequestItems: {
-                'server_events': items
-            }
-        },
-        (err, data) => {
-            if (err) {
-                throw new Error(err);
-            } else {
-                console.log('Success', data);
-            }
-        });
+    const batchWritePromises = [];
+    for (let i = 0, j = items.length; i < j; i += 25) {
+        const itemsBatch = items.slice(i, i + 25);
+
+        batchWritePromises.push(new Promise((resolve, reject) => {
+            docClient.batchWrite({
+                    RequestItems: {
+                        'server_events': itemsBatch
+                    }
+                },
+                (err, data) => {
+                    if (err) {
+                        console.error(err);
+                        reject(err);
+                    } else {
+                        console.log('Success', data);
+                        resolve(data);
+                    }
+                });
+        }));
+    }
+
+    await Promise.all(batchWritePromises);
 
     return {
         statusCode: 201,
