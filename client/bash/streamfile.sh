@@ -9,6 +9,7 @@ serverId="$4"
 apiKeyId="$5"
 bufferSize="$6"
 controlTimeout="$7"
+grepFilter="$8"
 
 controlFilePath="$(mktemp)"
 controlFileEntry="--- ServerLogger.com streamfile.sh control file entry ---"
@@ -27,7 +28,7 @@ eventsBuffer=()
 eventsString=""
 
 
-tail -n0 -F -q "$filePath" "$controlFilePath" | while read -r line; do
+tail -n0 -F -q "$filePath" "$controlFilePath" | grep -v "$grepFilter" | while read -r line; do
   line="${line:0:512}"
   if [ "$line" != "$controlFileEntry" ]
   then
@@ -63,6 +64,7 @@ $eventString"
 
         i=0
         eventsBuffer=()
+        echo ""
     fi
 
   else
