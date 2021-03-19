@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component, Fragment} from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import ErrorMessagePresentational from "../presentationals/ErrorMessagePresentational";
@@ -33,36 +33,48 @@ class RegisterContainer extends Component {
         }
 
         return (
-            <div className='m-4'>
-                <h1>Registration</h1>
-                <ErrorMessagePresentational message={this.props.reduxState.session.registration.errorMessage} />
-                <form onSubmit={this.handleSubmit}>
-                    <div className="mb-3">
-                        <label className='form-label' htmlFor='name'>
-                            E-Mail:
-                        </label>
-                        <input className='form-control' type='text' name='name' value={this.state.email} onChange={this.handleChangeEmail} />
+            <Fragment>
+                {
+                    this.props.reduxState.session.registration.justFinishedSuccessfully
+                    &&
+                    <Redirect to='/login' />
+                }
+
+                {
+                    this.props.reduxState.session.registration.justFinishedSuccessfully
+                    ||
+                    <div className='m-4'>
+                        <h1>Registration</h1>
+                        <ErrorMessagePresentational message={this.props.reduxState.session.registration.errorMessage} />
+                        <form onSubmit={this.handleSubmit}>
+                            <div className="mb-3">
+                                <label className='form-label' htmlFor='name'>
+                                    E-Mail:
+                                </label>
+                                <input className='form-control' type='text' name='name' value={this.state.email} onChange={this.handleChangeEmail} />
+                            </div>
+                            <div className="mb-3">
+                                <label className='form-label' htmlFor='password'>
+                                    Password:
+                                </label>
+                                <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
+                            </div>
+                            <div className="mb-3">
+                                {
+                                    this.props.reduxState.session.registration.isProcessing
+                                    &&
+                                    <button className='btn btn-warning disabled'>Processing registration...</button>
+                                }
+                                {
+                                    this.props.reduxState.session.registration.isProcessing
+                                    ||
+                                    <button className='btn btn-primary' type='submit'>Register</button>
+                                }
+                            </div>
+                        </form>
                     </div>
-                    <div className="mb-3">
-                        <label className='form-label' htmlFor='password'>
-                            Password:
-                        </label>
-                        <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
-                    </div>
-                    <div className="mb-3">
-                        {
-                            this.props.reduxState.session.registration.isProcessing
-                            &&
-                            <button className='btn btn-warning disabled'>Processing registration...</button>
-                        }
-                        {
-                            this.props.reduxState.session.registration.isProcessing
-                            ||
-                            <button className='btn btn-primary' type='submit'>Register</button>
-                        }
-                    </div>
-                </form>
-            </div>
+                }
+            </Fragment>
         );
     }
 }

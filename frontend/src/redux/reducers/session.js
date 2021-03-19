@@ -52,7 +52,7 @@ export const registerAccountCommand = (email, password) => (dispatch) => {
                 console.debug(responseContentAsObject);
                 dispatch(registerAccountFailedEvent(responseContentAsObject));
             } else {
-                dispatch(registerAccountSucceededEvent(JSON.parse(responseContentAsObject), email, password));
+                dispatch(registerAccountSucceededEvent(responseContentAsObject, email, password));
             }
         })
 
