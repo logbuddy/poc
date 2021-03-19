@@ -1,38 +1,25 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-    Redirect
-} from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import ErrorMessagePresentational from "../presentationals/ErrorMessagePresentational";
-import {registerAccountCommand} from '../redux/reducers/session';
-
-const mapStateToProps = state => ({
-    reduxState: {...state}
-});
-
-const mapDispatchToProps = dispatch => ({
-    registerAccount: (email, password) => dispatch(registerAccountCommand(email, password))
-});
+import { registerAccountCommand } from '../redux/reducers/session';
 
 class RegisterContainer extends Component {
     constructor(props) {
         super(props);
-        this.state = {email: '', password: ''};
-        this.handleChangeEmail = this.handleChangeEmail.bind(this);
-        this.handleChangePassword = this.handleChangePassword.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.state = { email: '', password: '' };
     }
 
-    handleChangeEmail(event) {
+    handleChangeEmail = (event) => {
         this.setState({ email: event.target.value, password: this.state.password });
     }
 
-    handleChangePassword(event) {
+    handleChangePassword = (event) => {
         this.setState({ password: event.target.value, email: this.state.email });
     }
 
-    handleSubmit(event) {
-        this.props.registerAccount(this.state.email, this.state.password);
+    handleSubmit = (event) => {
+        this.props.dispatch(registerAccountCommand(this.state.email, this.state.password));
         event.preventDefault();
     }
 
@@ -80,4 +67,7 @@ class RegisterContainer extends Component {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(RegisterContainer);
+export default connect(
+    reduxState => ({ reduxState }),
+    dispatch => ({ dispatch })
+)(RegisterContainer);

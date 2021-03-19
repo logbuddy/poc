@@ -1,8 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import {
-    Redirect
-} from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { Cpu, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc } from 'react-bootstrap-icons';
 import {
     createServerCommand,
@@ -12,60 +10,42 @@ import {
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
-const mapStateToProps = state => ({
-    reduxState: {...state}
-});
-
-const mapDispatchToProps = dispatch => ({
-    retrieveServerList: () => dispatch(retrieveServerListCommand()),
-    retrieveYetUnseenServerEvents: (serverId, latestSeenSortValue) => dispatch(retrieveYetUnseenServerEventsCommand(serverId, latestSeenSortValue)),
-    createServer: (title) => dispatch(createServerCommand(title)),
-    flippedElementOpen: (serverId, elementName) => dispatch(flippedServerListElementOpenEvent(serverId, elementName)),
-    flippedElementClose: (serverId, elementName) => dispatch(flippedServerListElementCloseEvent(serverId, elementName))
-});
-
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
         this.state = { createServerTitle: '' };
-        this.handleRefreshClicked = this.handleRefreshClicked.bind(this);
-        this.handleChangeCreateServerTitle = this.handleChangeCreateServerTitle.bind(this);
-        this.handleCreateServerClicked = this.handleCreateServerClicked.bind(this);
-        this.handleFlipElementOpenClicked = this.handleFlipElementOpenClicked.bind(this);
-        this.handleFlipElementCloseClicked = this.handleFlipElementCloseClicked.bind(this);
-        this.retrieveYetUnseenServerEventsTimers = [];
     }
 
-    handleRefreshClicked() {
-        this.props.retrieveServerList();
+    handleRefreshClicked = () => {
+        this.props.dispatch(retrieveServerListCommand());
     }
 
-    handleChangeCreateServerTitle(event) {
+    handleChangeCreateServerTitle = (event) => {
         this.setState({ createServerTitle: event.target.value });
     }
 
-    handleCreateServerClicked() {
-        this.props.createServer(this.state.createServerTitle);
+    handleCreateServerClicked = () => {
+        this.props.dispatch(createServerCommand(this.state.createServerTitle));
         this.setState({ createServerTitle: '' });
     }
 
-    handleFlipElementOpenClicked(server, elementName) {
-        this.props.flippedElementOpen(server.id, elementName);
-        this.props.retrieveYetUnseenServerEvents(
-            server.id,
-            server.latestEventSortValue
-        );
+    handleFlipElementOpenClicked = (server, elementName) => {
+        this.props.dispatch(flippedServerListElementOpenEvent(server.id, elementName));
+        if (elementName === 'latestEvents') {
+            this.props.dispatch(retrieveYetUnseenServerEventsCommand(
+                server.id,
+                server.latestEventSortValue
+            ));
+        }
     }
 
-    handleFlipElementCloseClicked(server, elementName) {
-        this.props.flippedElementClose(server.id, elementName);
+    handleFlipElementCloseClicked = (server, elementName) => {
+        this.props.dispatch(flippedServerListElementCloseEvent(server.id, elementName));
     }
 
     componentDidMount() {
-        this.props.retrieveServerList();
+        this.props.dispatch(retrieveServerListCommand());
     }
-
-    componentWillUnmount() {}
 
     render() {
         if (!this.props.reduxState.session.isLoggedIn) {
@@ -324,4 +304,7 @@ class ServersContainer extends Component {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ServersContainer);
+export default connect(
+    reduxState => ({ reduxState }),
+    dispatch => ({ dispatch })
+)(ServersContainer);
