@@ -18,19 +18,22 @@ const corsOptionsResponse = {
     body: ''
 };
 
-const getRequestBodyParsedAsJson = (event) => {
-    let requestBodyJson = null;
+const getRequestBody = (event) => {
+    let requestBody = null;
     {
         if (event.isBase64Encoded) {
-            requestBodyJson = (Buffer.from(event.body, 'base64')).toString('utf8');
+            requestBody = (Buffer.from(event.body, 'base64')).toString('utf8');
         } else {
-            requestBodyJson = event.body;
+            requestBody = event.body;
         }
     }
+    return requestBody;
+}
 
-    console.debug('Event body as UTF-8: ', requestBodyJson);
-
-    return JSON.parse(requestBodyJson);
+const getRequestBodyParsedAsJson = (event) => {
+    const requestBody = getRequestBody(event);
+    console.debug('Event body as UTF-8: ', requestBody);
+    return JSON.parse(requestBody);
 };
 
 const authenticateWebappRequest = async (eventHeaders) => {
@@ -368,6 +371,20 @@ const handleCreateServer = async (event) => {
     }
 
     const requestBodyParsedAsJson = getRequestBodyParsedAsJson(event);
+
+    if (   !requestBodyParsedAsJson.hasOwnProperty('title')
+        ||  requestBodyParsedAsJson.title.trim() === ''
+    ) {
+        return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+                message: 'Problem with request body',
+                expectedRequestBody: { title: 'x' },
+                actualRequestBody: getRequestBody(event)
+            }, null, 2)
+        };
+    }
 
     const serverId = uuidv4();
     const loggingApiKeyId = uuidv4();
