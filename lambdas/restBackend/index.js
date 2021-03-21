@@ -93,6 +93,8 @@ const handleRegisterAccountRequest = async (event) => {
 
     const newUserCredentials = JSON.parse(newUserCredentialsJson);
 
+    newUserCredentials.email = newUserCredentials.email.toLowerCase();
+
     const getParams = {
         TableName: 'credentials',
         Key: {
@@ -191,6 +193,8 @@ const handleCreateWebappApiKey = async (event) => {
     console.debug('credentialsFromRequestJson', credentialsFromRequestJson);
 
     const credentialsFromRequest = JSON.parse(credentialsFromRequestJson);
+
+    credentialsFromRequest.email = credentialsFromRequest.email.toLowerCase();
 
     const getParams = {
         TableName: 'credentials',
