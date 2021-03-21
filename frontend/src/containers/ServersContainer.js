@@ -135,13 +135,14 @@ class ServersContainer extends Component {
             serverListElements.push(
                 <div key={i} className={`card mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
                     <div className='card-header'>
-                        <h4>
-                            <span className='text-success'>
+                        <div className='row'>
+                            <div className='text-success col server-headline-icon'>
                                 <Cpu />
-                            </span>
-                            &nbsp;
-                            {this.props.reduxState.servers.serverList[i].title}
-                        </h4>
+                            </div>
+                            <div className='col server-headline-title'>
+                                <h4 className='mb-0'>{this.props.reduxState.servers.serverList[i].title}</h4>
+                            </div>
+                        </div>
                     </div>
                     <div className='card-body'>
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'information') }
