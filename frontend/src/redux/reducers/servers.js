@@ -58,6 +58,19 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
                 dispatch(retrieveServerListFailedEvent(responseContentAsObject));
             } else {
                 dispatch(retrieveServerListSucceededEvent(responseContentAsObject));
+                for (let i=0; i < getState().servers.serverListOpenElements.latestEvents.length; i++) {
+                    console.debug('starting polling', getState().servers.serverList);
+                    let latestEventSortValue = null;
+                    for (let j=0; j < getState().servers.serverList.length; j++) {
+                        if (getState().servers.serverList[j].id === getState().servers.serverListOpenElements.latestEvents[i]) {
+                            latestEventSortValue = getState().servers.serverList[j].latestEventSortValue;
+                        }
+                    }
+                    dispatch(retrieveYetUnseenServerEventsCommand(
+                        getState().servers.serverListOpenElements.latestEvents[i],
+                        latestEventSortValue
+                    ));
+                }
                 dispatch(disableFlipAllLatestEventsElementsOpenCommand());
             }
         })

@@ -17,6 +17,10 @@ class ServersContainer extends Component {
         this.state = { createServerTitle: '' };
     }
 
+    isFlippedOpen = (serverId, elementName) => {
+        return this.props.reduxState.servers.serverListOpenElements[elementName].includes(serverId);
+    };
+
     handleRefreshClicked = () => {
         this.props.dispatch(retrieveServerListCommand());
     }
@@ -59,7 +63,7 @@ class ServersContainer extends Component {
                 sampleCurlCommand: 'Sample curl command',
                 latestEvents: 'Latest events',
             };
-            if (isFlippedOpen(server.id, elementName)) {
+            if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
                 return <Fragment>
                     <h5 className='mt-2 clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
@@ -88,10 +92,6 @@ class ServersContainer extends Component {
                     </span>
                 </div>;
             }
-        };
-
-        const isFlippedOpen = (serverId, elementName) => {
-            return this.props.reduxState.servers.serverListOpenElements[elementName].includes(serverId);
         };
 
         const serverListElements = [];
@@ -149,7 +149,7 @@ class ServersContainer extends Component {
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'information') }
 
                         {
-                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'information')
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'information')
                             &&
                             <Fragment>
                                 <div className='row mt-2 mb-2'>
@@ -201,21 +201,21 @@ class ServersContainer extends Component {
 
 
                         {
-                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
                             &&
                             <hr/>
                         }
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'sampleCurlCommand') }
 
                         {
-                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
                             &&
                             <code><pre>{sampleCurlCommand}</pre></code>
                         }
 
 
                         {
-                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
                             &&
                             <hr/>
                         }
@@ -223,7 +223,7 @@ class ServersContainer extends Component {
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'latestEvents') }
 
                         {
-                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
                             &&
                             serverEventElements.length > 0
                             &&
@@ -234,7 +234,7 @@ class ServersContainer extends Component {
                             </table>
                         }
                         {
-                            isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
                             &&
                             serverEventElements.length === 0
                             &&
