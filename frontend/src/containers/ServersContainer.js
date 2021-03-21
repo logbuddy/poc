@@ -5,8 +5,9 @@ import { Cpu, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc } from 
 import {
     createServerCommand,
     retrieveServerListCommand,
-    flippedServerListElementOpenEvent,
-    flippedServerListElementCloseEvent, retrieveYetUnseenServerEventsCommand
+    flipServerListElementOpenCommand,
+    flipServerListElementCloseCommand,
+    retrieveYetUnseenServerEventsCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
@@ -30,7 +31,7 @@ class ServersContainer extends Component {
     }
 
     handleFlipElementOpenClicked = (server, elementName) => {
-        this.props.dispatch(flippedServerListElementOpenEvent(server.id, elementName));
+        this.props.dispatch(flipServerListElementOpenCommand(server.id, elementName));
         if (elementName === 'latestEvents') {
             this.props.dispatch(retrieveYetUnseenServerEventsCommand(
                 server.id,
@@ -40,7 +41,7 @@ class ServersContainer extends Component {
     }
 
     handleFlipElementCloseClicked = (server, elementName) => {
-        this.props.dispatch(flippedServerListElementCloseEvent(server.id, elementName));
+        this.props.dispatch(flipServerListElementCloseCommand(server.id, elementName));
     }
 
     componentDidMount() {

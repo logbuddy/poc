@@ -1,6 +1,7 @@
 import { apiFetch } from '../util';
 
 const initialState = {
+    flipAllLatestEventsElementsOpen: true,
     retrieveServerList: {
         isProcessing: false,
         justFinishedSuccessfully: false,
@@ -20,6 +21,9 @@ const initialState = {
     }
 };
 
+export const disableFlipAllLatestEventsElementsOpenCommand = () => ({
+    type: 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND'
+});
 
 const retrieveServerListStartedEvent = () => ({
     type: 'RETRIEVE_SERVER_LIST_STARTED_EVENT'
@@ -54,6 +58,7 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
                 dispatch(retrieveServerListFailedEvent(responseContentAsObject));
             } else {
                 dispatch(retrieveServerListSucceededEvent(responseContentAsObject));
+                dispatch(disableFlipAllLatestEventsElementsOpenCommand());
             }
         })
 
@@ -169,13 +174,13 @@ export const createServerCommand = (title) => (dispatch, getState) => {
 };
 
 
-export const flippedServerListElementOpenEvent = (serverId, elementName) => ({
+export const flipServerListElementOpenCommand = (serverId, elementName) => ({
     type: 'FLIPPED_SERVER_LIST_ELEMENT_OPEN_EVENT',
     serverId,
     elementName
 });
 
-export const flippedServerListElementCloseEvent = (serverId, elementName) => ({
+export const flipServerListElementCloseCommand = (serverId, elementName) => ({
     type: 'FLIPPED_SERVER_LIST_ELEMENT_CLOSE_EVENT',
     serverId,
     elementName
@@ -202,6 +207,13 @@ const reducer = (state = initialState, action) => {
     };
 
     switch (action.type) {
+
+        case 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND':
+            return {
+                ...state,
+                flipAllLatestEventsElementsOpen: false,
+            };
+
         case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
             return {
                 ...state,
@@ -212,13 +224,25 @@ const reducer = (state = initialState, action) => {
             };
 
         case 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT':
+            let serverListOpenElementsLatestEvents = [];
+            if (state.flipAllLatestEventsElementsOpen === true) {
+                for (let i=0; i < action.serverList.length; i++) {
+                    serverListOpenElementsLatestEvents.push(action.serverList[i].id);
+                }
+            } else {
+                serverListOpenElementsLatestEvents = [ ...state.serverListOpenElements.latestEvents ];
+            }
             return {
                 ...state,
                 retrieveServerList: {
                     ...initialState.retrieveServerList,
                     justFinishedSuccessfully: true
                 },
-                serverList: action.serverList
+                serverList: action.serverList,
+                serverListOpenElements: {
+                    ...state.serverListOpenElements,
+                    latestEvents: serverListOpenElementsLatestEvents
+                }
             };
 
         case 'RETRIEVE_SERVER_LIST_FAILED_EVENT':

@@ -6,6 +6,18 @@ import App from './App';
 import configureStore from './redux/store';
 import reportWebVitals from './reportWebVitals';
 
+const urlParams = new URLSearchParams(window.location.search);
+
+console.debug(`Looking for direct login info in ${window.location.search}`);
+if (   urlParams.has('directLoginEmail')
+    && urlParams.has('directLoginWebappApiKeyId')
+) {
+    console.debug(`Found direct login info in ${window.location.search}`);
+    document.cookie = `loggedInEmail=${urlParams.get('directLoginEmail')};path=/;SameSite=Lax`;
+    document.cookie = `webappApiKeyId=${urlParams.get('directLoginWebappApiKeyId')};path=/;SameSite=Lax`;
+    window.location = '/#/servers/';
+}
+
 ReactDOM.render(
     <Provider store={configureStore()}>
         <App />
