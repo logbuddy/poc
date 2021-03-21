@@ -20,7 +20,7 @@ class App  extends Component {
         return (
             <Router>
                 <div>
-                    <nav className='navbar navbar-expand-sm navbar-dark bg-dark'>
+                    <nav className='navbar navbar-expand-sm navbar-dark bg-secondary ps-1'>
                         <div className="container-fluid">
                             <ul className='navbar-nav mr-auto'>
                                 <li className='nav-item'>
