@@ -29,7 +29,8 @@ class ServersContainer extends Component {
         this.setState({ createServerTitle: event.target.value });
     }
 
-    handleCreateServerClicked = () => {
+    handleCreateServerClicked = (event) => {
+        event.preventDefault();
         this.props.dispatch(createServerCommand(this.state.createServerTitle));
         this.setState({ createServerTitle: '' });
     }
@@ -75,9 +76,9 @@ class ServersContainer extends Component {
                         {
                             elementName === 'latestEvents'
                             &&
-                            <div className='small float-end text-black-50 mb-2'>
+                            <div className='small float-end text-light mb-2'>
                                 Polling for new entries
-                                <Disc className='spinning text-success' />
+                                <Disc className='spinning text-info' />
                             </div>
                         }
                     </h5>
@@ -107,15 +108,21 @@ class ServersContainer extends Component {
                 serverEventElements.push(
                     <tr key={j} className={rowClassName}>
                         <td>
-                            <span className='badge bg-secondary'>
+                            <code className='text-light'>
                                 {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
+                            </code>
+                        </td>
+                        <td>
+                            <span className='badge bg-dark text-success word-wrap-anywhere'>
+                                <code>
+                                    {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
+                                </code>
                             </span>
                         </td>
                         <td>
-                            {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
-                        </td>
-                        <td>
-                            <code className='word-wrap-anywhere'>{this.props.reduxState.servers.serverList[i].latestEvents[j].payload}</code>
+                            <code className='word-wrap-anywhere text-info'>
+                                {this.props.reduxState.servers.serverList[i].latestEvents[j].payload}
+                            </code>
                         </td>
                     </tr>
                 );
@@ -134,10 +141,10 @@ class ServersContainer extends Component {
                    }]}'`;
 
             serverListElements.push(
-                <div key={i} className={`card mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
-                    <div className='card-header'>
+                <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
+                    <div className='card-header border-bottom border-secondary'>
                         <div className='row'>
-                            <div className='text-success col server-headline-icon'>
+                            <div className='text-info col server-headline-icon'>
                                 <Cpu />
                             </div>
                             <div className='col server-headline-title'>
@@ -145,7 +152,7 @@ class ServersContainer extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className='card-body'>
+                    <div className='card-body bg-dark'>
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'information') }
 
                         {
@@ -227,7 +234,7 @@ class ServersContainer extends Component {
                             &&
                             serverEventElements.length > 0
                             &&
-                            <table className='table table-light table-borderless table-striped'>
+                            <table className='table table-light table-borderless table-striped table-dark'>
                                 <tbody>
                                 {serverEventElements}
                                 </tbody>
@@ -249,12 +256,12 @@ class ServersContainer extends Component {
 
         return (
             <div className='m-4'>
-                <div className='text-end'>
+                <div className='text-end float-end'>
                     <Fragment>
                         {
                             this.props.reduxState.servers.retrieveServerList.isProcessing
                             &&
-                            <Disc className={`text-success ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'spinning' : 'spinning not-spinning'}`} />
+                            <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'spinning' : 'spinning not-spinning'}`} />
                         }
                         {
                             this.props.reduxState.servers.retrieveServerList.isProcessing
@@ -270,35 +277,37 @@ class ServersContainer extends Component {
                     My servers
                 </h1>
 
-                <form className='row row-cols-lg-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
-                    <div className='col-12'>
-                        <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
-                        <div className='input-group'>
-                            <div className='input-group-text'>New server</div>
-                            <input
-                                type='text'
-                                className='form-control'
-                                id='create-server-title'
-                                placeholder='Name of new server'
-                                value={this.state.createServerTitle}
-                                onChange={this.handleChangeCreateServerTitle}
-                            />
+                <div className='card card-body bg-dark pt-0'>
+                    <form className='row row-cols-lg-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
+                        <div className='col-12'>
+                            <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
+                            <div className='input-group'>
+                                <div className='input-group-text'>New server</div>
+                                <input
+                                    type='text'
+                                    className='form-control'
+                                    id='create-server-title'
+                                    placeholder='Name of new server'
+                                    value={this.state.createServerTitle}
+                                    onChange={this.handleChangeCreateServerTitle}
+                                />
+                            </div>
                         </div>
-                    </div>
 
-                    <div className='col-12'>
-                        {
-                            this.props.reduxState.servers.createServer.isProcessing
-                            &&
-                            <button className='btn btn-warning disabled'>Adding...</button>
-                        }
-                        {
-                            this.props.reduxState.servers.createServer.isProcessing
-                            ||
-                            <button type='submit' className={`btn btn-primary ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
-                        }
-                    </div>
-                </form>
+                        <div className='col-12'>
+                            {
+                                this.props.reduxState.servers.createServer.isProcessing
+                                &&
+                                <button className='btn btn-warning disabled'>Adding...</button>
+                            }
+                            {
+                                this.props.reduxState.servers.createServer.isProcessing
+                                ||
+                                <button type='submit' className={`btn btn-success ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
+                            }
+                        </div>
+                    </form>
+                </div>
 
                 {serverListElements}
             </div>
