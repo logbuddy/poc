@@ -235,7 +235,7 @@ const reducer = (state = initialState, action) => {
         case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
             return {
                 ...state,
-                retrieveServerList: {
+                retrieveServerListOperation: {
                     ...initialState.retrieveServerListOperation,
                     isRunning: true
                 }
@@ -252,7 +252,7 @@ const reducer = (state = initialState, action) => {
             }
             return {
                 ...state,
-                retrieveServerList: {
+                retrieveServerListOperation: {
                     ...initialState.retrieveServerListOperation,
                     justFinishedSuccessfully: true
                 },
@@ -266,7 +266,7 @@ const reducer = (state = initialState, action) => {
         case 'RETRIEVE_SERVER_LIST_FAILED_EVENT':
             return {
                 ...state,
-                retrieveServerList: {
+                retrieveServerListOperation: {
                     ...initialState.retrieveServerListOperation,
                     errorMessage: action.errorMessage
                 },
@@ -319,7 +319,7 @@ const reducer = (state = initialState, action) => {
         case 'CREATE_SERVER_STARTED_EVENT':
             return {
                 ...state,
-                createServer: {
+                createServerOperation: {
                     ...initialState.createServerOperation,
                     isRunning: true
                 }
@@ -328,7 +328,7 @@ const reducer = (state = initialState, action) => {
         case 'CREATE_SERVER_SUCCEEDED_EVENT':
             return {
                 ...state,
-                createServer: {
+                createServerOperation: {
                     ...initialState.createServerOperation,
                     justFinishedSuccessfully: true
                 },
@@ -349,7 +349,7 @@ const reducer = (state = initialState, action) => {
         case 'CREATE_SERVER_FAILED_EVENT':
             return {
                 ...state,
-                createServer: {
+                createServerOperation: {
                     ...initialState.createServerOperation,
                     errorMessage: action.errorMessage
                 }
