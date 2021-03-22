@@ -1,5 +1,23 @@
 @import '../node_modules/bootstrap/scss/bootstrap.scss';
 
+.bg-dark {
+  background-color: tint-color($dark, 10%) !important;
+  color: tint-color($gray-800, 80%);
+}
+
+.bg-deepdark {
+  background-color: tint-color($black, 10%) !important;
+}
+
+.bg-secondary {
+  background-color: tint-color($dark, 20%) !important;
+}
+
+.navbar-dark {
+  background-color: tint-color($dark, 1%) !important;
+  color: tint-color($primary, 5%);
+}
+
 .clickable {
   cursor: pointer;
 }
@@ -11,6 +29,12 @@
 .w-6em {
   width: 6em;
 };
+
+#loggedin-user-badge {
+  color: tint-color($dark, 50%) !important;
+  border-color: tint-color($dark, 25%) !important;
+  background-color: tint-color($dark, 5%) !important;
+}
 
 code {
   color: $success;

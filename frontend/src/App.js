@@ -61,7 +61,7 @@ class App  extends Component {
                                 this.props.reduxState.session.isLoggedIn
                                 &&
                                 <ul className="navbar-nav ml-auto">
-                                    <li className='nav-item text-end btn btn-outline-dark disabled'>
+                                    <li id='loggedin-user-badge' className='nav-item text-end btn btn-outline-light btn-disabled text-light'>
                                         <PersonCircle />
                                         &nbsp;
                                         {this.props.reduxState.session.loggedInEmail}

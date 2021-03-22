@@ -67,12 +67,12 @@ class ServersContainer extends Component {
             if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
                 return <Fragment>
-                    <h5 className='mt-2 clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
-                        { elementNameToHeadline[elementName] }
-                        &nbsp;
+                    <h5 className='clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
                         <span className='align-text-top'>
                             <ChevronDown />
                         </span>
+                        &nbsp;
+                        { elementNameToHeadline[elementName] }
                         {
                             elementName === 'latestEvents'
                             &&
@@ -86,11 +86,11 @@ class ServersContainer extends Component {
             } else {
                 const handleFlipElementOpenClicked = this.handleFlipElementOpenClicked;
                 return <div className='clickable' onClick={() => handleFlipElementOpenClicked(server, elementName)}>
-                    { elementNameToHeadline[elementName] }
-                    &nbsp;
                     <span className='small align-text-bottom'>
                         <ChevronRight />
                     </span>
+                    &nbsp;
+                    { elementNameToHeadline[elementName] }
                 </div>;
             }
         };
@@ -142,7 +142,7 @@ class ServersContainer extends Component {
 
             serverListElements.push(
                 <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
-                    <div className='card-header border-bottom border-secondary'>
+                    <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-info col server-headline-icon'>
                                 <Cpu />
@@ -162,14 +162,14 @@ class ServersContainer extends Component {
                                 <div className='row mt-2 mb-2'>
                                     <div className='col-12'>
                                         <div className='input-group'>
-                                            <div className='input-group-text w-6em'>serverId</div>
+                                            <div className='input-group-text w-6em border border-dark bg-secondary text-light'>serverId</div>
                                             <input
                                                 type='text'
-                                                className='form-control text-black-50 code'
+                                                className='form-control text-info code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].id}
                                                 disabled={false}
                                             />
-                                            <div className='input-group-text'><Clipboard /></div>
+                                            <div className='btn btn-outline-secondary input-group-text text-light'><Clipboard /></div>
                                         </div>
                                     </div>
                                 </div>
@@ -177,14 +177,14 @@ class ServersContainer extends Component {
                                 <div className='row mt-2 mb-2'>
                                     <div className='col-12'>
                                         <div className='input-group'>
-                                            <div className='input-group-text w-6em'>userId</div>
+                                            <div className='input-group-text w-6em border border-dark bg-secondary text-light'>userId</div>
                                             <input
                                                 type='text'
-                                                className='form-control text-black-50 code'
+                                                className='form-control text-info code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].userId}
                                                 disabled={false}
                                             />
-                                            <div className='input-group-text'><Clipboard /></div>
+                                            <div className='btn btn-outline-secondary input-group-text text-light'><Clipboard /></div>
                                         </div>
                                     </div>
                                 </div>
@@ -192,39 +192,33 @@ class ServersContainer extends Component {
                                 <div className='row mt-2 mb-2'>
                                     <div className='col-12'>
                                         <div className='input-group'>
-                                            <div className='input-group-text w-6em'>apiKeyId</div>
+                                            <div className='input-group-text w-6em border border-dark bg-secondary text-light'>apiKeyId</div>
                                             <input
                                                 type='text'
-                                                className='form-control text-black-50 code'
+                                                className='form-control text-info code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].apiKeyId}
                                                 disabled={false}
                                             />
-                                            <div className='input-group-text'><Clipboard /></div>
+                                            <div className='btn btn-outline-secondary input-group-text text-light'><Clipboard /></div>
                                         </div>
                                     </div>
                                 </div>
+                                <hr/>
                             </Fragment>
                         }
 
 
-                        {
-                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
-                            &&
-                            <hr/>
-                        }
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'sampleCurlCommand') }
 
                         {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
                             &&
-                            <code><pre>{sampleCurlCommand}</pre></code>
-                        }
-
-
-                        {
-                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
-                            &&
-                            <hr/>
+                            <Fragment>
+                                <div className='rounded border border-dark p-2 bg-deepdark mb-2'>
+                                    <code><pre>{sampleCurlCommand}</pre></code>
+                                </div>
+                                <hr/>
+                            </Fragment>
                         }
 
                         { createFlipElement(this.props.reduxState.servers.serverList[i], 'latestEvents') }
@@ -273,12 +267,12 @@ class ServersContainer extends Component {
 
                 <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerList.errorMessage} />
 
-                <h1>
+                <h1 className='mb-3'>
                     My servers
                 </h1>
 
                 <div className='card card-body bg-dark pt-0'>
-                    <form className='row row-cols-lg-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
+                    <form className='row row-cols-sm-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
                         <div className='col-12'>
                             <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
                             <div className='input-group'>
@@ -298,12 +292,12 @@ class ServersContainer extends Component {
                             {
                                 this.props.reduxState.servers.createServer.isProcessing
                                 &&
-                                <button className='btn btn-warning disabled'>Adding...</button>
+                                <button className='float-end btn btn-warning disabled'>Adding...</button>
                             }
                             {
                                 this.props.reduxState.servers.createServer.isProcessing
                                 ||
-                                <button type='submit' className={`btn btn-success ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
+                                <button type='submit' className={`float-end btn btn-success ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
                             }
                         </div>
                     </form>
