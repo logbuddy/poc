@@ -45,8 +45,6 @@ code {
 }
 
 .word-wrap-anywhere {
-  word-wrap: anywhere;
-  word-break: break-all;
 }
 
 .server-headline-icon {
@@ -66,6 +64,11 @@ code {
   -moz-animation:spin 8s linear infinite;
   animation:spin 8s linear infinite;
   animation-play-state: running;
+}
+
+.spinning-small {
+  width: 20px;
+  height: 20px;
 }
 
 .not-spinning {

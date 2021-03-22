@@ -76,8 +76,8 @@ class ServersContainer extends Component {
             if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
                 return <Fragment>
-                    <h5 className='clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
-                        <span className='align-text-top'>
+                    <div className='clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
+                        <span className='align-text-top small'>
                             <ChevronDown />
                         </span>
                         &nbsp;
@@ -85,12 +85,15 @@ class ServersContainer extends Component {
                         {
                             elementName === 'latestEvents'
                             &&
-                            <div className='small float-end text-light mb-2'>
-                                Polling for new entries
-                                <Disc className='spinning text-info' />
-                            </div>
+                            <Fragment>
+                                <div className='small float-end text-light mb-2'>
+                                    Polling for new entries
+                                    <Disc className='spinning spinning-small text-info' />
+                                </div>
+                                <div className='float-none'><hr/></div>
+                            </Fragment>
                         }
-                    </h5>
+                    </div>
                 </Fragment>
             } else {
                 const handleFlipElementOpenClicked = this.handleFlipElementOpenClicked;
@@ -108,32 +111,34 @@ class ServersContainer extends Component {
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const serverEventElements = [];
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
-                let rowClassName = '';
+                let additionalRowClassNames = '';
                 if (   this.props.reduxState.servers.serverList[i].latestEvents[j].hasOwnProperty('hasBeenAddedByYetUnseenLogic')
                     && this.props.reduxState.servers.serverList[i].latestEvents[j].hasBeenAddedByYetUnseenLogic === true
                 ) {
-                    rowClassName = 'fade-in';
+                    additionalRowClassNames = 'fade-in';
                 }
                 serverEventElements.push(
-                    <tr key={j} className={rowClassName}>
-                        <td>
-                            <code className='text-light'>
-                                {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
-                            </code>
-                        </td>
-                        <td>
-                            <span className='badge bg-dark text-success word-wrap-anywhere'>
-                                <code>
+                    <Fragment>
+                        <div key={j} className={'row' + additionalRowClassNames}>
+                            <div className='col-xl-auto ps-1 pe-1'>
+                                <code className='text-light text-nowrap'>
+                                    {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
+                                </code>
+                            </div>
+                            <div className='col-xl-auto ps-1 pe-1'>
+                                <code className='text-secondary text-nowrap'>
                                     {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
                                 </code>
-                            </span>
-                        </td>
-                        <td>
-                            <code className='word-wrap-anywhere text-info'>
-                                {this.props.reduxState.servers.serverList[i].latestEvents[j].payload}
-                            </code>
-                        </td>
-                    </tr>
+                            </div>
+                        </div>
+                        <div key={j + 'p'} className={'row mb-4 ' + additionalRowClassNames}>
+                            <div className='col ps-1 pe-1'>
+                                <code className='word-wrap-anywhere text-info'>
+                                    {this.props.reduxState.servers.serverList[i].latestEvents[j].payload}
+                                </code>
+                            </div>
+                        </div>
+                    </Fragment>
                 );
             }
 
@@ -273,7 +278,7 @@ class ServersContainer extends Component {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'sampleCurlCommand')
                             &&
                             <Fragment>
-                                <div className='rounded border border-dark p-2 bg-deepdark mb-2'>
+                                <div className='rounded border border-dark p-2 bg-deepdark mb-2 mt-2'>
                                     <code><pre>{sampleCurlCommand}</pre></code>
                                 </div>
                                 <hr/>
@@ -287,11 +292,9 @@ class ServersContainer extends Component {
                             &&
                             serverEventElements.length > 0
                             &&
-                            <table className='table table-light table-borderless table-striped table-dark'>
-                                <tbody>
+                            <div className='container-fluid w-100'>
                                 {serverEventElements}
-                                </tbody>
-                            </table>
+                            </div>
                         }
                         {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
