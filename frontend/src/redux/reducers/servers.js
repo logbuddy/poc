@@ -7,7 +7,7 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    retrieveYetUnseenServerEventsOperations: [],
+    runningRetrieveYetUnseenServerEventsOperations: [],
     createServerOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
@@ -100,6 +100,11 @@ const retrieveYetUnseenServerEventsSucceededEvent = (serverId, yetUnseenServerEv
 });
 
 export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortValue) => (dispatch, getState) => {
+
+    if (getState().servers.runningRetrieveYetUnseenServerEventsOperations.includes(serverId)) {
+        console.warn(`A retrieveYetUnseenServerEventsCommand for serverId ${serverId} is already running, aborting.`);
+        return;
+    }
 
     dispatch(retrieveYetUnseenServerEventsStartedEvent(serverId));
 
@@ -269,14 +274,45 @@ const reducer = (state = initialState, action) => {
             };
 
 
+        case 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_STARTED_EVENT':
+            return {
+                ...state,
+                runningRetrieveYetUnseenServerEventsOperations: [
+                    ...state.runningRetrieveYetUnseenServerEventsOperations,
+                    action.serverId
+                ]
+            };
+
+        case 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_FAILED_EVENT':
+            return {
+                ...state,
+                runningRetrieveYetUnseenServerEventsOperations: [
+                    ...state.runningRetrieveYetUnseenServerEventsOperations.filter(
+                        serverId => serverId !== action.serverId
+                    )
+                ]
+            };
+
         case 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_SUCCEEDED_EVENT':
             if (action.yetUnseenServerEvents.length > 0) {
                 return {
                     ...state,
-                    serverList: withYetUnseenServerEventsUpdatedServerList(action.serverId, action.yetUnseenServerEvents)
+                    serverList: withYetUnseenServerEventsUpdatedServerList(action.serverId, action.yetUnseenServerEvents),
+                    runningRetrieveYetUnseenServerEventsOperations: [
+                        ...state.runningRetrieveYetUnseenServerEventsOperations.filter(
+                            serverId => serverId !== action.serverId
+                        )
+                    ]
                 };
             } else {
-                return state;
+                return {
+                    ...state,
+                    runningRetrieveYetUnseenServerEventsOperations: [
+                        ...state.runningRetrieveYetUnseenServerEventsOperations.filter(
+                            serverId => serverId !== action.serverId
+                        )
+                    ]
+                };
             }
 
 
