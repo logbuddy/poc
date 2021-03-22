@@ -2,14 +2,14 @@ import { apiFetch } from '../util';
 
 const initialState = {
     flipAllLatestEventsElementsOpen: true,
-    retrieveServerList: {
-        isProcessing: false,
+    retrieveServerListOperation: {
+        isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    retrieveYetUnseenServerEvents: [],
-    createServer: {
-        isProcessing: false,
+    retrieveYetUnseenServerEventsOperations: [],
+    createServerOperation: {
+        isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
@@ -231,8 +231,8 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 retrieveServerList: {
-                    ...initialState.retrieveServerList,
-                    isProcessing: true
+                    ...initialState.retrieveServerListOperation,
+                    isRunning: true
                 }
             };
 
@@ -248,7 +248,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 retrieveServerList: {
-                    ...initialState.retrieveServerList,
+                    ...initialState.retrieveServerListOperation,
                     justFinishedSuccessfully: true
                 },
                 serverList: action.serverList,
@@ -262,7 +262,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 retrieveServerList: {
-                    ...initialState.retrieveServerList,
+                    ...initialState.retrieveServerListOperation,
                     errorMessage: action.errorMessage
                 },
                 serverList: initialState.serverList
@@ -284,8 +284,8 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 createServer: {
-                    ...initialState.createServer,
-                    isProcessing: true
+                    ...initialState.createServerOperation,
+                    isRunning: true
                 }
             };
 
@@ -293,7 +293,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 createServer: {
-                    ...initialState.createServer,
+                    ...initialState.createServerOperation,
                     justFinishedSuccessfully: true
                 },
                 serverList: [ action.server, ...state.serverList ],
@@ -314,7 +314,7 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 createServer: {
-                    ...initialState.createServer,
+                    ...initialState.createServerOperation,
                     errorMessage: action.errorMessage
                 }
             };

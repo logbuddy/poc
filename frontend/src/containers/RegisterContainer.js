@@ -63,12 +63,12 @@ class RegisterContainer extends Component {
                                     </div>
                                     <div className="mb-3">
                                         {
-                                            this.props.reduxState.session.registration.isProcessing
+                                            this.props.reduxState.session.registration.isRunning
                                             &&
                                             <button className='btn btn-warning disabled'>Processing registration...</button>
                                         }
                                         {
-                                            this.props.reduxState.session.registration.isProcessing
+                                            this.props.reduxState.session.registration.isRunning
                                             ||
                                             <button className='btn btn-primary' type='submit'>Register</button>
                                         }

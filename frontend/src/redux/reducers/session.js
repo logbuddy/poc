@@ -5,12 +5,12 @@ const initialState = {
     loggedInEmail: null,
     webappApiKeyId: null,
     registration: {
-        isProcessing: false,
+        isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
     login: {
-        isProcessing: false,
+        isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     }
@@ -114,7 +114,7 @@ const reducer = (state = initialState, action) => {
                 ...state,
                 registration: {
                     ...initialState.registration,
-                    isProcessing: true
+                    isRunning: true
                 }
             }
 
@@ -145,7 +145,7 @@ const reducer = (state = initialState, action) => {
                 webappApiKeyId: null,
                 login: {
                     ...initialState.login,
-                    isProcessing: true
+                    isRunning: true
                 }
             }
 

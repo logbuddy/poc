@@ -54,12 +54,12 @@ class LoginContainer extends Component {
                             </div>
                             <div className="mb-3">
                                 {
-                                    this.props.reduxState.session.login.isProcessing
+                                    this.props.reduxState.session.login.isRunning
                                     &&
                                     <button className='btn btn-warning disabled'>Processing login...</button>
                                 }
                                 {
-                                    this.props.reduxState.session.login.isProcessing
+                                    this.props.reduxState.session.login.isRunning
                                     ||
                                     <button className='btn btn-primary' type='submit'>Log in</button>
                                 }

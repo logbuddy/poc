@@ -150,7 +150,7 @@ class ServersContainer extends Component {
                    }]}'`;
 
             serverListElements.push(
-                <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'opacity-25' : 'fade-in'}`}>
+                <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'opacity-25' : 'fade-in'}`}>
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-info col server-headline-icon'>
@@ -312,19 +312,19 @@ class ServersContainer extends Component {
                 <div className='text-end float-end'>
                     <Fragment>
                         {
-                            this.props.reduxState.servers.retrieveServerList.isProcessing
+                            this.props.reduxState.servers.retrieveServerListOperation.isRunning
                             &&
-                            <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerList.isProcessing ? 'spinning' : 'spinning not-spinning'}`} />
+                            <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
                         }
                         {
-                            this.props.reduxState.servers.retrieveServerList.isProcessing
+                            this.props.reduxState.servers.retrieveServerListOperation.isRunning
                             ||
                             <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
                         }
                     </Fragment>
                 </div>
 
-                <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerList.errorMessage} />
+                <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
 
                 <h1 className='mb-3'>
                     My servers
@@ -349,12 +349,12 @@ class ServersContainer extends Component {
 
                         <div className='col-12'>
                             {
-                                this.props.reduxState.servers.createServer.isProcessing
+                                this.props.reduxState.servers.createServerOperation.isRunning
                                 &&
                                 <button className='float-end btn btn-warning disabled'>Adding...</button>
                             }
                             {
-                                this.props.reduxState.servers.createServer.isProcessing
+                                this.props.reduxState.servers.createServerOperation.isRunning
                                 ||
                                 <button type='submit' className={`float-end btn btn-success ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
                             }
