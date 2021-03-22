@@ -98,3 +98,20 @@ code {
     opacity: 1;
   }
 }
+
+.fade-out-half {
+  opacity: .35;
+  animation-name: fadeOutHalfOpacity;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-out;
+  animation-duration: 1s;
+}
+
+@keyframes fadeOutHalfOpacity {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: .35;
+  }
+}

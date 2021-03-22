@@ -14,7 +14,8 @@ import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentat
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
-        this.state = { createServerTitle: '' };
+        this.state = { createServerTitle: '', showCopySuccessBadgeForId: null };
+        this.copyElements = {};
     }
 
     isFlippedOpen = (serverId, elementName) => {
@@ -47,6 +48,14 @@ class ServersContainer extends Component {
 
     handleFlipElementCloseClicked = (server, elementName) => {
         this.props.dispatch(flipServerListElementCloseCommand(server.id, elementName));
+    }
+
+    copyCodeToClipboard = (id) => {
+        const el = this.copyElements[id];
+        el.select();
+        document.execCommand('copy');
+        el.blur();
+        this.setState({ ...this.state, showCopySuccessBadgeForId: id });
     }
 
     componentDidMount() {
@@ -167,9 +176,27 @@ class ServersContainer extends Component {
                                                 type='text'
                                                 className='form-control text-info code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].id}
+                                                readOnly={true}
                                                 disabled={false}
+                                                ref={(element) => this.copyElements[this.props.reduxState.servers.serverList[i].id + 'id'] = element}
                                             />
-                                            <div className='btn btn-outline-secondary input-group-text text-light'><Clipboard /></div>
+                                            {
+                                                this.state.showCopySuccessBadgeForId === this.props.reduxState.servers.serverList[i].id + 'id'
+                                                &&
+                                                <div className='input-group-text border border-dark bg-secondary text-info fade-out-half'>
+                                                    <small>
+                                                        Copied to clipboard
+                                                    </small>
+                                                </div>
+                                            }
+                                            <div
+                                                className='btn btn-outline-secondary input-group-text text-light'
+                                                onClick={() => {
+                                                    this.copyCodeToClipboard(this.props.reduxState.servers.serverList[i].id + 'id');
+                                                }}
+                                            >
+                                                <Clipboard />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -182,9 +209,25 @@ class ServersContainer extends Component {
                                                 type='text'
                                                 className='form-control text-info code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].userId}
+                                                readOnly={true}
                                                 disabled={false}
+                                                ref={(element) => this.copyElements[this.props.reduxState.servers.serverList[i].id + 'userId'] = element}
                                             />
-                                            <div className='btn btn-outline-secondary input-group-text text-light'><Clipboard /></div>
+                                            {
+                                                this.state.showCopySuccessBadgeForId === this.props.reduxState.servers.serverList[i].id + 'userId'
+                                                &&
+                                                <div className='input-group-text border border-dark bg-secondary text-info fade-out-half'>
+                                                    <small>
+                                                        Copied to clipboard
+                                                    </small>
+                                                </div>
+                                            }
+                                            <div
+                                                className='btn btn-outline-secondary input-group-text text-light'
+                                                onClick={() => this.copyCodeToClipboard(this.props.reduxState.servers.serverList[i].id + 'userId')}
+                                            >
+                                                <Clipboard />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -197,9 +240,25 @@ class ServersContainer extends Component {
                                                 type='text'
                                                 className='form-control text-info code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].apiKeyId}
+                                                readOnly={true}
                                                 disabled={false}
+                                                ref={(element) => this.copyElements[this.props.reduxState.servers.serverList[i].id + 'apiKeyId'] = element}
                                             />
-                                            <div className='btn btn-outline-secondary input-group-text text-light'><Clipboard /></div>
+                                            {
+                                                this.state.showCopySuccessBadgeForId === this.props.reduxState.servers.serverList[i].id + 'apiKeyId'
+                                                &&
+                                                <div className='input-group-text border border-dark bg-secondary text-info fade-out-half'>
+                                                    <small>
+                                                        Copied to clipboard
+                                                    </small>
+                                                </div>
+                                            }
+                                            <div
+                                                className='btn btn-outline-secondary input-group-text text-light'
+                                                onClick={() => this.copyCodeToClipboard(this.props.reduxState.servers.serverList[i].id + 'apiKeyId')}
+                                            >
+                                                <Clipboard />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
