@@ -119,7 +119,7 @@ class ServersContainer extends Component {
                 }
                 serverEventElements.push(
                     <Fragment>
-                        <div key={j} className={'row' + additionalRowClassNames}>
+                        <div key={j} className={'row ' + additionalRowClassNames}>
                             <div className='col-xl-auto ps-1 pe-1'>
                                 <code className='text-light text-nowrap'>
                                     {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
@@ -292,7 +292,7 @@ class ServersContainer extends Component {
                             &&
                             serverEventElements.length > 0
                             &&
-                            <div className='container-fluid w-100'>
+                            <div className='container-fluid w-100 clearfix'>
                                 {serverEventElements}
                             </div>
                         }
