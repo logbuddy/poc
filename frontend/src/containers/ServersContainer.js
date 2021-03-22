@@ -87,7 +87,7 @@ class ServersContainer extends Component {
                             &&
                             <Fragment>
                                 <div className='small float-end text-light mb-2'>
-                                    Polling for new entries
+                                    Polling for new events
                                     <Disc className='spinning spinning-small text-info' />
                                 </div>
                                 <div className='float-none'><hr/></div>
