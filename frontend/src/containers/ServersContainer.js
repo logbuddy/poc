@@ -90,7 +90,7 @@ class ServersContainer extends Component {
                                     Polling for new events
                                     <Disc className='spinning spinning-small text-info' />
                                 </div>
-                                <div className='float-none'><hr/></div>
+                                <hr className='float-none text-dark'/>
                             </Fragment>
                         }
                     </div>
@@ -292,7 +292,7 @@ class ServersContainer extends Component {
                             &&
                             serverEventElements.length > 0
                             &&
-                            <div className='container-fluid w-100 clearfix'>
+                            <div className='container-fluid w-100 bg-deepdark ps-3 pe-3 rounded'>
                                 {serverEventElements}
                             </div>
                         }
