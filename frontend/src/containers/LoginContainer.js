@@ -11,11 +11,11 @@ class LoginContainer extends Component {
     }
 
     handleChangeEmail = (event) => {
-        this.setState({ email: event.target.value, password: this.state.password });
+        this.setState({ ...this.state, email: event.target.value, password: this.state.password });
     }
 
     handleChangePassword = (event) => {
-        this.setState({ password: event.target.value, email: this.state.email });
+        this.setState({ ...this.state, password: event.target.value, email: this.state.email });
     }
 
     handleSubmit = (event) => {

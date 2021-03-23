@@ -27,13 +27,13 @@ class ServersContainer extends Component {
     }
 
     handleChangeCreateServerTitle = (event) => {
-        this.setState({ createServerTitle: event.target.value });
+        this.setState({ ...this.state, createServerTitle: event.target.value });
     }
 
     handleCreateServerClicked = (event) => {
         event.preventDefault();
         this.props.dispatch(createServerCommand(this.state.createServerTitle));
-        this.setState({ createServerTitle: '' });
+        this.setState({ ...this.state, createServerTitle: '' });
     }
 
     handleFlipElementOpenClicked = (server, elementName) => {

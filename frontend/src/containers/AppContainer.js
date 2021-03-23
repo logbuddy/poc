@@ -10,8 +10,15 @@ import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './RegisterContainer';
 import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
+import { logOutOfAccountCommand } from "../redux/reducers/session";
 
 class AppContainer extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { showLogoutCta: false };
+    }
+
+
     render() {
         return (
             <Router>
@@ -57,11 +64,34 @@ class AppContainer extends Component {
                                 this.props.reduxState.session.isLoggedIn
                                 &&
                                 <ul className="navbar-nav ml-auto">
-                                    <li id='loggedin-user-badge' className='nav-item text-end btn btn-outline-light btn-disabled text-light'>
-                                        <PersonCircle />
-                                        &nbsp;
-                                        {this.props.reduxState.session.loggedInEmail}
-                                    </li>
+                                    {
+                                        this.state.showLogoutCta
+                                        ||
+                                        <li
+                                            id='loggedin-user-badge'
+                                            className='nav-item text-end btn btn-outline-light btn-disabled text-light'
+                                            onClick={
+                                                () => {
+                                                    this.setState({ ...this.state, showLogoutCta: true });
+                                                    setTimeout(() => this.setState({ ...this.state, showLogoutCta: false }), 5000);
+                                                }
+                                            }
+                                        >
+                                            <PersonCircle />
+                                            &nbsp;
+                                            {this.props.reduxState.session.loggedInEmail}
+                                        </li>
+                                    }
+                                    {
+                                        this.state.showLogoutCta
+                                        &&
+                                        <li
+                                            className='nav-item text-end btn btn-outline-danger'
+                                            onClick={ () => this.props.dispatch(logOutOfAccountCommand()) }
+                                        >
+                                            Log out?
+                                        </li>
+                                    }
                                 </ul>
                             }
                         </div>

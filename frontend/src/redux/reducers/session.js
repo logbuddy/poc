@@ -107,6 +107,30 @@ export const logIntoAccountCommand = (email, password) => (dispatch) => {
 };
 
 
+const logOutOfAccountStartedEvent = () => ({
+    type: 'LOG_OUT_OF_ACCOUNT_STARTED_EVENT'
+});
+
+const logOutOfAccountFailedEvent = (errorMessage) => ({
+    type: 'LOG_OUT_OF_ACCOUNT_FAILED_EVENT',
+    errorMessage
+});
+
+const logOutOfAccountSucceededEvent = (apiKeyId, email, password) => ({
+    type: 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT',
+    webappApiKeyId: apiKeyId,
+    email,
+    password
+});
+
+export const logOutOfAccountCommand = () => (dispatch) => {
+    dispatch(logOutOfAccountStartedEvent());
+    document.cookie = `loggedInEmail=;path=/;SameSite=Lax`;
+    document.cookie = `webappApiKeyId=;path=/;SameSite=Lax`;
+    dispatch(logOutOfAccountSucceededEvent());
+};
+
+
 const reducer = (state = initialState, action) => {
     switch (action.type) {
         case 'REGISTER_ACCOUNT_STARTED_EVENT':
@@ -173,6 +197,14 @@ const reducer = (state = initialState, action) => {
                     ...initialState.login,
                     errorMessage: action.errorMessage
                 }
+            }
+
+        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT':
+            return {
+                ...state,
+                isLoggedIn: false,
+                loggedInEmail: null,
+                webappApiKeyId: null,
             }
 
         default:
