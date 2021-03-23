@@ -331,7 +331,7 @@ class ServersContainer extends Component {
                         <div className='col-12'>
                             <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
                             <div className='input-group'>
-                                <div className='input-group-text'>New server</div>
+                                <div className='input-group-text'>Add server</div>
                                 <input
                                     type='text'
                                     className='form-control'
@@ -352,7 +352,11 @@ class ServersContainer extends Component {
                             {
                                 this.props.reduxState.servers.createServerOperation.isRunning
                                 ||
-                                <button type='submit' className={`float-end btn btn-success ${(this.state.createServerTitle.length > 0 ? '' : 'disabled')}`}>Add</button>
+                                (
+                                    (this.state.createServerTitle.length > 0)
+                                    &&
+                                    <button type='submit' className='float-end btn btn-success fade-in'>Add</button>
+                                )
                             }
                         </div>
                     </form>
