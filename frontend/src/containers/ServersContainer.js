@@ -1,13 +1,15 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { Cpu, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc } from 'react-bootstrap-icons';
+import { Cpu, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import {
     createServerCommand,
     retrieveServerListCommand,
     flipServerListElementOpenCommand,
     flipServerListElementCloseCommand,
-    retrieveYetUnseenServerEventsCommand
+    retrieveYetUnseenServerEventsCommand,
+    disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
+    enableSkipRetrieveYetUnseenServerEventsOperationsCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 
@@ -76,19 +78,56 @@ class ServersContainer extends Component {
             if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
                 return <Fragment>
-                    <div className='clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
-                        <span className='align-text-top small'>
-                            <ChevronDown />
+                    <div>
+                        <span className='clickable' onClick={() => handleFlipElementCloseClicked(server, elementName)}>
+                            <span className='align-text-top small'>
+                                <ChevronDown />
+                            </span>
+                            &nbsp;
+                            { elementNameToHeadline[elementName] }
                         </span>
-                        &nbsp;
-                        { elementNameToHeadline[elementName] }
                         {
                             elementName === 'latestEvents'
                             &&
                             <Fragment>
                                 <div className='small float-end text-light mb-2'>
-                                    Polling for new events
-                                    <Disc className='spinning spinning-small text-info' />
+                                    {
+                                        this.props.reduxState
+                                            .servers
+                                            .serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped
+                                            .includes(server.id)
+                                        &&
+                                        <div
+                                            className='clickable'
+                                            onClick={() => this.props.dispatch(disableSkipRetrieveYetUnseenServerEventsOperationsCommand(server.id)) }
+                                        >
+                                            <span>Not polling for new events</span>
+                                            &nbsp;
+                                            <span>
+                                                <PlayCircle className='latest-events-play-resume-button'/>
+                                            </span>
+                                            <Disc className='spinning not-spinning spinning-small text-white' />
+                                        </div>
+                                    }
+
+                                    {
+                                        this.props.reduxState
+                                            .servers
+                                            .serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped
+                                            .includes(server.id)
+                                        ||
+                                        <div
+                                            className='clickable'
+                                            onClick={() => this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(server.id)) }
+                                        >
+                                            <span>Polling for new events</span>
+                                            &nbsp;
+                                            <span>
+                                                <PauseCircle className='latest-events-play-resume-button'/>
+                                            </span>
+                                            <Disc className='spinning spinning-small text-info' />
+                                        </div>
+                                    }
                                 </div>
                                 <hr className='float-none text-dark'/>
                             </Fragment>

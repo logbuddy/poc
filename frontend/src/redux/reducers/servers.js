@@ -7,7 +7,8 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    runningRetrieveYetUnseenServerEventsOperations: [],
+    serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning: [],
+    serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped: [],
     createServerOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
@@ -66,10 +67,12 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
                             latestEventSortValue = getState().servers.serverList[j].latestEventSortValue;
                         }
                     }
-                    dispatch(retrieveYetUnseenServerEventsCommand(
-                        getState().servers.serverListOpenElements.latestEvents[i],
-                        latestEventSortValue
-                    ));
+                    if (getState().servers.flipAllLatestEventsElementsOpen === true) {
+                        dispatch(retrieveYetUnseenServerEventsCommand(
+                            getState().servers.serverListOpenElements.latestEvents[i],
+                            latestEventSortValue
+                        ));
+                    }
                 }
                 dispatch(disableFlipAllLatestEventsElementsOpenCommand());
             }
@@ -101,7 +104,25 @@ const retrieveYetUnseenServerEventsSucceededEvent = (serverId, yetUnseenServerEv
 
 export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortValue) => (dispatch, getState) => {
 
-    if (getState().servers.runningRetrieveYetUnseenServerEventsOperations.includes(serverId)) {
+    const repeat = () => {
+        if (getState().servers.serverListOpenElements.latestEvents.includes(serverId)) {
+            setTimeout(() => {
+                const serverList = getState().servers.serverList;
+                for (let i = 0; i < serverList.length; i++) {
+                    if (serverList[i].id === serverId) {
+                        dispatch(retrieveYetUnseenServerEventsCommand(serverId, serverList[i].latestEventSortValue));
+                    }
+                }
+            }, 2000);
+        }
+    }
+
+    if (getState().servers.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped.includes(serverId)) {
+        repeat();
+        return;
+    }
+
+    if (getState().servers.serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning.includes(serverId)) {
         console.warn(`A retrieveYetUnseenServerEventsCommand for serverId ${serverId} is already running, aborting.`);
         return;
     }
@@ -127,16 +148,7 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
                 dispatch(retrieveYetUnseenServerEventsFailedEvent(serverId, responseContentAsArray));
             } else {
                 dispatch(retrieveYetUnseenServerEventsSucceededEvent(serverId, responseContentAsArray));
-                if (getState().servers.serverListOpenElements.latestEvents.includes(serverId)) {
-                    setTimeout(() => {
-                        const serverList = getState().servers.serverList;
-                        for (let i = 0; i < serverList.length; i++) {
-                            if (serverList[i].id === serverId) {
-                                dispatch(retrieveYetUnseenServerEventsCommand(serverId, serverList[i].latestEventSortValue));
-                            }
-                        }
-                    }, 2000);
-                }
+                repeat();
             }
         })
 
@@ -145,6 +157,17 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
             dispatch(retrieveYetUnseenServerEventsFailedEvent(serverId, error.toString()));
         });
 };
+
+
+export const enableSkipRetrieveYetUnseenServerEventsOperationsCommand = (serverId) => ({
+    type: 'ENABLE_SKIP_RETRIEVE_YET_UNSEEN_SERVER_EVENTS_OPERATIONS_COMMAND',
+    serverId
+});
+
+export const disableSkipRetrieveYetUnseenServerEventsOperationsCommand = (serverId) => ({
+    type: 'DISABLE_SKIP_RETRIEVE_YET_UNSEEN_SERVER_EVENTS_OPERATIONS_COMMAND',
+    serverId
+});
 
 
 const createServerStartedEvent = () => ({
@@ -271,8 +294,8 @@ const reducer = (state = initialState, action) => {
         case 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_STARTED_EVENT':
             return {
                 ...state,
-                runningRetrieveYetUnseenServerEventsOperations: [
-                    ...state.runningRetrieveYetUnseenServerEventsOperations,
+                serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning: [
+                    ...state.serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning,
                     action.serverId
                 ]
             };
@@ -280,8 +303,8 @@ const reducer = (state = initialState, action) => {
         case 'RETRIEVE_YET_UNSEEN_SERVER_EVENTS_FAILED_EVENT':
             return {
                 ...state,
-                runningRetrieveYetUnseenServerEventsOperations: [
-                    ...state.runningRetrieveYetUnseenServerEventsOperations.filter(
+                serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning: [
+                    ...state.serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning.filter(
                         serverId => serverId !== action.serverId
                     )
                 ]
@@ -292,8 +315,8 @@ const reducer = (state = initialState, action) => {
                 return {
                     ...state,
                     serverList: withYetUnseenServerEventsUpdatedServerList(action.serverId, action.yetUnseenServerEvents),
-                    runningRetrieveYetUnseenServerEventsOperations: [
-                        ...state.runningRetrieveYetUnseenServerEventsOperations.filter(
+                    serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning: [
+                        ...state.serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning.filter(
                             serverId => serverId !== action.serverId
                         )
                     ]
@@ -301,13 +324,32 @@ const reducer = (state = initialState, action) => {
             } else {
                 return {
                     ...state,
-                    runningRetrieveYetUnseenServerEventsOperations: [
-                        ...state.runningRetrieveYetUnseenServerEventsOperations.filter(
+                    serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning: [
+                        ...state.serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning.filter(
                             serverId => serverId !== action.serverId
                         )
                     ]
                 };
             }
+
+
+        case 'ENABLE_SKIP_RETRIEVE_YET_UNSEEN_SERVER_EVENTS_OPERATIONS_COMMAND':
+            return {
+                ...state,
+                serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped: [
+                    ...state.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped, action.serverId
+                ]
+            };
+
+        case 'DISABLE_SKIP_RETRIEVE_YET_UNSEEN_SERVER_EVENTS_OPERATIONS_COMMAND':
+            return {
+                ...state,
+                serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped: [
+                    ...state.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped.filter(
+                        serverId => serverId !== action.serverId
+                    )
+                ]
+            };
 
 
         case 'CREATE_SERVER_STARTED_EVENT':
