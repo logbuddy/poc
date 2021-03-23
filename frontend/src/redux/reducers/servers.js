@@ -1,7 +1,7 @@
 import { apiFetch } from '../util';
 
 const initialState = {
-    flipAllLatestEventsElementsOpen: true,
+    flipAllLatestEventsElementsOpen: false,
     retrieveServerListOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,

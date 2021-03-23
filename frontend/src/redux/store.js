@@ -10,13 +10,18 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const preloadedState = {
     session: {
         ...sessionInitialState,
+
+    },
+    servers: {
         ...serversInitialState
     }
 };
 
 const cookies = new Cookies();
 
-if (cookies.getAll().hasOwnProperty('loggedInEmail') && cookies.getAll().hasOwnProperty('webappApiKeyId')) {
+if (   cookies.getAll().hasOwnProperty('loggedInEmail')
+    && cookies.getAll().hasOwnProperty('webappApiKeyId'))
+{
     preloadedState.session = {
         ...preloadedState.session,
         isLoggedIn: true,
@@ -24,6 +29,14 @@ if (cookies.getAll().hasOwnProperty('loggedInEmail') && cookies.getAll().hasOwnP
         webappApiKeyId: cookies.get('webappApiKeyId')
     };
 }
+
+if (   cookies.getAll().hasOwnProperty('flipAllLatestEventsElementsOpen')
+    && cookies.get('flipAllLatestEventsElementsOpen') === '1'
+) {
+    preloadedState.servers.flipAllLatestEventsElementsOpen = true;
+    document.cookie = `flipAllLatestEventsElementsOpen=0;path=/;SameSite=Lax`;
+}
+
 
 export default function configureStore() {
     return createStore(
