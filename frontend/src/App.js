@@ -15,7 +15,7 @@ const mapStateToProps = state => ({
     reduxState: {...state}
 });
 
-class App  extends Component {
+class App extends Component {
     render() {
         return (
             <Router>
