@@ -111,15 +111,9 @@ class ServersContainer extends Component {
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const serverEventElements = [];
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
-                let additionalRowClassNames = '';
-                if (   this.props.reduxState.servers.serverList[i].latestEvents[j].hasOwnProperty('hasBeenAddedByYetUnseenLogic')
-                    && this.props.reduxState.servers.serverList[i].latestEvents[j].hasBeenAddedByYetUnseenLogic === true
-                ) {
-                    additionalRowClassNames = 'fade-in';
-                }
                 serverEventElements.push(
                     <Fragment>
-                        <div key={j} className={'row ' + additionalRowClassNames}>
+                        <div key={j} className='row'>
                             <div className='col-auto ps-1 pe-1'>
                                 <code className='text-light text-nowrap'>
                                     {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
@@ -291,7 +285,7 @@ class ServersContainer extends Component {
                             &&
                             serverEventElements.length > 0
                             &&
-                            <div className='container-fluid w-100 bg-deepdark pt-2 ps-4 pe-3 rounded border border-dark border-3'>
+                            <div className='container-fluid w-100 bg-deepdark pt-2 pb-2 ps-4 pe-3 rounded border border-dark border-3'>
                                 {serverEventElements}
                             </div>
                         }
