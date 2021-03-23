@@ -119,7 +119,7 @@ class ServersContainer extends Component {
                                     {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
                                 </code>
                             </div>
-                            <div className='col-xxl-1 col-xl-2 col-lg-3 col-md-4 ps-1 pe-1'>
+                            <div className='col-xxl-1 col-xl-2 col-lg-2 col-md-3 ps-1 pe-1'>
                                 <code className='text-secondary word-wrap-anywhere'>
                                     {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
                                 </code>
