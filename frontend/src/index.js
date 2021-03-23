@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux'
 import './index.scss';
-import App from './App';
+import AppContainer from './containers/AppContainer';
 import configureStore from './redux/store';
 import reportWebVitals from './reportWebVitals';
 
@@ -20,7 +20,7 @@ if (   urlParams.has('directLoginEmail')
 } else {
     ReactDOM.render(
         <Provider store={configureStore()}>
-            <App />
+            <AppContainer />
         </Provider>,
         document.getElementById('root')
     );

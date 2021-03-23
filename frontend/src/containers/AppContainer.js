@@ -7,15 +7,11 @@ import {
     NavLink
 } from 'react-router-dom';
 import { PersonCircle } from 'react-bootstrap-icons';
-import RegisterContainer from './containers/RegisterContainer';
-import LoginContainer from './containers/LoginContainer';
-import ServersContainer from './containers/ServersContainer';
+import RegisterContainer from './RegisterContainer';
+import LoginContainer from './LoginContainer';
+import ServersContainer from './ServersContainer';
 
-const mapStateToProps = state => ({
-    reduxState: {...state}
-});
-
-class App extends Component {
+class AppContainer extends Component {
     render() {
         return (
             <Router>
@@ -95,4 +91,7 @@ class App extends Component {
     }
 }
 
-export default connect(mapStateToProps)(App);
+export default connect(
+    reduxState => ({ reduxState }),
+    dispatch => ({ dispatch })
+)(AppContainer);
