@@ -111,11 +111,6 @@ const logOutOfAccountStartedEvent = () => ({
     type: 'LOG_OUT_OF_ACCOUNT_STARTED_EVENT'
 });
 
-const logOutOfAccountFailedEvent = (errorMessage) => ({
-    type: 'LOG_OUT_OF_ACCOUNT_FAILED_EVENT',
-    errorMessage
-});
-
 const logOutOfAccountSucceededEvent = (apiKeyId, email, password) => ({
     type: 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT',
     webappApiKeyId: apiKeyId,
