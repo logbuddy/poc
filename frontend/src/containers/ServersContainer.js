@@ -150,6 +150,17 @@ class ServersContainer extends Component {
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const serverEventElements = [];
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
+                const payload = this.props.reduxState.servers.serverList[i].latestEvents[j].payload;
+                let parsedPayload = '';
+                try {
+                    parsedPayload = JSON.parse(payload);
+                } catch (e) {}
+                let payloadToShow = '';
+                if ('"' + parsedPayload + '"' === payload) {
+                    payloadToShow = parsedPayload;
+                } else {
+                    payloadToShow = payload;
+                }
                 serverEventElements.push(
                     <Fragment>
                         <div key={j} className='row'>
@@ -165,7 +176,7 @@ class ServersContainer extends Component {
                             </div>
                             <div className='col ps-1 pe-1'>
                                 <code className='text-info word-wrap-anywhere'>
-                                    {this.props.reduxState.servers.serverList[i].latestEvents[j].payload}
+                                    {payloadToShow}
                                 </code>
                             </div>
                         </div>
