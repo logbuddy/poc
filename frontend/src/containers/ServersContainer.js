@@ -201,7 +201,7 @@ class ServersContainer extends Component {
                 <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'opacity-25' : 'fade-in'}`}>
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
-                            <div className='text-info col server-headline-icon'>
+                            <div className='text-primary col server-headline-icon'>
                                 <JournalText />
                             </div>
                             <div className='col server-headline-title'>

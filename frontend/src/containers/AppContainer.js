@@ -29,7 +29,7 @@ class AppContainer extends Component {
                                 <li className='nav-item pe-2'>
                                     <NavLink className='nav-link p-0' activeClassName='active' to='/'>
                                     <h2 className='text-white-50 fw-bol'>
-                                        <JournalText className='text-success'/>
+                                        <JournalText className='text-primary'/>
                                     </h2>
                                     </NavLink>
                                 </li>
@@ -113,15 +113,15 @@ class AppContainer extends Component {
                                 <div className='card card-body bg-deepdark p-5'>
                                     <div className='mb-3'>
                                         <h1 className='text-white fw-bol'>
-                                            <JournalText className='text-success'/>
+                                            <JournalText className='text-primary'/>
                                             LogBuddy
                                         </h1>
                                         <h4 className='text-white-50'>
-                                            Your logs on the web. <span className='text-success'>Fast.</span>
+                                            Your logs on the web. <span className='text-primary'>Fast.</span>
                                         </h4>
                                     </div>
                                     <div className='row-cols-lg-2'>
-                                        <div className='card card-body mt-4 p-4 pb-2 bg-success p-2 ms-auto me-auto'>
+                                        <div className='card card-body mt-4 p-4 pb-2 bg-primary p-2 ms-auto me-auto'>
                                             <p>
                                                 LogBuddy is at your side whenever you need to quickly bring your log
                                                 files from your servers to the web in real-time, allowing you to easily
@@ -136,7 +136,7 @@ class AppContainer extends Component {
                                                 Start now by setting up your first server:
                                             </p>
                                             <p className='bg-dark rounded p-3'>
-                                                <code className='text-white-50'>bash -c "$(curl -fsSL https://raw.githubusercontent.com/logbuddy/bash-clients/main/src/sl-install)"</code>
+                                                <code className='text-success'><small>bash -c "$(curl -fsSL https://raw.githubusercontent.com/logbuddy/bash-clients/main/src/sl-install)"</small></code>
                                             </p>
                                             <p className='text-dark'>
                                                 No need to register first - the CLI command takes care of that.
