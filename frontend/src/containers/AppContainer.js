@@ -130,12 +130,23 @@ class AppContainer extends Component {
                                                 Start now by setting up your first server:
                                             </p>
                                             <p className='bg-dark rounded p-1 pt-0'>
-                                                <code className='tiny text-primary'>
+                                                <code className='tiny text-success'>
                                                       bash -c "$(curl -fsSL https://raw.githubusercontent.com/logbuddy/bash-clients/main/src/sl-install)"
                                                 </code>
                                             </p>
                                             <p>
                                                 No need to register first - the CLI command takes care of that.
+                                            </p>
+                                            <p>
+                                                Running the above command on your server will guide you through setting
+                                                up your LogBuddy account and will enable your server to send whatever log file
+                                                output you like into that account, making your log file content available on
+                                                the web in real-time.
+                                            </p>
+                                            <p>
+                                                The setup script doesn't need any kind of root access on your server, and
+                                                you can always check out its source code
+                                                at <a className='text-white' href='https://github.com/logbuddy/bash-clients/tree/main/src'>GitHub.com</a>.
                                             </p>
                                         </div>
                                     </div>
