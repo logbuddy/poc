@@ -202,7 +202,7 @@ class ServersContainer extends Component {
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-primary col server-headline-icon'>
-                                <JournalText />
+                                <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1 pe-1' alt='LogBuddy Icon' />
                             </div>
                             <div className='col server-headline-title'>
                                 <h4 className='mb-0'>{this.props.reduxState.servers.serverList[i].title}</h4>

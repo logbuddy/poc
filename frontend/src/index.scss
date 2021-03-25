@@ -9,6 +9,10 @@
   background-color: tint-color($black, 10%) !important;
 }
 
+.bg-primary-dark {
+  background-color: shade-color($primary, 70%) !important;
+}
+
 .bg-secondary {
   background-color: tint-color($dark, 20%) !important;
 }
@@ -16,6 +20,14 @@
 .navbar-dark {
   background-color: tint-color($dark, 1%) !important;
   color: tint-color($primary, 5%);
+}
+
+.line-space-2 {
+  line-height: 2em;
+}
+
+.tiny {
+  font-size: 0.8em;
 }
 
 .clickable {
