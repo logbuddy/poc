@@ -135,7 +135,7 @@ class AppContainer extends Component {
                                                 </code>
                                             </p>
                                             <p>
-                                                No need to register first - the CLI command takes care of that.
+                                                No need to register here first - the above CLI command takes care of that.
                                             </p>
                                             <p>
                                                 Running the above command on your server will guide you through setting
@@ -147,6 +147,14 @@ class AppContainer extends Component {
                                                 The setup script doesn't need any kind of root access on your server, and
                                                 you can always check out its source code
                                                 at <a className='text-white' href='https://github.com/logbuddy/bash-clients/tree/main/src'>GitHub.com</a>.
+                                            </p>
+                                            <p>
+                                                Here's how a CLI setup session actually looks like (click to enlarge):
+                                            </p>
+                                            <p>
+                                                <a href='/assets/images/logbuddy-cli-session-full.png'>
+                                                    <img src='/assets/images/logbuddy-cli-session-small.png' className='w-100' alt='LogBuddy Logo'/>
+                                                </a>
                                             </p>
                                         </div>
                                     </div>
