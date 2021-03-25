@@ -125,7 +125,7 @@ class ServersContainer extends Component {
                                             <span>
                                                 <PauseCircle className='latest-events-play-resume-button'/>
                                             </span>
-                                            <Disc className='spinning spinning-small text-info' />
+                                            <Disc className='spinning spinning-small text-primary' />
                                         </div>
                                     }
                                 </div>
@@ -165,7 +165,7 @@ class ServersContainer extends Component {
                     <Fragment>
                         <div key={j} className='row'>
                             <div className='col-auto ps-1 pe-1'>
-                                <code className='text-light text-nowrap'>
+                                <code className='text-white-50 text-nowrap'>
                                     {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
                                 </code>
                             </div>
@@ -175,7 +175,7 @@ class ServersContainer extends Component {
                                 </code>
                             </div>
                             <div className='col ps-1 pe-1'>
-                                <code className='text-info word-wrap-anywhere'>
+                                <code className='text-white-75 word-wrap-anywhere'>
                                     {payloadToShow}
                                 </code>
                             </div>
@@ -222,7 +222,7 @@ class ServersContainer extends Component {
                                             <div className='input-group-text w-6em border border-dark bg-secondary text-light'>serverId</div>
                                             <input
                                                 type='text'
-                                                className='form-control text-info code border border-dark bg-dark'
+                                                className='form-control text-primary code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].id}
                                                 readOnly={true}
                                                 disabled={false}
@@ -231,7 +231,7 @@ class ServersContainer extends Component {
                                             {
                                                 this.state.showCopySuccessBadgeForId === this.props.reduxState.servers.serverList[i].id + 'id'
                                                 &&
-                                                <div className='input-group-text border border-dark bg-secondary text-info fade-out-half'>
+                                                <div className='input-group-text border border-dark bg-secondary text-primary fade-out-half'>
                                                     <small>
                                                         Copied to clipboard
                                                     </small>
@@ -255,7 +255,7 @@ class ServersContainer extends Component {
                                             <div className='input-group-text w-6em border border-dark bg-secondary text-light'>userId</div>
                                             <input
                                                 type='text'
-                                                className='form-control text-info code border border-dark bg-dark'
+                                                className='form-control text-primary code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].userId}
                                                 readOnly={true}
                                                 disabled={false}
@@ -264,7 +264,7 @@ class ServersContainer extends Component {
                                             {
                                                 this.state.showCopySuccessBadgeForId === this.props.reduxState.servers.serverList[i].id + 'userId'
                                                 &&
-                                                <div className='input-group-text border border-dark bg-secondary text-info fade-out-half'>
+                                                <div className='input-group-text border border-dark bg-secondary text-primary fade-out-half'>
                                                     <small>
                                                         Copied to clipboard
                                                     </small>
@@ -286,7 +286,7 @@ class ServersContainer extends Component {
                                             <div className='input-group-text w-6em border border-dark bg-secondary text-light'>apiKeyId</div>
                                             <input
                                                 type='text'
-                                                className='form-control text-info code border border-dark bg-dark'
+                                                className='form-control text-primary code border border-dark bg-dark'
                                                 value={this.props.reduxState.servers.serverList[i].apiKeyId}
                                                 readOnly={true}
                                                 disabled={false}
@@ -295,7 +295,7 @@ class ServersContainer extends Component {
                                             {
                                                 this.state.showCopySuccessBadgeForId === this.props.reduxState.servers.serverList[i].id + 'apiKeyId'
                                                 &&
-                                                <div className='input-group-text border border-dark bg-secondary text-info fade-out-half'>
+                                                <div className='input-group-text border border-dark bg-secondary text-primary fade-out-half'>
                                                     <small>
                                                         Copied to clipboard
                                                     </small>

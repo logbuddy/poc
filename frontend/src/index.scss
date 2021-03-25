@@ -17,6 +17,10 @@
   background-color: tint-color($dark, 20%) !important;
 }
 
+.text-white-75 {
+  color: tint-color($gray-800, 80%);
+}
+
 .navbar-dark {
   background-color: tint-color($dark, 1%) !important;
   color: tint-color($primary, 5%);
