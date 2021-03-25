@@ -138,6 +138,9 @@ class AppContainer extends Component {
                                             <p className='bg-dark rounded p-3'>
                                                 <code className='text-white-50'>bash -c "$(curl -fsSL https://raw.githubusercontent.com/logbuddy/bash-clients/main/src/sl-install)"</code>
                                             </p>
+                                            <p className='text-dark'>
+                                                No need to register first - the CLI command takes care of that.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
