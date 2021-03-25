@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { Cpu, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
+import { JournalText, ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -202,7 +202,7 @@ class ServersContainer extends Component {
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-info col server-headline-icon'>
-                                <Cpu />
+                                <JournalText />
                             </div>
                             <div className='col server-headline-title'>
                                 <h4 className='mb-0'>{this.props.reduxState.servers.serverList[i].title}</h4>
