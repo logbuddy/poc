@@ -112,7 +112,7 @@ class AppContainer extends Component {
                                     <div className='mb-3'>
                                         <img src='assets/images/logbuddy-logo.png' width='300' alt='LogBuddy Logo'/>
                                         <h4 className='text-white-50'>
-                                            Your logs on the web. <span className='text-primary'>Fast.</span>
+                                            Put your logs on the web <span className='text-primary'>in no time.</span>
                                         </h4>
                                     </div>
                                     <div className='row-cols-lg-2'>
