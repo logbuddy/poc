@@ -131,7 +131,7 @@ class AppContainer extends Component {
                                             allowing you to <span className='bg-primary text-white p-1'>easily&nbsp;share&nbsp;and&nbsp;analyze</span> the output of your applications and services.
                                         </p>
                                     </div>
-                                    <div className='col-md-6 text-end me-0 pe-0 mb-0 pb-0 mt-md-5'>
+                                    <div className='col-md-6 text-end me-0 pe-0 mb-0 pb-0 mt-md-5 align-self-end'>
                                         <img src='assets/images/logbuddy-cli-to-browser-demo.png' className='mw-100' width='90%' alt='LogBuddy CLI to Browser Demo'/>
                                     </div>
                                 </div>
