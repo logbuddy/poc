@@ -120,8 +120,8 @@ const logOutOfAccountSucceededEvent = (apiKeyId, email, password) => ({
 
 export const logOutOfAccountCommand = () => (dispatch) => {
     dispatch(logOutOfAccountStartedEvent());
-    document.cookie = `loggedInEmail=;path=/;SameSite=Lax`;
-    document.cookie = `webappApiKeyId=;path=/;SameSite=Lax`;
+    document.cookie = `loggedInEmail=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
+    document.cookie = `webappApiKeyId=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
     dispatch(logOutOfAccountSucceededEvent());
 };
 
