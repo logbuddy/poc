@@ -118,15 +118,15 @@ class AppContainer extends Component {
                                 </div>
                                 <div className='row bg-white bg-gradient-transparent-to-bg-secondary'>
                                     <div className='col-md-6 mt-auto mb-auto'>
-                                        <p className='line-space-2 text-dark ps-5 pe-5 pt-5 pt-lg-0 pt-md-5 pt-sm-5 h4 d-lg-none'>
+                                        <p className='line-space-1-5 text-dark ps-5 pe-5 pt-5 pt-lg-0 pt-md-5 pt-sm-5 h4 d-lg-none'>
                                             LogBuddy is at your side whenever you need to quickly <span className='bg-primary text-white p-1'>put&nbsp;your&nbsp;log&nbsp;files&nbsp;online</span> in real-time,
                                             allowing you to <span className='bg-primary text-white p-1'>easily&nbsp;share&nbsp;and&nbsp;analyze</span> the output of your applications and services.
                                         </p>
-                                        <p className='line-space-2 text-dark ps-5 pe-5 pt-5 pt-lg-0 pt-md-5 pt-sm-5 h2 d-none d-lg-block d-xxl-none'>
+                                        <p className='line-space-1-5 text-dark ps-5 pe-5 pt-5 pt-lg-0 pt-md-5 pt-sm-5 h2 d-none d-lg-block d-xxl-none'>
                                             LogBuddy is at your side whenever you need to quickly <span className='bg-primary text-white p-1'>put&nbsp;your&nbsp;log&nbsp;files&nbsp;online</span> in real-time,
                                             allowing you to <span className='bg-primary text-white p-1'>easily&nbsp;share&nbsp;and&nbsp;analyze</span> the output of your applications and services.
                                         </p>
-                                        <p className='line-space-2 text-dark ps-5 pe-5 pt-5 pt-lg-0 pt-md-5 pt-sm-5 h1 d-none d-xxl-block'>
+                                        <p className='line-space-1-5 text-dark ps-5 pe-5 pt-5 pt-lg-0 pt-md-5 pt-sm-5 h1 d-none d-xxl-block'>
                                             LogBuddy is at your side whenever you need to quickly <span className='bg-primary text-white p-1'>put&nbsp;your&nbsp;log&nbsp;files&nbsp;online</span> in real-time,
                                             allowing you to <span className='bg-primary text-white p-1'>easily&nbsp;share&nbsp;and&nbsp;analyze</span> the output of your applications and services.
                                         </p>
