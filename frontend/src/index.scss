@@ -60,6 +60,11 @@ code {
   font-family: var(--bs-font-monospace);
 }
 
+.no-wrap {
+  word-wrap: unset;
+  word-break: keep-all;
+}
+
 .word-wrap-anywhere {
   word-wrap: anywhere;
   word-break: break-all;
