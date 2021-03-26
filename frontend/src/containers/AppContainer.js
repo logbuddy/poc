@@ -23,7 +23,7 @@ class AppContainer extends Component {
         return (
             <Router>
                 <div>
-                    <nav className='navbar navbar-expand-sm navbar-dark bg-secondary ps-1'>
+                    <nav className='navbar navbar-expand navbar-dark bg-secondary ps-1'>
                         <div className="container-fluid">
                             <ul className='navbar-nav mr-auto'>
                                 <li className='nav-item pe-2'>
@@ -108,7 +108,7 @@ class AppContainer extends Component {
                         </Route>
                         <Route exact path='/'>
                             <div className='container-fluid'>
-                                <div className='row pb-3 pt-4 navbar-dark'>
+                                <div className='row pb-5 pt-5 navbar-dark'>
                                     <div className='col-12 text-center'>
                                         <img src='assets/images/logbuddy-logo.png' width='300' alt='LogBuddy Logo'/>
                                         <h4 className='text-white-50'>
