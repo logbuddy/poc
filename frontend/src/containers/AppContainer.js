@@ -158,7 +158,7 @@ class AppContainer extends Component {
                                 </div>
 
                                 <div className='row bg-dark ps-2 pe-2 pt-4 pb-5'>
-                                    <div className='col-md-6 pe-md-5 pb-5 ps-5 pe-5'>
+                                    <div className='col-lg-6 pe-md-5 pb-5 ps-5 pe-5'>
                                         <p>
                                             Running the above command on your server will guide you through setting
                                             up your LogBuddy account and will enable your server to send whatever log file
@@ -171,7 +171,7 @@ class AppContainer extends Component {
                                             at <a className='text-white' href='https://github.com/logbuddy/bash-clients/tree/main/src'>GitHub.com</a>.
                                         </p>
                                     </div>
-                                    <div className='col-md-6 text-center ps-md-5'>
+                                    <div className='col-lg-6 text-center ps-md-5'>
                                         &nbsp;
                                     </div>
                                 </div>
