@@ -48,20 +48,14 @@ class RegisterContainer extends Component {
                             <div className='col-xs-auto col-sm-12 col-md-8 col-lg-6 col-xl-4'>
                                 <h1>Registration</h1>
                                 <ErrorMessagePresentational message={this.props.reduxState.session.registration.errorMessage} />
-                                <form onSubmit={this.handleSubmit}>
-                                    <div className="mb-3">
-                                        <label className='form-label' htmlFor='name'>
-                                            E-Mail:
-                                        </label>
-                                        <input className='form-control' type='text' name='name' value={this.state.email} onChange={this.handleChangeEmail} />
+                                <form onSubmit={this.handleSubmit} className='mt-4'>
+                                    <div className="mb-4">
+                                        <input className='form-control' type='text' name='name' placeholder='E-Mail' value={this.state.email} onChange={this.handleChangeEmail} />
                                     </div>
-                                    <div className="mb-3">
-                                        <label className='form-label' htmlFor='password'>
-                                            Password:
-                                        </label>
-                                        <input className='form-control' type='password' name='password' value={this.state.password} onChange={this.handleChangePassword} />
+                                    <div className="mb-4">
+                                        <input className='form-control' type='password' name='password' placeholder='Password' value={this.state.password} onChange={this.handleChangePassword} />
                                     </div>
-                                    <div className="mb-3">
+                                    <div className="mt-4 mb-3">
                                         {
                                             this.props.reduxState.session.registration.isRunning
                                             &&

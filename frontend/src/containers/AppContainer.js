@@ -4,13 +4,58 @@ import {
     HashRouter as Router,
     Switch,
     Route,
-    NavLink
+    NavLink,
+    useLocation
 } from 'react-router-dom';
 import { PersonCircle, JournalText } from 'react-bootstrap-icons';
 import RegisterContainer from './RegisterContainer';
 import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
 import { logOutOfAccountCommand } from "../redux/reducers/session";
+
+const Navigation = (params) => (
+    <Fragment>
+        <ul className='navbar-nav me-auto'>
+            {
+                useLocation().pathname === '/'
+                ||
+                <ul className='navbar-nav me-auto'>
+                    <li className='nav-item pe-2'>
+                        <NavLink className='nav-link p-0' activeClassName='active' to='/'>
+                            <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1' alt='LogBuddy Icon' />
+                        </NavLink>
+                    </li>
+                </ul>
+            }
+            {
+                params.reduxState.session.isLoggedIn
+                &&
+                <li className='nav-item'>
+                    <NavLink className='nav-link' activeClassName='active' to='/servers/'>
+                        My servers
+                    </NavLink>
+                </li>
+            }
+        </ul>
+
+        {
+            params.reduxState.session.isLoggedIn
+            ||
+            <ul className='navbar-nav ms-auto'>
+                <li className='nav-item'>
+                    <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
+                </li>
+                {
+                    params.reduxState.session.registration.justFinishedSuccessfully
+                    ||
+                    <li className='nav-item'>
+                        <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>
+                    </li>
+                }
+            </ul>
+        }
+    </Fragment>
+);
 
 class AppContainer extends Component {
     constructor(props) {
@@ -25,39 +70,8 @@ class AppContainer extends Component {
                 <div>
                     <nav className='navbar navbar-expand navbar-dark bg-secondary ps-1'>
                         <div className="container-fluid">
-                            <ul className='navbar-nav mr-auto'>
-                                <li className='nav-item pe-2'>
-                                    <NavLink className='nav-link p-0' activeClassName='active' to='/'>
-                                        <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1' alt='LogBuddy Icon' />
-                                    </NavLink>
-                                </li>
-                                {
-                                    this.props.reduxState.session.isLoggedIn
-                                    ||
-                                    <Fragment>
-                                        <li className='nav-item'>
-                                            <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
-                                        </li>
-                                        {
-                                            this.props.reduxState.session.registration.justFinishedSuccessfully
-                                            ||
-                                            <li className='nav-item'>
-                                                <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>
-                                            </li>
-                                        }
-                                    </Fragment>
-                                }
+                            <Navigation reduxState={this.props.reduxState} />
 
-                                {
-                                    this.props.reduxState.session.isLoggedIn
-                                    &&
-                                    <li className='nav-item'>
-                                        <NavLink className='nav-link' activeClassName='active' to='/servers/'>
-                                            My servers
-                                        </NavLink>
-                                    </li>
-                                }
-                            </ul>
 
                             {
                                 this.props.reduxState.session.isLoggedIn
