@@ -12,7 +12,7 @@ const flattenObject = (obj, parent = null, res = []) => {
                     console.log('> isArray', key, obj[key]);
                     for (let i in obj[key]) {
                         const resEntry = {};
-                        resEntry[propName] = flattenObject(obj[key][i], propName + '_' + i);
+                        resEntry[propName] = flattenObject(obj[key][i], propName);
                         res.push(resEntry);
                     }
                 } else {

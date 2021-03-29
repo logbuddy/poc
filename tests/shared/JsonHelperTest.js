@@ -3,6 +3,7 @@ const assert = require('assert/strict');
 
 
 console.debug(
+    JSON.stringify(
     JsonHelper.splitObjectPaths(
         {
             name: "test",
@@ -19,7 +20,7 @@ console.debug(
                 }
             }
         }
-    )
+    ), null, 2)
 );
 
 /*
