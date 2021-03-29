@@ -16,7 +16,11 @@ import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentat
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
-        this.state = { createServerTitle: '', showCopySuccessBadgeForId: null };
+        let filterEventsInputTexts = {};
+        for (let i = 0; i < this.props.reduxState.servers.serverList; i++) {
+            filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id] = '';
+        }
+        this.state = { createServerTitle: '', showCopySuccessBadgeForId: null, filterEventsInputTexts };
         this.copyElements = {};
     }
 
@@ -30,6 +34,12 @@ class ServersContainer extends Component {
 
     handleChangeCreateServerTitle = (event) => {
         this.setState({ ...this.state, createServerTitle: event.target.value });
+    }
+
+    handleChangeFilterEventsInputText = (event, serverId) => {
+        const filterEventsInputTexts = { ...this.state.filterEventsInputTexts };
+        filterEventsInputTexts[serverId] = event.target.value;
+        this.setState({ ...this.state, filterEventsInputTexts });
     }
 
     handleCreateServerClicked = (event) => {
@@ -101,7 +111,7 @@ class ServersContainer extends Component {
                                             className='clickable'
                                             onClick={() => this.props.dispatch(disableSkipRetrieveYetUnseenServerEventsOperationsCommand(server.id)) }
                                         >
-                                            <span>Not polling for new events</span>
+                                            <span>Not polling for new entries</span>
                                             &nbsp;
                                             <span>
                                                 <PlayCircle className='latest-events-play-resume-button'/>
@@ -120,7 +130,7 @@ class ServersContainer extends Component {
                                             className='clickable'
                                             onClick={() => this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(server.id)) }
                                         >
-                                            <span>Polling for new events</span>
+                                            <span>Polling for new entries</span>
                                             &nbsp;
                                             <span>
                                                 <PauseCircle className='latest-events-play-resume-button'/>
@@ -149,6 +159,7 @@ class ServersContainer extends Component {
         const serverListElements = [];
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const serverEventElements = [];
+            let index = 0;
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
                 const payload = this.props.reduxState.servers.serverList[i].latestEvents[j].payload;
                 let parsedPayload = '';
@@ -161,28 +172,37 @@ class ServersContainer extends Component {
                 } else {
                     payloadToShow = payload;
                 }
-                serverEventElements.push(
-                    <Fragment>
-                        <div key={j} className='row'>
-                            <div className='col-auto ps-1 pe-1'>
-                                <code className='text-white-50 text-nowrap'>
-                                    {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
-                                </code>
+
+                if (this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id) === false
+                    ||
+                    (     this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id)
+                       && payloadToShow.toLowerCase().includes(this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id].toLowerCase())
+                    )
+                ) {
+                    serverEventElements.push(
+                        <Fragment>
+                            <div key={index} className='row'>
+                                <div className='col-auto ps-1 pe-1'>
+                                    <code className='text-white-50 text-nowrap'>
+                                        {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
+                                    </code>
+                                </div>
+                                <div className='col-xxl-1 col-xl-2 col-lg-2 col-md-3 ps-1 pe-1'>
+                                    <code className='text-secondary word-wrap-anywhere'>
+                                        {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
+                                    </code>
+                                </div>
+                                <div className='col ps-1 pe-1'>
+                                    <code className='text-white-75 word-wrap-anywhere'>
+                                        {payloadToShow}
+                                    </code>
+                                </div>
                             </div>
-                            <div className='col-xxl-1 col-xl-2 col-lg-2 col-md-3 ps-1 pe-1'>
-                                <code className='text-secondary word-wrap-anywhere'>
-                                    {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
-                                </code>
-                            </div>
-                            <div className='col ps-1 pe-1'>
-                                <code className='text-white-75 word-wrap-anywhere'>
-                                    {payloadToShow}
-                                </code>
-                            </div>
-                        </div>
-                        <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
-                    </Fragment>
-                );
+                            <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
+                        </Fragment>
+                    );
+                    index = index + 1;
+                }
             }
 
             const sampleCurlCommand = `curl \\
@@ -333,21 +353,60 @@ class ServersContainer extends Component {
                         {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
                             &&
-                            serverEventElements.length > 0
+                            this.props.reduxState.servers.serverList[i].latestEvents.length > 0
                             &&
                             <div className='container-fluid w-100 bg-deepdark pt-2 pb-2 ps-4 pe-3 rounded border border-dark border-3'>
+
+                                <div key='filters' className='row'>
+                                    <div className='col ms-0 ps-0 me-1 pe-0 mb-2'>
+                                        <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
+                                        <div className='input-group'>
+                                            <div className='input-group-text bg-dark border-dark'>Filter events</div>
+                                            <input
+                                                type='text'
+                                                className='form-control bg-secondary text-white-50 border-dark'
+                                                id='filter-events-input'
+                                                placeholder=''
+                                                value={this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id]}
+                                                onChange={
+                                                    (event) =>
+                                                        this.handleChangeFilterEventsInputText(event, this.props.reduxState.servers.serverList[i].id)
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {serverEventElements}
                             </div>
                         }
+
                         {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
                             &&
-                            serverEventElements.length === 0
+                            this.props.reduxState.servers.serverList[i].latestEvents.length === 0
                             &&
-                            <div className='alert alert-secondary'>
-                                No events yet.
+                            <div className='row-cols-auto mt-3'>
+                                No entries yet.
                             </div>
                         }
+
+                        {
+                            this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
+                            &&
+                            this.props.reduxState.servers.serverList[i].latestEvents.length > 0
+                            &&
+                            this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id)
+                            &&
+                            this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id].length > 0
+                            &&
+                            serverEventElements.length === 0
+                            &&
+                            <div className='row-cols-auto mt-3'>
+                                No entries match the current filter.
+                            </div>
+                        }
+
                     </div>
                 </div>
             );
