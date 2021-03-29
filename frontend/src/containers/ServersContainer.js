@@ -83,7 +83,7 @@ class ServersContainer extends Component {
             const elementNameToHeadline = {
                 information: 'Information',
                 sampleCurlCommand: 'Sample curl command',
-                latestEvents: 'Latest events',
+                latestEvents: 'Latest entries',
             };
             if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
