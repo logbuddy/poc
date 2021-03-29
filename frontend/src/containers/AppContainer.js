@@ -7,7 +7,7 @@ import {
     NavLink,
     useLocation
 } from 'react-router-dom';
-import { PersonCircle, JournalText } from 'react-bootstrap-icons';
+import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './RegisterContainer';
 import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
@@ -125,7 +125,7 @@ class AppContainer extends Component {
                                 <div className='row pb-5 pt-5 navbar-dark'>
                                     <div className='col-12 text-center'>
                                         <img src='assets/images/logbuddy-logo.png' width='300' alt='LogBuddy Logo'/>
-                                        <h4 className='text-white-50'>
+                                        <h4 className='text-white'>
                                             Put your logs on the web <span className='text-primary'>in no time.</span>
                                         </h4>
                                     </div>
