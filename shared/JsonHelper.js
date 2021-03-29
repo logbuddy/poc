@@ -1,19 +1,21 @@
-// { foo: { bar: 'baz' } }
-
 const flattenObject = (obj, parent = null, res = []) => {
     if (typeof obj === 'object' && !Array.isArray(obj) && obj !== null) {
         for (let key in obj) {
             console.log(key);
             if (obj.hasOwnProperty(key)) {
-                const propName = parent ? parent + '_' + key : key;
+                const propName = parent ? parent + '.' + key : key;
                 if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
                     flattenObject(obj[key], propName, res);
                 } else if (Array.isArray(obj[key])) {
                     console.log('> isArray', key, obj[key]);
                     for (let i in obj[key]) {
-                        const resEntry = {};
-                        resEntry[propName] = flattenObject(obj[key][i], propName);
-                        res.push(resEntry);
+                        if (typeof obj[key][i] === 'object' && !Array.isArray(obj[key][i]) && obj[key][i] !== null) {
+                            res.push(flattenObject(obj[key][i], propName));
+                        } else {
+                            const resEntry = {};
+                            resEntry[propName] = flattenObject(obj[key][i], propName);
+                            res.push(resEntry);
+                        }
                     }
                 } else {
                     const resEntry = {};
