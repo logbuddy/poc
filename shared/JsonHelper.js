@@ -1,13 +1,11 @@
 const flattenObject = (obj, parent = null, res = []) => {
     if (typeof obj === 'object' && !Array.isArray(obj) && obj !== null) {
         for (let key in obj) {
-            console.log(key);
             if (obj.hasOwnProperty(key)) {
                 const propName = parent ? parent + '.' + key : key;
                 if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
                     flattenObject(obj[key], propName, res);
                 } else if (Array.isArray(obj[key])) {
-                    console.log('> isArray', key, obj[key]);
                     for (let i in obj[key]) {
                         if (typeof obj[key][i] === 'object' && !Array.isArray(obj[key][i]) && obj[key][i] !== null) {
                             res.push(flattenObject(obj[key][i], propName));
@@ -30,21 +28,19 @@ const flattenObject = (obj, parent = null, res = []) => {
     }
 }
 
-const splitObjectPaths = (elem, res = []) => {
+const flattenToKeyValuePairs = (elem, res = []) => {
     if (Array.isArray(elem)) {
         for (let arrVal of elem) {
-            splitObjectPaths(arrVal, res);
+            flattenToKeyValuePairs(arrVal, res);
         }
     } else if (typeof elem === 'object' && elem !== null) {
-        return (
-            flattenObject(elem)
-        );
+        res.push(flattenObject(elem).flat(999));
     } else {
         return elem;
     }
-    return res;
+    return res.flat(999);
 }
 
 module.exports = {
-    splitObjectPaths
+    flattenToKeyValuePairs
 }

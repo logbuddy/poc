@@ -1,30 +1,43 @@
 const JsonHelper = require('../../shared/JsonHelper');
 const assert = require('assert/strict');
 
-const res =
-    JsonHelper.splitObjectPaths(
-        {
-            name: "test",
-            lols: ['abc', 'de', { hurks: 'murks' }],
-            address: {
-                personal: 'abc',
-                office: {
-                    pets: ['cat', 'dog'],
-                    building: 'random',
-                    street: 'some street',
-                    users: [
-                        { firstname: 'Han', lastname: 'Solo', pets: ['horse', 'turtle'] },
-                        { firstname: 'Luke', lastname: 'Skywalker' },
-                    ]
-                }
-            }
-        }
-    );
-
-console.debug(JSON.stringify(res, null, 2))
+assert.deepEqual(
+    JsonHelper.flattenToKeyValuePairs('Hello'),
+    'Hello'
+);
 
 assert.deepEqual(
-    res,
+    JsonHelper.flattenToKeyValuePairs([1, 2, 3]),
+    []
+);
+
+assert.deepEqual(
+    JsonHelper.flattenToKeyValuePairs([1, 2, 3, { foo: 'bar' }]),
+    [ { foo: 'bar' } ]
+);
+
+assert.deepEqual(
+    JsonHelper.flattenToKeyValuePairs([ { foo: 'bar' } ]),
+    [ { foo: 'bar' } ]
+);
+
+assert.deepEqual(
+    JsonHelper.flattenToKeyValuePairs({
+        name: "test",
+        lols: ['abc', 'de', { hurks: 'murks' }],
+        address: {
+            personal: 'abc',
+            office: {
+                pets: ['cat', 'dog'],
+                building: 'random',
+                street: 'some street',
+                users: [
+                    { firstname: 'Han', lastname: 'Solo', pets: ['horse', 'turtle'], children: [ { firstname: 'Kylo', lastname: 'Ren', pets: ['tiger'] } ] },
+                    { firstname: 'Luke', lastname: 'Skywalker' },
+                ]
+            }
+        }
+    }),
     [
         {
             "name": "test"
@@ -64,6 +77,15 @@ assert.deepEqual(
         },
         {
             "address.office.users.pets": "turtle"
+        },
+        {
+            "address.office.users.children.firstname": "Kylo"
+        },
+        {
+            "address.office.users.children.lastname": "Ren"
+        },
+        {
+            "address.office.users.children.pets": "tiger"
         },
         {
             "address.office.users.firstname": "Luke"
