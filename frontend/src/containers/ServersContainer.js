@@ -12,6 +12,7 @@ import {
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
+import JsonHelper from '../../../shared/JsonHelper.mjs';
 
 class ServersContainer extends Component {
     constructor(props) {
@@ -20,7 +21,12 @@ class ServersContainer extends Component {
         for (let i = 0; i < this.props.reduxState.servers.serverList; i++) {
             filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id] = '';
         }
-        this.state = { createServerTitle: '', showCopySuccessBadgeForId: null, filterEventsInputTexts };
+        this.state = {
+            createServerTitle: '',
+            showCopySuccessBadgeForId: null,
+            filterEventsInputTexts,
+            exploreDialogueData: null
+        };
         this.copyElements = {};
     }
 
@@ -68,6 +74,37 @@ class ServersContainer extends Component {
         document.execCommand('copy');
         el.blur();
         this.setState({ ...this.state, showCopySuccessBadgeForId: id });
+    }
+
+    handleExploreDialogueOpenClicked = (serverId, payload) => {
+        const exploreDialogueData = {
+            serverId,
+            payload,
+            values: JsonHelper.getBrokenDownValues(payload),
+            keys: null,
+            keysValues: null
+        };
+
+        let parsedJson = null;
+        try {
+            parsedJson = JSON.parse(payload);
+        } catch (e) {
+            console.error('Cannot parse payload into valid JSON', e);
+        }
+
+        if (parsedJson === null) {
+            console.error('Could not parse payload into valid JSON');
+        } else {
+            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(payload);
+            exploreDialogueData.keys = JsonHelper.getBrokenDownKeys(
+                keyValuePairs
+            );
+            exploreDialogueData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
+                keyValuePairs
+            )
+        }
+
+        this.setState({ ...this.state, exploreDialogueData });
     }
 
     componentDidMount() {
@@ -196,8 +233,25 @@ class ServersContainer extends Component {
                                     <code className='text-white-75 word-wrap-anywhere'>
                                         {payloadToShow}
                                     </code>
+                                    <button
+                                        className='btn btn-primary btn-sm'
+                                        onClick={() => this.handleExploreDialogueOpenClicked(
+                                            this.props.reduxState.servers.serverList[i].id,
+                                            this.props.reduxState.servers.serverList[i].latestEvents[j].payload
+                                        )}
+                                    >
+                                        Explore
+                                    </button>
                                 </div>
                             </div>
+                            {
+                                (this.state.exploreDialogueData !== null
+                                    && this.state.exploreDialogueData.serverId)
+                                &&
+                                    <div className='row-cols-12'>
+                                        offen
+                                    </div>
+                            }
                             <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
                         </Fragment>
                     );

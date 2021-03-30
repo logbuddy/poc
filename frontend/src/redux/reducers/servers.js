@@ -159,6 +159,56 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
 };
 
 
+const retrieveServerEventsByStartedEvent = (serverId) => ({
+    type: 'RETRIEVE_SERVER_EVENTS_BY_STARTED_EVENT',
+    serverId
+});
+
+const retrieveServerEventsByFailedEvent = (serverId, errorMessage) => ({
+    type: 'RETRIEVE_SERVER_EVENTS_BY_FAILED_EVENT',
+    serverId,
+    errorMessage
+});
+
+const retrieveServerEventsBySucceededEvent = (serverId, serverEvents) => ({
+    type: 'RETRIEVE_SERVER_EVENTS_BY_SUCCEEDED_EVENT',
+    serverId,
+    serverEvents
+});
+
+export const retrieveServerEventsByCommand = (serverId, byName, byVal) => (dispatch, getState) => {
+
+    dispatch(retrieveServerEventsByStartedEvent(serverId));
+
+    let responseWasOk = true;
+    apiFetch(
+        `/server-events-by?serverId=${encodeURIComponent(serverId)}&byName=${encodeURIComponent(byName)}&byVal=${encodeURIComponent(byVal)}`,
+        'GET',
+        getState().session.webappApiKeyId
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsArray => {
+            if (!responseWasOk) {
+                dispatch(retrieveServerEventsByFailedEvent(serverId, responseContentAsArray));
+            } else {
+                dispatch(retrieveServerEventsBySucceededEvent(serverId, responseContentAsArray));
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(retrieveServerEventsByFailedEvent(serverId, error.toString()));
+        });
+};
+
+
 export const enableSkipRetrieveYetUnseenServerEventsOperationsCommand = (serverId) => ({
     type: 'ENABLE_SKIP_RETRIEVE_YET_UNSEEN_SERVER_EVENTS_OPERATIONS_COMMAND',
     serverId
