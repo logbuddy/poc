@@ -12,7 +12,7 @@ import {
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
-import JsonHelper from '../../../shared/JsonHelper.mjs';
+import JsonHelper from '../JsonHelper.mjs';
 
 class ServersContainer extends Component {
     constructor(props) {
@@ -76,11 +76,13 @@ class ServersContainer extends Component {
         this.setState({ ...this.state, showCopySuccessBadgeForId: id });
     }
 
-    handleExploreDialogueOpenClicked = (serverId, payload) => {
+    handleExploreDialogueOpenClicked = (serverId, serverEventId, payload) => {
         const exploreDialogueData = {
             serverId,
+            serverEventId,
             payload,
-            values: JsonHelper.getBrokenDownValues(payload),
+            isJson: false,
+            values: null,
             keys: null,
             keysValues: null
         };
@@ -95,7 +97,11 @@ class ServersContainer extends Component {
         if (parsedJson === null) {
             console.error('Could not parse payload into valid JSON');
         } else {
-            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(payload);
+            exploreDialogueData.isJson = true;
+            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
+            exploreDialogueData.values = JsonHelper.getBrokenDownValues(
+                keyValuePairs
+            );
             exploreDialogueData.keys = JsonHelper.getBrokenDownKeys(
                 keyValuePairs
             );
@@ -115,6 +121,45 @@ class ServersContainer extends Component {
         if (!this.props.reduxState.session.isLoggedIn) {
             return (<Redirect to='/login' />);
         }
+
+        const createExploreDialogueElement = (exploreDialogueData) => {
+            const valueElements = [];
+            for (let value of exploreDialogueData.values) {
+                valueElements.push(
+                    <div className='badge bg-primary ms-1 me-1'>
+                        {value}
+                    </div>
+                );
+            }
+
+            const keyElements = [];
+            for (let key of exploreDialogueData.keys) {
+                keyElements.push(
+                    <div className='badge bg-primary ms-1 me-1'>
+                        {key.replaceAll(JsonHelper.separator, '.')}
+                    </div>
+                );
+            }
+
+            const keyValueElements = [];
+            for (let keyValue of exploreDialogueData.keysValues) {
+                keyValueElements.push(
+                    <div className='badge bg-primary ms-1 me-1'>
+                        {keyValue.split(JsonHelper.separator).slice(0, -1).join('.') + ': ' + keyValue.split(JsonHelper.separator).slice(-1)}
+                    </div>
+                );
+            }
+
+            return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
+                <div className='col p-2 pb-3 pt-2'>
+                    {valueElements}
+                    <hr/>
+                    {keyElements}
+                    <hr/>
+                    {keyValueElements}
+                </div>
+            </div>
+        };
 
         const createFlipElement = (server, elementName) => {
             const elementNameToHeadline = {
@@ -218,7 +263,14 @@ class ServersContainer extends Component {
                 ) {
                     serverEventElements.push(
                         <Fragment>
-                            <div key={index} className='row'>
+                            <div key={index}
+                                 className='row clickable'
+                                 onClick={() => this.handleExploreDialogueOpenClicked(
+                                    this.props.reduxState.servers.serverList[i].id,
+                                    this.props.reduxState.servers.serverList[i].latestEvents[j].id,
+                                    this.props.reduxState.servers.serverList[i].latestEvents[j].payload
+                                )}
+                            >
                                 <div className='col-auto ps-1 pe-1'>
                                     <code className='text-white-50 text-nowrap'>
                                         {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
@@ -233,24 +285,14 @@ class ServersContainer extends Component {
                                     <code className='text-white-75 word-wrap-anywhere'>
                                         {payloadToShow}
                                     </code>
-                                    <button
-                                        className='btn btn-primary btn-sm'
-                                        onClick={() => this.handleExploreDialogueOpenClicked(
-                                            this.props.reduxState.servers.serverList[i].id,
-                                            this.props.reduxState.servers.serverList[i].latestEvents[j].payload
-                                        )}
-                                    >
-                                        Explore
-                                    </button>
                                 </div>
                             </div>
                             {
                                 (this.state.exploreDialogueData !== null
-                                    && this.state.exploreDialogueData.serverId)
+                                    && this.state.exploreDialogueData.serverId === this.props.reduxState.servers.serverList[i].id
+                                    && this.state.exploreDialogueData.serverEventId === this.props.reduxState.servers.serverList[i].latestEvents[j].id)
                                 &&
-                                    <div className='row-cols-12'>
-                                        offen
-                                    </div>
+                                createExploreDialogueElement(this.state.exploreDialogueData)
                             }
                             <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
                         </Fragment>
