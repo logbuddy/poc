@@ -81,7 +81,7 @@ class ServersContainer extends Component {
             serverId,
             serverEventId,
             payload,
-            isJson: false,
+            isStructured: false,
             values: null,
             keys: null,
             keysValues: null
@@ -97,17 +97,20 @@ class ServersContainer extends Component {
         if (parsedJson === null) {
             console.error('Could not parse payload into valid JSON');
         } else {
-            exploreDialogueData.isJson = true;
             const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
             exploreDialogueData.values = JsonHelper.getBrokenDownValues(
-                keyValuePairs
+                parsedJson
             );
-            exploreDialogueData.keys = JsonHelper.getBrokenDownKeys(
-                keyValuePairs
-            );
-            exploreDialogueData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
-                keyValuePairs
-            )
+
+            if (parsedJson !== null && typeof(parsedJson) === 'object') {
+                exploreDialogueData.isStructured = true;
+                exploreDialogueData.keys = JsonHelper.getBrokenDownKeys(
+                    keyValuePairs
+                );
+                exploreDialogueData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
+                    keyValuePairs
+                );
+            }
         }
 
         this.setState({ ...this.state, exploreDialogueData });
@@ -123,10 +126,18 @@ class ServersContainer extends Component {
         }
 
         const createExploreDialogueElement = (exploreDialogueData) => {
+            if (exploreDialogueData.isStructured !== true) {
+                return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
+                    <div className='col p-2 pb-3 pt-2'>
+                        The payload of this event is not structured.
+                    </div>
+                </div>
+            }
+
             const valueElements = [];
             for (let value of exploreDialogueData.values) {
                 valueElements.push(
-                    <div className='badge bg-primary ms-1 me-1'>
+                    <div className='badge bg-primary ms-1 me-1 clickable'>
                         {value}
                     </div>
                 );
@@ -135,7 +146,7 @@ class ServersContainer extends Component {
             const keyElements = [];
             for (let key of exploreDialogueData.keys) {
                 keyElements.push(
-                    <div className='badge bg-primary ms-1 me-1'>
+                    <div className='badge bg-primary ms-1 me-1 clickable'>
                         {key.replaceAll(JsonHelper.separator, '.')}
                     </div>
                 );
@@ -144,7 +155,7 @@ class ServersContainer extends Component {
             const keyValueElements = [];
             for (let keyValue of exploreDialogueData.keysValues) {
                 keyValueElements.push(
-                    <div className='badge bg-primary ms-1 me-1'>
+                    <div className='badge bg-primary ms-1 me-1 clickable'>
                         {keyValue.split(JsonHelper.separator).slice(0, -1).join('.') + ': ' + keyValue.split(JsonHelper.separator).slice(-1)}
                     </div>
                 );
@@ -152,6 +163,10 @@ class ServersContainer extends Component {
 
             return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
                 <div className='col p-2 pb-3 pt-2'>
+                    <h4>Structured Data Explorer</h4>
+                    <hr/>
+                    You can further explore all server log entries which contain structured data by these three dimension: values, keys, and key-value-pairs.
+                    <hr/>
                     {valueElements}
                     <hr/>
                     {keyElements}
