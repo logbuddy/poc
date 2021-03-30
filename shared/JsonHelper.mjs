@@ -76,8 +76,10 @@ const getUniqueValues = (arr) => {
     return res;
 };
 
-module.exports = {
+const JsonHelper = {
     flattenToKeyValuePairs,
     getBrokenDownKeysAndValues,
     getUniqueValues
 }
+
+export default JsonHelper;
