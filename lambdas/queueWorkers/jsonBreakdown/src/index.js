@@ -61,12 +61,12 @@ exports.handler = async (event) => {
                         });
                     }
 
-                    const batchWritePromises = [];
+                    const batchWritePromisesForBrokenDownKeysItems = [];
                     for (let i = 0, j = brokenDownKeysItems.length; i < j; i += 25) {
                         const itemsBatch = brokenDownKeysItems.slice(i, i + 25);
 
                         if (itemsBatch.length > 0) {
-                            batchWritePromises.push(new Promise((resolve, reject) => {
+                            batchWritePromisesForBrokenDownKeysItems.push(new Promise((resolve, reject) => {
                                 docClient.batchWrite({
                                         RequestItems: {
                                             'server_events_by_key': itemsBatch
@@ -85,8 +85,9 @@ exports.handler = async (event) => {
                         }
                     }
 
-                    await Promise.all(batchWritePromises);
+                    await Promise.all(batchWritePromisesForBrokenDownKeysItems);
 
+                    
                     const brokenDownKeysAndValues = JsonHelper.getBrokenDownKeysAndValues(
                         JsonHelper.flattenToKeyValuePairs(parsedJson)
                     );
@@ -95,6 +96,49 @@ exports.handler = async (event) => {
                         'brokenDownKeysAndValues',
                         brokenDownKeysAndValues
                     );
+
+                    const brokenDownKeysAndValuesItems = [];
+                    for (let brokenDownKeyAndValue of brokenDownKeysAndValues) {
+                        brokenDownKeysAndValuesItems.push({
+                            PutRequest: {
+                                Item: {
+                                    'servers_id_key_value': record.dynamodb.NewImage['servers_id'].S + '_' + brokenDownKeyAndValue,
+                                    'sort_value': record.dynamodb.NewImage['sort_value'].S,
+                                    'servers_id': record.dynamodb.NewImage['servers_id'].S,
+                                    'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
+                                    'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
+                                    'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
+                                }
+                            }
+                        });
+                    }
+
+                    const batchWritePromisesForBrokenDownKeysAndValuesItems = [];
+                    for (let i = 0, j = brokenDownKeysAndValuesItems.length; i < j; i += 25) {
+                        const itemsBatch = brokenDownKeysAndValuesItems.slice(i, i + 25);
+
+                        if (itemsBatch.length > 0) {
+                            batchWritePromisesForBrokenDownKeysAndValuesItems.push(new Promise((resolve, reject) => {
+                                docClient.batchWrite({
+                                        RequestItems: {
+                                            'server_events_by_key_value': itemsBatch
+                                        }
+                                    },
+                                    (err, data) => {
+                                        if (err) {
+                                            console.error(err);
+                                            reject(err);
+                                        } else {
+                                            console.log('Success', data);
+                                            resolve(data);
+                                        }
+                                    });
+                            }));
+                        }
+                    }
+
+                    await Promise.all(batchWritePromisesForBrokenDownKeysAndValuesItems);
+                    
                 } else {
                     console.debug("Not going to break down payload because it's neither object nor array");
                 }
@@ -107,6 +151,48 @@ exports.handler = async (event) => {
                     'brokenDownValues',
                     brokenDownValues
                 );
+
+                const brokenDownValuesItems = [];
+                for (let brokenDownKeyAndValue of brokenDownValues) {
+                    brokenDownValuesItems.push({
+                        PutRequest: {
+                            Item: {
+                                'servers_id_value': record.dynamodb.NewImage['servers_id'].S + '_' + brokenDownKeyAndValue,
+                                'sort_value': record.dynamodb.NewImage['sort_value'].S,
+                                'servers_id': record.dynamodb.NewImage['servers_id'].S,
+                                'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
+                                'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
+                                'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
+                            }
+                        }
+                    });
+                }
+
+                const batchWritePromisesForBrokenDownValuesItems = [];
+                for (let i = 0, j = brokenDownValuesItems.length; i < j; i += 25) {
+                    const itemsBatch = brokenDownValuesItems.slice(i, i + 25);
+
+                    if (itemsBatch.length > 0) {
+                        batchWritePromisesForBrokenDownValuesItems.push(new Promise((resolve, reject) => {
+                            docClient.batchWrite({
+                                    RequestItems: {
+                                        'server_events_by_value': itemsBatch
+                                    }
+                                },
+                                (err, data) => {
+                                    if (err) {
+                                        console.error(err);
+                                        reject(err);
+                                    } else {
+                                        console.log('Success', data);
+                                        resolve(data);
+                                    }
+                                });
+                        }));
+                    }
+                }
+
+                await Promise.all(batchWritePromisesForBrokenDownValuesItems);
             }
         } else {
             console.debug('No valid INSERT detected.');
