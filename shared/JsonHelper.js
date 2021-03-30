@@ -2,7 +2,7 @@ const flattenObject = (obj, parent = null, res = []) => {
     if (typeof obj === 'object' && !Array.isArray(obj) && obj !== null) {
         for (let key in obj) {
             if (obj.hasOwnProperty(key)) {
-                const propName = parent ? parent + '.' + key : key;
+                const propName = parent ? parent + '|/logbuddy/|' + key : key;
                 if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
                     flattenObject(obj[key], propName, res);
                 } else if (Array.isArray(obj[key])) {
