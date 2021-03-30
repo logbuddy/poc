@@ -23,16 +23,16 @@ assert.deepEqual(
 
 assert.deepEqual(
     JsonHelper.flattenToKeyValuePairs({
-        name: "test",
+        name: 'test',
         lols: ['abc', 'de', { hurks: 'murks' }],
         address: {
-            personal: 'abc',
+            personal: null,
             office: {
                 pets: ['cat', 'dog'],
                 building: 'random',
                 street: 'some street',
                 users: [
-                    { firstname: 'Han', lastname: 'Solo', pets: ['horse', 'turtle'], children: [ { firstname: 'Kylo', lastname: 'Ren', pets: ['tiger'] } ] },
+                    { firstname: 'Han', lastname: 'Solo', pets: ['horse', 'turtle'], children: [ { firstname: 'Kylo', lastname: null, pets: ['tiger'] } ] },
                     { firstname: 'Luke', lastname: 'Skywalker' },
                 ]
             }
@@ -52,7 +52,7 @@ assert.deepEqual(
             "lols.hurks": "murks"
         },
         {
-            "address.personal": "abc"
+            "address.personal": null
         },
         {
             "address.office.pets": "cat"
@@ -82,7 +82,7 @@ assert.deepEqual(
             "address.office.users.children.firstname": "Kylo"
         },
         {
-            "address.office.users.children.lastname": "Ren"
+            "address.office.users.children.lastname": null
         },
         {
             "address.office.users.children.pets": "tiger"
