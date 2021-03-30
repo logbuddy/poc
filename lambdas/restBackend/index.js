@@ -7,9 +7,9 @@ AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 const corsHeaders = {
-    "Access-Control-Allow-Headers" : "Content-Type,X-Herodot-Webapp-Api-Key-Id",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+    'Access-Control-Allow-Headers' : 'Content-Type,X-Herodot-Webapp-Api-Key-Id',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
 };
 
 const corsOptionsResponse = {
@@ -19,13 +19,11 @@ const corsOptionsResponse = {
 };
 
 const getRequestBody = (event) => {
-    let requestBody = null;
-    {
-        if (event.isBase64Encoded) {
-            requestBody = (Buffer.from(event.body, 'base64')).toString('utf8');
-        } else {
-            requestBody = event.body;
-        }
+    let requestBody;
+    if (event.isBase64Encoded) {
+        requestBody = (Buffer.from(event.body, 'base64')).toString('utf8');
+    } else {
+        requestBody = event.body;
     }
     return requestBody;
 }

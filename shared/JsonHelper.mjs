@@ -1,3 +1,5 @@
+const separator = '|/herodot/|';
+
 const pushIfNew = (val, res) => {
     if (!res.includes(val)) {
         res.push(val);
@@ -8,7 +10,7 @@ const flattenObject = (obj, parent = null, res = []) => {
     if (typeof obj === 'object' && !Array.isArray(obj) && obj !== null) {
         for (let key in obj) {
             if (obj.hasOwnProperty(key)) {
-                const propName = parent ? parent + '|/herodot/|' + key : key;
+                const propName = parent ? parent + separator + key : key;
                 if (typeof obj[key] === 'object' && !Array.isArray(obj[key]) && obj[key] !== null) {
                     flattenObject(obj[key], propName, res);
                 } else if (Array.isArray(obj[key])) {
@@ -52,12 +54,12 @@ const getBrokenDownKeys = (arr) => {
     for (let obj of arr) {
         for (let objKey in obj) {
             const val = obj[objKey];
-            const parts = objKey.split('|/herodot/|').reverse();
+            const parts = objKey.split(separator).reverse();
             let prevPart = null;
             for (let part of parts) {
                 let thisPart = part;
                 if (prevPart !== null) {
-                    thisPart = thisPart + '|/herodot/|' + prevPart;
+                    thisPart = thisPart + separator + prevPart;
                 }
                 prevPart = thisPart;
                 pushIfNew(thisPart, res);
@@ -72,15 +74,15 @@ const getBrokenDownKeysAndValues = (arr) => {
     for (let obj of arr) {
         for (let objKey in obj) {
             const val = obj[objKey];
-            const parts = objKey.split('|/herodot/|').reverse();
+            const parts = objKey.split(separator).reverse();
             let prevPart = null;
             for (let part of parts) {
                 let thisPart = part;
                 if (prevPart !== null) {
-                    thisPart = thisPart + '|/herodot/|' + prevPart;
+                    thisPart = thisPart + separator + prevPart;
                 }
                 prevPart = thisPart;
-                pushIfNew(thisPart + '|/herodot/|' + val, res);
+                pushIfNew(thisPart + separator + val, res);
             }
         }
     }
@@ -115,7 +117,8 @@ const JsonHelper = {
     flattenToKeyValuePairs,
     getBrokenDownKeys,
     getBrokenDownKeysAndValues,
-    getBrokenDownValues
+    getBrokenDownValues,
+    separator
 }
 
 export default JsonHelper;
