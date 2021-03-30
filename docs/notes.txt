@@ -43,3 +43,8 @@ streamfile.sh \
     "22195011-1b55-479e-a372-1471b11173f5" \
     2 \
     1
+
+
+curl -X GET \
+    --header 'X-Herodot-Webapp-Api-Key-Id: b7d963a0-2b3c-409a-9315-0b7cfeff2e8c' \
+    https://rs213s9yml.execute-api.eu-central-1.amazonaws.com/server-events-by?byName=keyValue&byVal=action|/herodot/|eventBacklog|/herodot/|1&serverId=5f7adc32-de40-4b56-8e41-6a9cd6e00e71

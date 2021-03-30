@@ -104,6 +104,7 @@ exports.handler = async (event) => {
                                 Item: {
                                     'servers_id_key_value': record.dynamodb.NewImage['servers_id'].S + '_' + brokenDownKeyAndValue,
                                     'sort_value': record.dynamodb.NewImage['sort_value'].S,
+                                    'server_events_id': record.dynamodb.NewImage['id'].S,
                                     'servers_id': record.dynamodb.NewImage['servers_id'].S,
                                     'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
                                     'server_event_source': record.dynamodb.NewImage['server_event_source'].S,

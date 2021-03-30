@@ -548,6 +548,117 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
 };
 
 
+const handleRetrieveServerEventsByRequest = async (event) => {
+    const byNameToTablename = {
+        'key': 'server_events_by_key',
+        'value': 'server_events_by_value',
+        'keyValue': 'server_events_by_key_value'
+    };
+
+    const byNameToPk = {
+        'key': 'servers_id_key',
+        'value': 'servers_id_value',
+        'keyValue': 'servers_id_key_value'
+    };
+
+    const webappApiKey = await authenticateWebappRequest(event.headers);
+
+    if (webappApiKey === null) {
+        return unknownWebappApiKeyIdResponse;
+    }
+
+    if (   !event.queryStringParameters.hasOwnProperty('byName')
+        || !['key', 'value', 'keyValue'].includes(event.queryStringParameters.byName)
+        || !event.queryStringParameters.hasOwnProperty('byVal')
+        || !event.queryStringParameters.hasOwnProperty('serverId')
+    ) {
+        return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+                message: 'Problem with query string parameters',
+                expectedQueryStringParameters: { byName: 'key|value|keyValue', byVal: 'x', serverId: 'y' },
+                actualQueryStringParameters: event.queryStringParameters
+            }, null, 2)
+        };
+    }
+
+    const reqByName = event.queryStringParameters.byName;
+    const reqByVal = event.queryStringParameters.byVal;
+    const reqServerId = event.queryStringParameters.serverId;
+
+    const serverBelongsToUser = await new Promise((resolve, reject) => {
+        docClient.query({
+            TableName: 'servers',
+            KeyConditionExpression: 'users_id = :users_id',
+            ExpressionAttributeValues: {
+                ':users_id': webappApiKey.users_id
+            }
+        }, (err, data) => {
+            if (err) {
+                console.error(err);
+                reject(err);
+            } else {
+                console.log(data);
+                for (let i = 0; i < data.Count; i++) {
+                    if (data.Items[i].id === reqServerId) {
+                        resolve(true);
+                    }
+                }
+                resolve(false);
+            }
+        });
+    });
+
+    if (!serverBelongsToUser) {
+        return {
+            statusCode: 403,
+            headers: corsHeaders,
+            body: JSON.stringify({
+                message: `Server ${reqServerId} does not belong to user ${webappApiKey.users_id}.`,
+            }, null, 2)
+        };
+    }
+
+    const serverEvents = await new Promise((resolve, reject) => {
+        const params = {
+            TableName: byNameToTablename[reqByName],
+            Limit: 100,
+            ScanIndexForward: false,
+            KeyConditionExpression: byNameToPk[reqByName] + ' = :pk',
+            ExpressionAttributeValues: {
+                ':pk': reqServerId + '_' + reqByVal
+            }
+        };
+        docClient.query(params, (err, data) => {
+            if (err) {
+                console.error('docClient.query', err);
+                reject(err);
+            } else {
+                console.log(data);
+                let serverEvents = [];
+                for (let i = 0; i < data.Count; i++) {
+                    serverEvents.push({
+                        id: data.Items[i].server_events_id,
+                        sortValue: data.Items[i].sort_value,
+                        createdAt: data.Items[i].server_event_created_at,
+                        source: data.Items[i].server_event_source,
+                        payload: data.Items[i].server_event_payload,
+                    });
+                }
+                resolve(serverEvents);
+            }
+        });
+    });
+
+    return {
+        statusCode: 200,
+        headers: corsHeaders,
+        body: JSON.stringify(serverEvents)
+    };
+};
+
+
 const handleInsertServerEventsRequest = async (event) => {
 
     const verifyAuthInformation = async (userId, apiKeyId, serverId) => {
@@ -706,6 +817,10 @@ exports.handler = async (event) => {
 
     if (event.routeKey === 'GET /yet-unseen-server-events') {
         return handleRetrieveYetUnseenServerEventsRequest(event);
+    }
+
+    if (event.routeKey === 'GET /server-events-by') {
+        return handleRetrieveServerEventsByRequest(event);
     }
 
     if (event.routeKey === 'POST /server-events') {
