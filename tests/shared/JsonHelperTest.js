@@ -42,20 +42,66 @@ assert.deepEqual(
         { 'name': 'test' },
         { 'lols': 'abc' },
         { 'lols': 'de' },
-        { 'lols|/logbuddy/|hurks': 123.456 },
-        { 'address|/logbuddy/|personal': null },
-        { 'address|/logbuddy/|office|/logbuddy/|pets': 'cat' },
-        { 'address|/logbuddy/|office|/logbuddy/|pets': 'dog' },
-        { 'address|/logbuddy/|office|/logbuddy/|building': 'random' },
-        { 'address|/logbuddy/|office|/logbuddy/|street': 'some street' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|firstname': 'Han' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|lastname': 'Solo' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|pets': 'horse' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|pets': 'turtle' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|children|/logbuddy/|firstname': 'Kylo' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|children|/logbuddy/|lastname': null },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|children|/logbuddy/|pets': 'tiger' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|firstname': 'Luke' },
-        { 'address|/logbuddy/|office|/logbuddy/|users|/logbuddy/|lastname': 'Skywalker' }
+        { 'lols|/herodot/|hurks': 123.456 },
+        { 'address|/herodot/|personal': null },
+        { 'address|/herodot/|office|/herodot/|pets': 'cat' },
+        { 'address|/herodot/|office|/herodot/|pets': 'dog' },
+        { 'address|/herodot/|office|/herodot/|building': 'random' },
+        { 'address|/herodot/|office|/herodot/|street': 'some street' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|firstname': 'Han' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|lastname': 'Solo' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|pets': 'horse' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|pets': 'turtle' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|children|/herodot/|firstname': 'Kylo' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|children|/herodot/|lastname': null },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|children|/herodot/|pets': 'tiger' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|firstname': 'Luke' },
+        { 'address|/herodot/|office|/herodot/|users|/herodot/|lastname': 'Skywalker' }
+    ]
+);
+
+
+assert.deepEqual(
+    JsonHelper.getBrokenDownKeysAndValues(
+    [
+            { 'name': 'test' },
+            { 'lols': 'abc' },
+            { 'lols': 'de' },
+            { 'lols|/herodot/|hurks': 123.456 },
+            { 'address|/herodot/|office|/herodot/|pets': 'cat' }
+        ]
+    ),
+    [
+        { 'name': 'test' },
+        { 'lols': 'abc' },
+        { 'lols': 'de' },
+        { 'hurks': 123.456 },
+        { 'lols|/herodot/|hurks': 123.456 },
+        { 'pets': 'cat' },
+        { 'office|/herodot/|pets': 'cat' },
+        { 'address|/herodot/|office|/herodot/|pets': 'cat' }
+    ]
+);
+
+
+assert.deepEqual(
+    JsonHelper.getUniqueValues(
+        [
+            { 'name': 'test' },
+            { 'lols': 'abc' },
+            { 'lols': 'de' },
+            { 'hurks': 123.456 },
+            { 'lols|/herodot/|hurks': 123.456 },
+            { 'pets': 'cat' },
+            { 'office|/herodot/|pets': 'cat' },
+            { 'address|/herodot/|office|/herodot/|pets': 'cat' }
+        ]
+    ),
+    [
+        'test',
+        'abc',
+        'de',
+        123.456,
+        'cat'
     ]
 );
