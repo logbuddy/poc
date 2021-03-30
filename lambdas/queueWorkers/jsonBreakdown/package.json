@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "aws-sdk": "^2.875.0",
     "rollup": "^2.44.0"
   },
   "type": "module"

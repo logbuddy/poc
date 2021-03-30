@@ -17,6 +17,17 @@ assert.deepEqual(
 );
 
 assert.deepEqual(
+    JsonHelper.flattenToKeyValuePairs([1, 2, 3, { foo: 'bar', baz: { bak: 123 } }, { foo: 987.654 } ]),
+    [
+        { foo: 'bar' },
+        {
+            'baz|/herodot/|bak': 123
+        },
+        { foo: 987.654 }
+    ]
+);
+
+assert.deepEqual(
     JsonHelper.flattenToKeyValuePairs([ { foo: 'bar' } ]),
     [ { foo: 'bar' } ]
 );
@@ -72,36 +83,50 @@ assert.deepEqual(
         ]
     ),
     [
-        { 'name': 'test' },
-        { 'lols': 'abc' },
-        { 'lols': 'de' },
-        { 'hurks': 123.456 },
-        { 'lols|/herodot/|hurks': 123.456 },
-        { 'pets': 'cat' },
-        { 'office|/herodot/|pets': 'cat' },
-        { 'address|/herodot/|office|/herodot/|pets': 'cat' }
+        'name|/herodot/|test',
+        'lols|/herodot/|abc',
+        'lols|/herodot/|de',
+        'hurks|/herodot/|123.456',
+        'lols|/herodot/|hurks|/herodot/|123.456',
+        'pets|/herodot/|cat',
+        'office|/herodot/|pets|/herodot/|cat',
+        'address|/herodot/|office|/herodot/|pets|/herodot/|cat'
     ]
 );
 
 
 assert.deepEqual(
-    JsonHelper.getUniqueValues(
-        [
+    JsonHelper.getBrokenDownKeys(
+    [
             { 'name': 'test' },
             { 'lols': 'abc' },
             { 'lols': 'de' },
-            { 'hurks': 123.456 },
             { 'lols|/herodot/|hurks': 123.456 },
-            { 'pets': 'cat' },
-            { 'office|/herodot/|pets': 'cat' },
             { 'address|/herodot/|office|/herodot/|pets': 'cat' }
         ]
     ),
     [
-        'test',
-        'abc',
-        'de',
-        123.456,
-        'cat'
+        'name',
+        'lols',
+        'hurks',
+        'lols|/herodot/|hurks',
+        'pets',
+        'office|/herodot/|pets',
+        'address|/herodot/|office|/herodot/|pets'
     ]
+);
+
+
+assert.deepEqual(
+    JsonHelper.getBrokenDownValues(
+        [1, 2, 3, { foo: 'bar', baz: { bak: 123, meh: [4, 5] } }, { foo: 987.654 } ]
+    ),
+    [ 1, 2, 3, 'bar', 123, 4, 5, 987.654 ]
+);
+
+assert.deepEqual(
+    JsonHelper.getBrokenDownValues(
+        "Hello, World"
+    ),
+    [ "Hello, World" ]
 );

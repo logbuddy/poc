@@ -1,3 +1,9 @@
+const pushIfNew = (val, res) => {
+    if (!res.includes(val)) {
+        res.push(val);
+    }
+};
+
 const flattenObject = (obj, parent = null, res = []) => {
     if (typeof obj === 'object' && !Array.isArray(obj) && obj !== null) {
         for (let key in obj) {
@@ -41,6 +47,25 @@ const flattenToKeyValuePairs = (elem, res = []) => {
     return res.flat(999);
 }
 
+const getBrokenDownKeys = (arr) => {
+    const res = [];
+    for (let obj of arr) {
+        for (let objKey in obj) {
+            const val = obj[objKey];
+            const parts = objKey.split('|/herodot/|').reverse();
+            let prevPart = null;
+            for (let part of parts) {
+                let thisPart = part;
+                if (prevPart !== null) {
+                    thisPart = thisPart + '|/herodot/|' + prevPart;
+                }
+                prevPart = thisPart;
+                pushIfNew(thisPart, res);
+            }
+        }
+    }
+    return res;
+};
 
 const getBrokenDownKeysAndValues = (arr) => {
     const res = [];
@@ -55,31 +80,42 @@ const getBrokenDownKeysAndValues = (arr) => {
                     thisPart = thisPart + '|/herodot/|' + prevPart;
                 }
                 prevPart = thisPart;
-                const newObj = {};
-                newObj[thisPart] = val;
-                res.push(newObj);
+                pushIfNew(thisPart + '|/herodot/|' + val, res);
             }
         }
     }
     return res;
 };
 
-const getUniqueValues = (arr) => {
-    const res = [];
-    for (let obj of arr) {
-        for (let objKey in obj) {
-            if (!res.includes(obj[objKey])) {
-                res.push(obj[objKey]);
-            }
-        }
+const getBrokenDownValues = (elem, res = []) => {
+    if (elem === null) {
+        pushIfNew(elem, res);
+        return res;
     }
+
+    if (Array.isArray(elem)) {
+        for (let arrElem of elem) {
+            getBrokenDownValues(arrElem, res);
+        }
+        return res;
+    }
+
+    if (typeof(elem) === 'object') {
+        for (let objKey in elem) {
+            getBrokenDownValues(elem[objKey], res);
+        }
+        return res;
+    }
+
+    pushIfNew(elem, res)
     return res;
 };
 
 const JsonHelper = {
     flattenToKeyValuePairs,
+    getBrokenDownKeys,
     getBrokenDownKeysAndValues,
-    getUniqueValues
+    getBrokenDownValues
 }
 
 export default JsonHelper;

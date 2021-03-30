@@ -654,22 +654,24 @@ const handleInsertServerEventsRequest = async (event) => {
     for (let i = 0, j = items.length; i < j; i += 25) {
         const itemsBatch = items.slice(i, i + 25);
 
-        batchWritePromises.push(new Promise((resolve, reject) => {
-            docClient.batchWrite({
-                    RequestItems: {
-                        'server_events': itemsBatch
-                    }
-                },
-                (err, data) => {
-                    if (err) {
-                        console.error(err);
-                        reject(err);
-                    } else {
-                        console.log('Success', data);
-                        resolve(data);
-                    }
-                });
-        }));
+        if (itemsBatch.length > 0) {
+            batchWritePromises.push(new Promise((resolve, reject) => {
+                docClient.batchWrite({
+                        RequestItems: {
+                            'server_events': itemsBatch
+                        }
+                    },
+                    (err, data) => {
+                        if (err) {
+                            console.error(err);
+                            reject(err);
+                        } else {
+                            console.log('Success', data);
+                            resolve(data);
+                        }
+                    });
+            }));
+        }
     }
 
     await Promise.all(batchWritePromises);
