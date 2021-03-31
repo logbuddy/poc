@@ -2,6 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -208,7 +210,7 @@ class ServersContainer extends Component {
                         latestEventsByElements.push(
                             <Fragment>
                                 <div className='row mb-3'>
-                                    <div className='col-sm-2 col-auto ps-1 pe-1'>
+                                    <div className='col-sm-2 col-auto ps-1 pe-1 pt-0'>
                                         <code className='text-white-50 word-wrap-anywhere p-0'>
                                             {latestEventBy.createdAt}
                                             <br/>
@@ -220,7 +222,9 @@ class ServersContainer extends Component {
                                     <div className='col ps-1 pe-1 pt-1'>
                                         <code className='word-wrap-anywhere'>
                                             <span className='text-white-75'>
-                                                <pre>{JSON.stringify(JSON.parse(latestEventBy.payload), null, 2)}</pre>
+                                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                                    {JSON.stringify(JSON.parse(latestEventBy.payload), null, 2)}
+                                                </SyntaxHighlighter>
                                             </span>
                                         </code>
                                     </div>
@@ -427,18 +431,20 @@ class ServersContainer extends Component {
                                      payload
                                 )}
                             >
-                                <div className='col-2 ps-1 pe-1'>
-                                    <code className='text-white-50 word-wrap-anywhere'>
+                                <div className='col-sm-12 ps-1 pe-1'>
+                                    <code className='text-white-75 word-wrap-anywhere'>
                                         {createdAt}
                                     </code>
                                 </div>
-                                <div className='col ps-1 pe-1'>
-                                    <code className='text-white-75 word-wrap-anywhere'>
-                                        <span className='text-secondary me-2'>
-                                            {source}
-                                        </span>
-                                        {payloadToShow}
+                                <div className='col-sm-12 ps-1 pe-1 mb-2'>
+                                    <code className='text-white-50 word-wrap-anywhere'>
+                                        {source}
                                     </code>
+                                </div>
+                                <div className='col-sm-12 ps-1 pe-1'>
+                                    <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                        {payloadToShow}
+                                    </SyntaxHighlighter>
                                 </div>
                             </div>
                             {
