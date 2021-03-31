@@ -176,7 +176,7 @@ class ServersContainer extends Component {
             }
 
             return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
-                <div className='col p-2 pb-3 pt-2'>
+                <div className='col p-3'>
                     <h4>Structured Data Explorer</h4>
                     <hr/>
                     <div className='mb-4'>
@@ -189,9 +189,14 @@ class ServersContainer extends Component {
                             {createKeyValueBadgeElement('key', 'value')}.
                         </p>
                         <p>
-                            Clicking on any one element yields those results from this server that match the element.
+                            The list below shows the keys, values, and key-value pairs identified within the current log entry.
+                        </p>
+                        <p>
+                            Clicking on any one element shows those log entries from this server that also match the selected value, key, or key-value pair.
                         </p>
                     </div>
+
+                    <hr/>
 
                     <div className='mb-4'>
                         <h5>Keys</h5>
