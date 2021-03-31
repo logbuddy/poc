@@ -3,6 +3,20 @@ const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
 
 const AWS_REGION = 'eu-central-1';
 
+
+const consoleOp = false;
+const _console = {};
+_console.debug = (...data) => {
+    if (consoleOp) console.debug(data);
+}
+_console.log = (...data) => {
+    if (consoleOp) console.log(data);
+}
+_console.error = (...data) => {
+    if (consoleOp) console.error(data);
+}
+
+
 AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
@@ -30,12 +44,12 @@ const getRequestBody = (event) => {
 
 const getRequestBodyParsedAsJson = (event) => {
     const requestBody = getRequestBody(event);
-    console.debug('Event body as UTF-8: ', requestBody);
+    _console.debug('Event body as UTF-8: ', requestBody);
     return JSON.parse(requestBody);
 };
 
 const authenticateWebappRequest = async (eventHeaders) => {
-    console.debug('About to authenticate webapp request with api key id', eventHeaders['x-herodot-webapp-api-key-id']);
+    _console.debug('About to authenticate webapp request with api key id', eventHeaders['x-herodot-webapp-api-key-id']);
     const getParamsWebappApiKey = {
         TableName: 'webapp_api_keys',
         Key: {
@@ -46,10 +60,10 @@ const authenticateWebappRequest = async (eventHeaders) => {
     const getWebappApiKeyResultPromise = new Promise((resolve, reject) => {
         docClient.get(getParamsWebappApiKey, function(err, data) {
             if (err) {
-                console.error(err);
+                _console.error(err);
                 reject(err);
             } else {
-                console.debug(data);
+                _console.debug(data);
                 if (data.hasOwnProperty('Item')) {
                     resolve(data.Item);
                 } else {
@@ -61,14 +75,14 @@ const authenticateWebappRequest = async (eventHeaders) => {
 
     let getWebappApiKeyResult;
     try {
-        console.debug('About to await getWebappApiKeyResultPromise');
+        _console.debug('About to await getWebappApiKeyResultPromise');
         getWebappApiKeyResult = await getWebappApiKeyResultPromise;
     } catch (e) {
-        console.error('await getWebappApiKeyResultPromise exception', e);
+        _console.error('await getWebappApiKeyResultPromise exception', e);
         getWebappApiKeyResult = null;
     }
 
-    console.debug('getWebappApiKeyResult', getWebappApiKeyResult);
+    _console.debug('getWebappApiKeyResult', getWebappApiKeyResult);
 
     return getWebappApiKeyResult;
 };
@@ -87,7 +101,7 @@ const handleRegisterAccountRequest = async (event) => {
     } else {
         newUserCredentialsJson = event.body;
     }
-    console.debug('newUserCredentialsJson', newUserCredentialsJson);
+    _console.debug('newUserCredentialsJson', newUserCredentialsJson);
 
     const newUserCredentials = JSON.parse(newUserCredentialsJson);
 
@@ -103,10 +117,10 @@ const handleRegisterAccountRequest = async (event) => {
     const userExists = await new Promise((resolve, reject) => {
         docClient.get(getParams, function(err, data) {
             if (err) {
-                console.error(err);
+                _console.error(err);
                 reject(err);
             } else {
-                console.debug('getCredentials result', data);
+                _console.debug('getCredentials result', data);
                 if (data.hasOwnProperty('Item')) {
                     resolve(true);
                 } else {
@@ -129,8 +143,8 @@ const handleRegisterAccountRequest = async (event) => {
         const hash = await bcrypt.hash(newUserCredentials.password, 8);
         const userId = uuidv1();
 
-        console.log('Hash: ', hash);
-        console.log('Id: ', userId);
+        _console.log('Hash: ', hash);
+        _console.log('Id: ', userId);
 
         const putParamsCredentials = {
             TableName: 'credentials',
@@ -144,10 +158,10 @@ const handleRegisterAccountRequest = async (event) => {
         await new Promise((resolve, reject) => {
             docClient.put(putParamsCredentials, function(err, data) {
                 if (err) {
-                    console.error(err);
+                    _console.error(err);
                     reject(err);
                 } else {
-                    console.debug('putCredentialsResult', data);
+                    _console.debug('putCredentialsResult', data);
                     resolve(data);
                 }
             });
@@ -164,10 +178,10 @@ const handleRegisterAccountRequest = async (event) => {
         await new Promise((resolve, reject) => {
             docClient.put(putParamsUsers, function(err, data) {
                 if (err) {
-                    console.error(err);
+                    _console.error(err);
                     reject(err);
                 } else {
-                    console.debug('putUsersResult', data);
+                    _console.debug('putUsersResult', data);
                     resolve(data);
                 }
             });
@@ -188,7 +202,7 @@ const handleCreateWebappApiKey = async (event) => {
     } else {
         credentialsFromRequestJson = event.body;
     }
-    console.debug('credentialsFromRequestJson', credentialsFromRequestJson);
+    _console.debug('credentialsFromRequestJson', credentialsFromRequestJson);
 
     const credentialsFromRequest = JSON.parse(credentialsFromRequestJson);
 
@@ -205,10 +219,10 @@ const handleCreateWebappApiKey = async (event) => {
     const credentialsFromDb = await new Promise((resolve, reject) => {
         docClient.get(getParams, function(err, data) {
             if (err) {
-                console.error(err);
+                _console.error(err);
                 reject(err);
             } else {
-                console.debug('getCredentialsResult', data);
+                _console.debug('getCredentialsResult', data);
                 if (data.hasOwnProperty('Item')) {
                     resolve(data.Item);
                 } else {
@@ -244,7 +258,7 @@ const handleCreateWebappApiKey = async (event) => {
         const response = await new Promise((resolve, reject) => {
             docClient.put(putParamsApiKeys, function(err) {
                 if (err) {
-                    console.error(err);
+                    _console.error(err);
                     resolve({
                         statusCode: 500,
                         headers: corsHeaders,
@@ -290,16 +304,16 @@ const handleRetrieveServerList = async (event) => {
     const serversFromDbResult = await new Promise((resolve, reject) => {
         docClient.query(queryParamsServers, function(err, data) {
             if (err) {
-                console.error(err);
+                _console.error(err);
                 reject(err);
             } else {
-                console.debug('queryServersResult', data);
+                _console.debug('queryServersResult', data);
                 resolve(data);
             }
         });
     });
 
-    console.debug('res', serversFromDbResult);
+    _console.debug('res', serversFromDbResult);
 
     for (let i = 0; i < serversFromDbResult.Items.length; i++) {
         serversFromDb.push({
@@ -328,7 +342,7 @@ const handleRetrieveServerList = async (event) => {
         const serverEventsFromDbResultPromise = new Promise((resolve, reject) => {
             docClient.query(queryParamsServerEvents, (err, data) => {
                 if (err) {
-                    console.error(err);
+                    _console.error(err);
                     reject(err);
                 } else {
                     resolve(data);
@@ -404,10 +418,10 @@ const handleCreateServer = async (event) => {
             },
             (err, data) => {
                 if (err) {
-                    console.error(err);
+                    _console.error(err);
                     reject(err);
                 } else {
-                    console.debug('docClient.put.servers', data);
+                    _console.debug('docClient.put.servers', data);
                     resolve(data);
                 }
             }
@@ -467,10 +481,10 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
             }
         }, (err, data) => {
             if (err) {
-                console.error(err);
+                _console.error(err);
                 reject(err);
             } else {
-                console.log(data);
+                _console.log(data);
                 for (let i = 0; i < data.Count; i++) {
                     if (data.Items[i].id === serverId) {
                         resolve(true);
@@ -517,10 +531,10 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         }
         docClient.query(params, (err, data) => {
                 if (err) {
-                    console.error(err);
+                    _console.error(err);
                     reject(err);
                 } else {
-                    console.log(data);
+                    _console.log(data);
                     let serverEvents = [];
                     for (let i = 0; i < data.Count; i++) {
                         let id = null;
@@ -596,10 +610,10 @@ const handleRetrieveServerEventsByRequest = async (event) => {
             }
         }, (err, data) => {
             if (err) {
-                console.error(err);
+                _console.error(err);
                 reject(err);
             } else {
-                console.log(data);
+                _console.log(data);
                 for (let i = 0; i < data.Count; i++) {
                     if (data.Items[i].id === reqServerId) {
                         resolve(true);
@@ -632,10 +646,10 @@ const handleRetrieveServerEventsByRequest = async (event) => {
         };
         docClient.query(params, (err, data) => {
             if (err) {
-                console.error('docClient.query', err);
+                _console.error('docClient.query', err);
                 reject(err);
             } else {
-                console.log(data);
+                _console.log(data);
                 let serverEvents = [];
                 for (let i = 0; i < data.Count; i++) {
                     serverEvents.push({
@@ -671,19 +685,19 @@ const handleInsertServerEventsRequest = async (event) => {
                     }
                 }, (err, data) => {
                     if (err) {
-                        console.error(err);
+                        _console.error(err);
                         reject(err);
                     } else {
-                        console.log(data);
+                        _console.log(data);
                         for (let i = 0; i < data.Count; i++) {
                             if (   data.Items[i].users_id === userId
                                 && data.Items[i].id === serverId
                                 && data.Items[i].logging_api_key_id === apiKeyId
                             ) {
-                                console.log(`Item ${i} looks good.`)
+                                _console.log(`Item ${i} looks good.`)
                                 resolve(true);
                             } else {
-                                console.log(`Item ${i} does not look good.`)
+                                _console.log(`Item ${i} does not look good.`)
                             }
                         }
                         resolve(false);
@@ -692,7 +706,7 @@ const handleInsertServerEventsRequest = async (event) => {
         });
     };
 
-    console.debug('Request body: ', event.body);
+    _console.debug('Request body: ', event.body);
 
     let requestBodyJson = null;
     {
@@ -703,7 +717,7 @@ const handleInsertServerEventsRequest = async (event) => {
         }
     }
 
-    console.debug('Event body as UTF-8: ', requestBodyJson);
+    _console.debug('Event body as UTF-8: ', requestBodyJson);
 
     const requestBodyObject = JSON.parse(requestBodyJson);
 
@@ -711,7 +725,7 @@ const handleInsertServerEventsRequest = async (event) => {
     const apiKeyId = requestBodyObject['apiKeyId'];
     const serverId = requestBodyObject['serverId'];
 
-    console.log('Starting verify...');
+    _console.log('Starting verify...');
     let verificationSuccessful = await verifyAuthInformation(
         userId,
         apiKeyId,
@@ -719,9 +733,9 @@ const handleInsertServerEventsRequest = async (event) => {
     );
 
     if (verificationSuccessful) {
-        console.log('Verification successful.');
+        _console.log('Verification successful.');
     } else {
-        console.log('Verification not successful.');
+        _console.log('Verification not successful.');
         return {
             statusCode: 400,
             body: JSON.stringify(`Could not verify request based on auth values userId: ${userId}, apiKeyId: ${apiKeyId}, serverId: ${serverId}.`)
@@ -757,7 +771,7 @@ const handleInsertServerEventsRequest = async (event) => {
         });
     }
 
-    console.log('Starting write to DDB...');
+    _console.log('Starting write to DDB...');
 
     const batchWritePromises = [];
     for (let i = 0, j = items.length; i < j; i += 25) {
@@ -772,10 +786,10 @@ const handleInsertServerEventsRequest = async (event) => {
                     },
                     (err, data) => {
                         if (err) {
-                            console.error(err);
+                            _console.error(err);
                             reject(err);
                         } else {
-                            console.log('Success', data);
+                            _console.log('Success', data);
                             resolve(data);
                         }
                     });
@@ -793,7 +807,7 @@ const handleInsertServerEventsRequest = async (event) => {
 
 exports.handler = async (event) => {
 
-    console.debug('Received event:' + JSON.stringify(event, null, 2));
+    _console.debug('Received event:' + JSON.stringify(event, null, 2));
 
     if (event.requestContext.http.method === 'OPTIONS') {
         return corsOptionsResponse;

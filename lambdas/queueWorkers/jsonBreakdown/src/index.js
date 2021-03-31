@@ -4,14 +4,28 @@ const AWS = require('aws-sdk');
 
 const AWS_REGION = 'eu-central-1';
 
+
+const consoleOp = false;
+const _console = {};
+_console.debug = (...data) => {
+    if (consoleOp) console.debug(data);
+}
+_console.log = (...data) => {
+    if (consoleOp) console.log(data);
+}
+_console.error = (...data) => {
+    if (consoleOp) console.error(data);
+}
+
+
 AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event) => {
     for (const record of event.Records) {
-        console.log(record.eventID);
-        console.log(record.eventName);
-        console.log('DynamoDB Record: %j', record.dynamodb);
+        _console.log(record.eventID);
+        _console.log(record.eventName);
+        _console.log('DynamoDB Record: %j', record.dynamodb);
 
         if (   record.eventName === 'INSERT'
             && record.dynamodb.hasOwnProperty('NewImage')
@@ -20,19 +34,19 @@ exports.handler = async (event) => {
             && record.dynamodb.NewImage.hasOwnProperty('server_event_payload')
             && record.dynamodb.NewImage['server_event_payload'].hasOwnProperty('S')
         ) {
-            console.debug('Valid INSERT detected.');
+            _console.debug('Valid INSERT detected.');
 
-            console.debug('Trying to parse payload as JSON', record.dynamodb.NewImage['server_event_payload'].S);
+            _console.debug('Trying to parse payload as JSON', record.dynamodb.NewImage['server_event_payload'].S);
 
             let parsedJson = null;
             try {
                 parsedJson = JSON.parse(record.dynamodb.NewImage['server_event_payload'].S);
             } catch (e) {
-                console.error('Cannot parse payload into valid JSON', e);
+                _console.error('Cannot parse payload into valid JSON', e);
             }
 
             if (parsedJson === null) {
-                console.error('Could not parse payload into valid JSON');
+                _console.error('Could not parse payload into valid JSON');
             } else {
 
                 if (typeof parsedJson === 'object') {
@@ -40,7 +54,7 @@ exports.handler = async (event) => {
                         JsonHelper.flattenToKeyValuePairs(parsedJson)
                     );
 
-                    console.debug(
+                    _console.debug(
                         'brokenDownKeys',
                         brokenDownKeys
                     );
@@ -74,10 +88,10 @@ exports.handler = async (event) => {
                                     },
                                     (err, data) => {
                                         if (err) {
-                                            console.error(err);
+                                            _console.error(err);
                                             reject(err);
                                         } else {
-                                            console.log('Success', data);
+                                            _console.log('Success', data);
                                             resolve(data);
                                         }
                                     });
@@ -92,7 +106,7 @@ exports.handler = async (event) => {
                         JsonHelper.flattenToKeyValuePairs(parsedJson)
                     );
 
-                    console.debug(
+                    _console.debug(
                         'brokenDownKeysAndValues',
                         brokenDownKeysAndValues
                     );
@@ -127,10 +141,10 @@ exports.handler = async (event) => {
                                     },
                                     (err, data) => {
                                         if (err) {
-                                            console.error(err);
+                                            _console.error(err);
                                             reject(err);
                                         } else {
-                                            console.log('Success', data);
+                                            _console.log('Success', data);
                                             resolve(data);
                                         }
                                     });
@@ -141,14 +155,14 @@ exports.handler = async (event) => {
                     await Promise.all(batchWritePromisesForBrokenDownKeysAndValuesItems);
                     
                 } else {
-                    console.debug("Not going to break down payload because it's neither object nor array");
+                    _console.debug("Not going to break down payload because it's neither object nor array");
                 }
 
                 const brokenDownValues = JsonHelper.getBrokenDownValues(
                     parsedJson
                 );
 
-                console.debug(
+                _console.debug(
                     'brokenDownValues',
                     brokenDownValues
                 );
@@ -182,10 +196,10 @@ exports.handler = async (event) => {
                                 },
                                 (err, data) => {
                                     if (err) {
-                                        console.error(err);
+                                        _console.error(err);
                                         reject(err);
                                     } else {
-                                        console.log('Success', data);
+                                        _console.log('Success', data);
                                         resolve(data);
                                     }
                                 });
@@ -196,7 +210,7 @@ exports.handler = async (event) => {
                 await Promise.all(batchWritePromisesForBrokenDownValuesItems);
             }
         } else {
-            console.debug('No valid INSERT detected.');
+            _console.debug('No valid INSERT detected.');
         }
     }
     return `Successfully processed ${event.Records.length} records.`;
