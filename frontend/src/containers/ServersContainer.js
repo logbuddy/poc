@@ -641,7 +641,7 @@ class ServersContainer extends Component {
                             <div className='container-fluid w-100 bg-deepdark pt-2 pb-2 ps-4 pe-3 rounded border border-dark border-3'>
 
                                 <div key='filters' className='row'>
-                                    <div className='col ms-0 ps-0 me-1 pe-0 mb-2'>
+                                    <div className='col ms-0 ps-0 me-1 pe-0 mb-2 mt-1'>
                                         <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
                                         <div className='input-group'>
                                             <div className='input-group-text bg-dark border-dark'>Filter events</div>
