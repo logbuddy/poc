@@ -10,7 +10,8 @@ import {
     retrieveYetUnseenServerEventsCommand,
     disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand,
-    retrieveServerEventsByCommand
+    retrieveServerEventsByCommand,
+    resetServerEventsByCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import JsonHelper from '../JsonHelper.mjs';
@@ -78,6 +79,8 @@ class ServersContainer extends Component {
     }
 
     handleExploreDialogueOpenClicked = (serverId, serverEventId, payload) => {
+        this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(serverId));
+        this.props.dispatch(resetServerEventsByCommand());
         const exploreDialogueData = {
             serverId,
             serverEventId,
@@ -203,23 +206,27 @@ class ServersContainer extends Component {
                 if (server.id === exploreDialogueData.serverId) {
                     for (let latestEventBy of server.latestEventsBy) {
                         latestEventsByElements.push(
-                            <div className='row mb-3'>
-                                <div className='col-2 ps-1 pe-1'>
-                                    <code className='text-black-50 word-wrap-anywhere'>
-                                        {latestEventBy.createdAt}
-                                    </code>
+                            <Fragment>
+                                <div className='row mb-3'>
+                                    <div className='col-sm-2 col-auto ps-1 pe-1'>
+                                        <code className='text-white-50 word-wrap-anywhere p-0'>
+                                            {latestEventBy.createdAt}
+                                            <br/>
+                                            <span className='text-secondary me-2'>
+                                                {latestEventBy.source}
+                                            </span>
+                                        </code>
+                                    </div>
+                                    <div className='col ps-1 pe-1 pt-1'>
+                                        <code className='word-wrap-anywhere'>
+                                            <span className='text-white-75'>
+                                                <pre>{JSON.stringify(JSON.parse(latestEventBy.payload), null, 2)}</pre>
+                                            </span>
+                                        </code>
+                                    </div>
                                 </div>
-                                <div className='col ps-1 pe-1'>
-                                    <code className='word-wrap-anywhere'>
-                                        <span className='text-secondary me-2'>
-                                            {latestEventBy.source}
-                                        </span>
-                                        <span className='text-dark'>
-                                            {latestEventBy.payload}
-                                        </span>
-                                    </code>
-                                </div>
-                            </div>
+                                <hr/>
+                            </Fragment>
                         );
                     }
                 }
@@ -263,27 +270,45 @@ class ServersContainer extends Component {
                         {keyValueElements}
                     </div>
 
-                    {
-                        this.props.reduxState.servers
+                    <h4>Results</h4>
+                    <hr/>
+
+                    <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
+                        {
+                            this.props.reduxState.servers
+                                .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                .includes(exploreDialogueData.serverId)
+                            &&
+                            <Fragment>
+                                Retrieving...
+                            </Fragment>
+                        }
+
+                        {
+                            latestEventsByElements.length > 0
+                            &&
+                            !this.props.reduxState.servers
                             .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
                             .includes(exploreDialogueData.serverId)
-                        &&
-                        <Fragment>
-                            <hr/>
-                            Loading...
-                        </Fragment>
-                    }
+                            &&
+                            latestEventsByElements
+                        }
 
-                    {
-                        latestEventsByElements.length > 0
-                        &&
-                        <Fragment>
-                            <h4>Results</h4>
-                            <div className='container-fluid bg-white rounded p-3 pt-2 pb-2'>
-                                {latestEventsByElements}
-                            </div>
-                        </Fragment>
-                    }
+                        {
+                            (
+                                latestEventsByElements.length === 0
+                                &&
+                                !this.props.reduxState.servers
+                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                    .includes(exploreDialogueData.serverId)
+                            )
+                            &&
+                            <span className='text-secondary'>
+                                Currently no results. Please click an element to start retrieving matching log entries.
+                            </span>
+                        }
+                    </div>
+
                 </div>
             </div>
         };

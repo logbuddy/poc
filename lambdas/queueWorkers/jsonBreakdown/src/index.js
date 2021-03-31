@@ -8,13 +8,13 @@ const AWS_REGION = 'eu-central-1';
 const consoleOp = false;
 const _console = {};
 _console.debug = (...data) => {
-    if (consoleOp) console.debug(data);
+    if (consoleOp) console.debug(...data);
 }
 _console.log = (...data) => {
-    if (consoleOp) console.log(data);
+    if (consoleOp) console.log(...data);
 }
 _console.error = (...data) => {
-    if (consoleOp) console.error(data);
+    if (consoleOp) console.error(...data);
 }
 
 
@@ -99,9 +99,14 @@ exports.handler = async (event) => {
                         }
                     }
 
-                    await Promise.all(batchWritePromisesForBrokenDownKeysItems);
+                    try {
+                        await Promise.all(batchWritePromisesForBrokenDownKeysItems);
+                        _console.log('All batchWritePromisesForBrokenDownKeysItems finished successfully.');
+                    } catch (e) {
+                        _console.error('batchWritePromisesForBrokenDownKeysItems finished with error.', e);
+                    }
 
-                    
+
                     const brokenDownKeysAndValues = JsonHelper.getBrokenDownKeysAndValues(
                         JsonHelper.flattenToKeyValuePairs(parsedJson)
                     );
@@ -152,7 +157,12 @@ exports.handler = async (event) => {
                         }
                     }
 
-                    await Promise.all(batchWritePromisesForBrokenDownKeysAndValuesItems);
+                    try {
+                        await Promise.all(batchWritePromisesForBrokenDownKeysAndValuesItems);
+                        _console.log('All batchWritePromisesForBrokenDownKeysAndValuesItems finished successfully.');
+                    } catch (e) {
+                        _console.error('batchWritePromisesForBrokenDownKeysAndValuesItems finished with error.', e);
+                    }
                     
                 } else {
                     _console.debug("Not going to break down payload because it's neither object nor array");
@@ -207,11 +217,17 @@ exports.handler = async (event) => {
                     }
                 }
 
-                await Promise.all(batchWritePromisesForBrokenDownValuesItems);
+                try {
+                    await Promise.all(batchWritePromisesForBrokenDownValuesItems);
+                    _console.log('All batchWritePromisesForBrokenDownValuesItems finished successfully.');
+                } catch (e) {
+                    _console.error('batchWritePromisesForBrokenDownValuesItems finished with error.', e);
+                }
             }
         } else {
             _console.debug('No valid INSERT detected.');
         }
     }
+    _console.log(`Successfully processed ${event.Records.length} records.`);
     return `Successfully processed ${event.Records.length} records.`;
 }

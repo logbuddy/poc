@@ -7,13 +7,13 @@ const AWS_REGION = 'eu-central-1';
 const consoleOp = false;
 const _console = {};
 _console.debug = (...data) => {
-    if (consoleOp) console.debug(data);
+    if (consoleOp) console.debug(...data);
 }
 _console.log = (...data) => {
-    if (consoleOp) console.log(data);
+    if (consoleOp) console.log(...data);
 }
 _console.error = (...data) => {
-    if (consoleOp) console.error(data);
+    if (consoleOp) console.error(...data);
 }
 
 

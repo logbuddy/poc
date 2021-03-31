@@ -177,6 +177,10 @@ const retrieveServerEventsBySucceededEvent = (serverId, serverEvents) => ({
     serverEvents
 });
 
+export const resetServerEventsByCommand = () => ({
+    type: 'RESET_SERVER_EVENTS_BY_COMMAND'
+});
+
 export const retrieveServerEventsByCommand = (serverId, byName, byVal) => (dispatch, getState) => {
 
     dispatch(retrieveServerEventsByStartedEvent(serverId));
@@ -298,6 +302,14 @@ const reducer = (state = initialState, action) => {
             if (serverId === serverList[i].id) {
                 serverList[i].latestEventsBy = serverEvents.slice(0, 999);
             }
+        }
+        return serverList;
+    };
+
+    const withEmptiedServerEventsByServerList = () => {
+        const serverList = [ ...state.serverList ];
+        for (let i = 0; i < serverList.length; i++) {
+            serverList[i].latestEventsBy = [];
         }
         return serverList;
     };
@@ -543,6 +555,12 @@ const reducer = (state = initialState, action) => {
                         serverId => serverId !== action.serverId
                     )
                 ]
+            };
+
+        case 'RESET_SERVER_EVENTS_BY_COMMAND':
+            return {
+                ...state,
+                serverList: withEmptiedServerEventsByServerList()
             };
 
         case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT':
