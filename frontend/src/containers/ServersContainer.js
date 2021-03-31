@@ -198,17 +198,17 @@ class ServersContainer extends Component {
 
                     <hr/>
 
-                    <div className='mb-4'>
+                    <div className='mb-5'>
                         <h5>Keys</h5>
                         {keyElements}
                     </div>
 
-                    <div className='mb-4'>
+                    <div className='mb-5'>
                         <h5>Values</h5>
                         {valueElements}
                     </div>
 
-                    <div className='mb-4'>
+                    <div className='mb-5'>
                         <h5>Keys and values</h5>
                         {keyValueElements}
                     </div>
