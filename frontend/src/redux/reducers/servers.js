@@ -9,6 +9,7 @@ const initialState = {
     },
     serverIdsForWhichRetrieveYetUnseenServerEventsOperationIsRunning: [],
     serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped: [],
+    serverIdsForWhichRetrieveServerEventsByOperationIsRunning: [],
     createServerOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
@@ -291,6 +292,16 @@ const reducer = (state = initialState, action) => {
         return serverList;
     };
 
+    const withServerEventsByUpdatedServerList = (serverId, serverEvents) => {
+        const serverList = [ ...state.serverList ];
+        for (let i = 0; i < serverList.length; i++) {
+            if (serverId === serverList[i].id) {
+                serverList[i].latestEventsBy = serverEvents.slice(0, 999);
+            }
+        }
+        return serverList;
+    };
+
     switch (action.type) {
 
         case 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND':
@@ -503,6 +514,36 @@ const reducer = (state = initialState, action) => {
                 serverListOpenElements: updatedStateCloseEvent
             };
 
+
+        case 'RETRIEVE_SERVER_EVENTS_BY_STARTED_EVENT':
+            return {
+                ...state,
+                serverIdsForWhichRetrieveServerEventsByOperationIsRunning: [
+                    ...state.serverIdsForWhichRetrieveServerEventsByOperationIsRunning,
+                    action.serverId
+                ]
+            }
+
+        case 'RETRIEVE_SERVER_EVENTS_BY_FAILED_EVENT':
+            return {
+                ...state,
+                serverIdsForWhichRetrieveServerEventsByOperationIsRunning: [
+                    ...state.serverIdsForWhichRetrieveServerEventsByOperationIsRunning.filter(
+                        serverId => serverId !== action.serverId
+                    )
+                ]
+            }
+
+        case 'RETRIEVE_SERVER_EVENTS_BY_SUCCEEDED_EVENT':
+            return {
+                ...state,
+                serverList: withServerEventsByUpdatedServerList(action.serverId, action.serverEvents),
+                serverIdsForWhichRetrieveServerEventsByOperationIsRunning: [
+                    ...state.serverIdsForWhichRetrieveServerEventsByOperationIsRunning.filter(
+                        serverId => serverId !== action.serverId
+                    )
+                ]
+            };
 
         case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT':
             return { ...initialState }

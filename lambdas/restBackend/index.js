@@ -322,7 +322,8 @@ const handleRetrieveServerList = async (event) => {
             apiKeyId: serversFromDbResult.Items[i].logging_api_key_id,
             title: serversFromDbResult.Items[i].title,
             latestEventSortValue: null,
-            latestEvents: []
+            latestEvents: [],
+            latestEventsBy: []
         });
     }
 
@@ -437,7 +438,8 @@ const handleCreateServer = async (event) => {
             apiKeyId: loggingApiKeyId,
             title: requestBodyParsedAsJson.title,
             latestEventSortValue: null,
-            latestEvents: []
+            latestEvents: [],
+            latestEventsBy: []
         })
     };
 };

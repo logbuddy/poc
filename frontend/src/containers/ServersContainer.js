@@ -9,7 +9,8 @@ import {
     flipServerListElementCloseCommand,
     retrieveYetUnseenServerEventsCommand,
     disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
-    enableSkipRetrieveYetUnseenServerEventsOperationsCommand
+    enableSkipRetrieveYetUnseenServerEventsOperationsCommand,
+    retrieveServerEventsByCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import JsonHelper from '../JsonHelper.mjs';
@@ -116,6 +117,10 @@ class ServersContainer extends Component {
         this.setState({ ...this.state, exploreDialogueData });
     }
 
+    handleExplorerBadgeClicked = (serverId, byName, byVal) => {
+        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
+    }
+
     componentDidMount() {
         this.props.dispatch(retrieveServerListCommand());
     }
@@ -135,24 +140,45 @@ class ServersContainer extends Component {
             }
 
             const createValueBadgeElement = (value) => {
-                return <div className='badge bg-success ms-1 me-1 clickable'>
+                return <div
+                    className='badge bg-success ms-1 me-1 clickable'
+                    onClick={() => this.handleExplorerBadgeClicked(
+                        exploreDialogueData.serverId,
+                        'value',
+                        value
+                    )}
+                >
                     {value}
                 </div>
             };
 
             const createKeyBadgeElement = (key) => {
-                return <div className='badge bg-primary ms-1 me-1 clickable'>
-                    {key}
+                return <div
+                    className='badge bg-primary ms-1 me-1 clickable'
+                    onClick={() => this.handleExplorerBadgeClicked(
+                        exploreDialogueData.serverId,
+                        'key',
+                        key
+                    )}
+                >
+                    {key.replaceAll(JsonHelper.separator, '.')}
                 </div>
             };
 
-            const createKeyValueBadgeElement = (key, value) => {
-                return <span className='exlorer-key-value-badge clickable'>
+            const createKeyValueBadgeElement = (keyValue) => {
+                return <span
+                    className='exlorer-key-value-badge clickable'
+                    onClick={() => this.handleExplorerBadgeClicked(
+                        exploreDialogueData.serverId,
+                        'keyValue',
+                        keyValue
+                    )}
+                >
                     <div className='badge bg-primary ms-1 me-0 exlorer-key-value-badge-key'>
-                        {key}
+                        {keyValue.split(JsonHelper.separator).slice(0, -1).join('.')}
                     </div>
                     <div className='badge bg-success ms-0 me-1 exlorer-key-value-badge-value'>
-                        {value}
+                        {keyValue.split(JsonHelper.separator).slice(-1)}
                     </div>
                 </span>
             };
@@ -164,20 +190,44 @@ class ServersContainer extends Component {
 
             const keyElements = [];
             for (let key of exploreDialogueData.keys) {
-                keyElements.push(createKeyBadgeElement(key.replaceAll(JsonHelper.separator, '.')));
+                keyElements.push(createKeyBadgeElement(key));
             }
 
             const keyValueElements = [];
             for (let keyValue of exploreDialogueData.keysValues) {
-                keyValueElements.push(createKeyValueBadgeElement(
-                    keyValue.split(JsonHelper.separator).slice(0, -1).join('.'),
-                    keyValue.split(JsonHelper.separator).slice(-1)
-                ));
+                keyValueElements.push(createKeyValueBadgeElement(keyValue));
+            }
+
+            const latestEventsByElements = [];
+            for (let server of this.props.reduxState.servers.serverList) {
+                if (server.id === exploreDialogueData.serverId) {
+                    for (let latestEventBy of server.latestEventsBy) {
+                        latestEventsByElements.push(
+                            <div className='row mb-3'>
+                                <div className='col-2 ps-1 pe-1'>
+                                    <code className='text-black-50 word-wrap-anywhere'>
+                                        {latestEventBy.createdAt}
+                                    </code>
+                                </div>
+                                <div className='col ps-1 pe-1'>
+                                    <code className='word-wrap-anywhere'>
+                                        <span className='text-secondary me-2'>
+                                            {latestEventBy.source}
+                                        </span>
+                                        <span className='text-dark'>
+                                            {latestEventBy.payload}
+                                        </span>
+                                    </code>
+                                </div>
+                            </div>
+                        );
+                    }
+                }
             }
 
             return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
                 <div className='col p-3'>
-                    <h4>Structured Data Explorer</h4>
+                    <h3>Structured Data Explorer</h3>
                     <hr/>
                     <div className='mb-4'>
                         <p>
@@ -186,7 +236,7 @@ class ServersContainer extends Component {
                             {createKeyBadgeElement('key')},
                             {createValueBadgeElement('value')},
                             and
-                            {createKeyValueBadgeElement('key', 'value')}.
+                            {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value')}.
                         </p>
                         <p>
                             The list below shows the keys, values, and key-value pairs identified within the current log entry.
@@ -212,6 +262,28 @@ class ServersContainer extends Component {
                         <h5>Keys and values</h5>
                         {keyValueElements}
                     </div>
+
+                    {
+                        this.props.reduxState.servers
+                            .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                            .includes(exploreDialogueData.serverId)
+                        &&
+                        <Fragment>
+                            <hr/>
+                            Loading...
+                        </Fragment>
+                    }
+
+                    {
+                        latestEventsByElements.length > 0
+                        &&
+                        <Fragment>
+                            <h4>Results</h4>
+                            <div className='container-fluid bg-white rounded p-3 pt-2 pb-2'>
+                                {latestEventsByElements}
+                            </div>
+                        </Fragment>
+                    }
                 </div>
             </div>
         };
