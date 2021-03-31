@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
+import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle, X } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import {
@@ -39,6 +39,7 @@ class ServersContainer extends Component {
     };
 
     handleRefreshClicked = () => {
+        this.setState({ ...this.state, exploreDialogueData: null });
         this.props.dispatch(retrieveServerListCommand());
     }
 
@@ -236,8 +237,12 @@ class ServersContainer extends Component {
                 }
             }
 
-            return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
+            return <div className='row bg-dark rounded mt-3 mb-4 p-0 ms-1 me-1'>
                 <div className='col p-3'>
+                    <X
+                        className='close-button float-end clickable'
+                        onClick={() => this.setState({ ...this.state, exploreDialogueData: null })}
+                    />
                     <h3>Structured Data Explorer</h3>
                     <hr/>
                     <div className='mb-4'>
@@ -415,10 +420,32 @@ class ServersContainer extends Component {
                     payloadToShow = payload;
                 }
 
+                const textMatchesSearchterm = (text, searchterm) => {
+                    const buildRegEx = (str, keywords) => {
+                        return new RegExp("(?=.*?\\b" +
+                            keywords
+                                .split(" ")
+                                .join(")(?=.*?\\b") +
+                            ").*",
+                            "i"
+                        );
+                    }
+
+                    const test = (str, keywords, expected) => {
+                        return buildRegEx(str, keywords).test(str) === expected
+                    }
+
+                    if (searchterm.substr(0, 1) === '!') {
+                        return test(text, searchterm.substr(1), false);
+                    } else {
+                        return test(text, searchterm, true);
+                    }
+                };
+
                 if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false
                     ||
                     (     this.state.filterEventsInputTexts.hasOwnProperty(serverId)
-                       && (createdAt + source + payload).toLowerCase().includes(this.state.filterEventsInputTexts[serverId].toLowerCase())
+                       && textMatchesSearchterm(`${createdAt} ${source} ${payload}`, this.state.filterEventsInputTexts[serverId])
                     )
                 ) {
                     serverEventElements.push(

@@ -330,7 +330,7 @@ const handleRetrieveServerList = async (event) => {
     for (let i = 0; i < serversFromDb.length; i++) {
         const queryParamsServerEvents = {
             TableName: 'server_events',
-            Limit: 100,
+            Limit: 250,
             ScanIndexForward: false,
             KeyConditionExpression: 'servers_id = :servers_id',
             ExpressionAttributeValues: {
@@ -512,7 +512,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         if (latestSeenSortValue !== null) {
             params = {
                 TableName: 'server_events',
-                Limit: 100,
+                Limit: 250,
                 ScanIndexForward: false,
                 KeyConditionExpression: 'servers_id = :servers_id AND sort_value > :latest_seen_sort_value',
                 ExpressionAttributeValues: {
@@ -523,7 +523,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         } else {
             params = {
                 TableName: 'server_events',
-                Limit: 100,
+                Limit: 250,
                 ScanIndexForward: false,
                 KeyConditionExpression: 'servers_id = :servers_id',
                 ExpressionAttributeValues: {
@@ -639,7 +639,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
     const serverEvents = await new Promise((resolve, reject) => {
         const params = {
             TableName: byNameToTablename[reqByName],
-            Limit: 100,
+            Limit: 250,
             ScanIndexForward: false,
             KeyConditionExpression: byNameToPk[reqByName] + ' = :pk',
             ExpressionAttributeValues: {
