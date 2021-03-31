@@ -134,44 +134,79 @@ class ServersContainer extends Component {
                 </div>
             }
 
-            const valueElements = [];
-            for (let value of exploreDialogueData.values) {
-                valueElements.push(
-                    <div className='badge bg-primary ms-1 me-1 clickable'>
+            const createValueBadgeElement = (value) => {
+                return <div className='badge bg-success ms-1 me-1 clickable'>
+                    {value}
+                </div>
+            };
+
+            const createKeyBadgeElement = (key) => {
+                return <div className='badge bg-primary ms-1 me-1 clickable'>
+                    {key}
+                </div>
+            };
+
+            const createKeyValueBadgeElement = (key, value) => {
+                return <span className='exlorer-key-value-badge clickable'>
+                    <div className='badge bg-primary ms-1 me-0 exlorer-key-value-badge-key'>
+                        {key}
+                    </div>
+                    <div className='badge bg-success ms-0 me-1 exlorer-key-value-badge-value'>
                         {value}
                     </div>
-                );
+                </span>
+            };
+
+            const valueElements = [];
+            for (let value of exploreDialogueData.values) {
+                valueElements.push(createValueBadgeElement(value));
             }
 
             const keyElements = [];
             for (let key of exploreDialogueData.keys) {
-                keyElements.push(
-                    <div className='badge bg-primary ms-1 me-1 clickable'>
-                        {key.replaceAll(JsonHelper.separator, '.')}
-                    </div>
-                );
+                keyElements.push(createKeyBadgeElement(key.replaceAll(JsonHelper.separator, '.')));
             }
 
             const keyValueElements = [];
             for (let keyValue of exploreDialogueData.keysValues) {
-                keyValueElements.push(
-                    <div className='badge bg-primary ms-1 me-1 clickable'>
-                        {keyValue.split(JsonHelper.separator).slice(0, -1).join('.') + ': ' + keyValue.split(JsonHelper.separator).slice(-1)}
-                    </div>
-                );
+                keyValueElements.push(createKeyValueBadgeElement(
+                    keyValue.split(JsonHelper.separator).slice(0, -1).join('.'),
+                    keyValue.split(JsonHelper.separator).slice(-1)
+                ));
             }
 
             return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
                 <div className='col p-2 pb-3 pt-2'>
                     <h4>Structured Data Explorer</h4>
                     <hr/>
-                    You can further explore all server log entries which contain structured data by these three dimension: values, keys, and key-value-pairs.
-                    <hr/>
-                    {valueElements}
-                    <hr/>
-                    {keyElements}
-                    <hr/>
-                    {keyValueElements}
+                    <div className='mb-4'>
+                        <p>
+                            You can further explore all server log entries which contain structured data
+                            by these three dimension:
+                            {createKeyBadgeElement('key')},
+                            {createValueBadgeElement('value')},
+                            and
+                            {createKeyValueBadgeElement('key', 'value')}.
+                        </p>
+                        <p>
+                            Clicking on any one element yields those results from this server that match the element.
+                        </p>
+                    </div>
+
+                    <div className='mb-4'>
+                        <h5>Keys</h5>
+                        {keyElements}
+                    </div>
+
+                    <div className='mb-4'>
+                        <h5>Values</h5>
+                        {valueElements}
+                    </div>
+
+                    <div className='mb-4'>
+                        <h5>Keys and values</h5>
+                        {keyValueElements}
+                    </div>
                 </div>
             </div>
         };
@@ -255,9 +290,13 @@ class ServersContainer extends Component {
 
         const serverListElements = [];
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
+            const serverId = this.props.reduxState.servers.serverList[i].id;
             const serverEventElements = [];
             let index = 0;
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
+                const serverEventId = this.props.reduxState.servers.serverList[i].latestEvents[j].id;
+                const createdAt = this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt;
+                const source = this.props.reduxState.servers.serverList[i].latestEvents[j].source;
                 const payload = this.props.reduxState.servers.serverList[i].latestEvents[j].payload;
                 let parsedPayload = '';
                 try {
@@ -270,42 +309,40 @@ class ServersContainer extends Component {
                     payloadToShow = payload;
                 }
 
-                if (this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id) === false
+                if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false
                     ||
-                    (     this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id)
-                       && payloadToShow.toLowerCase().includes(this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id].toLowerCase())
+                    (     this.state.filterEventsInputTexts.hasOwnProperty(serverId)
+                       && (createdAt + source + payload).toLowerCase().includes(this.state.filterEventsInputTexts[serverId].toLowerCase())
                     )
                 ) {
                     serverEventElements.push(
                         <Fragment>
                             <div key={index}
-                                 className='row clickable'
+                                 className='row clickable mb-3'
                                  onClick={() => this.handleExploreDialogueOpenClicked(
-                                    this.props.reduxState.servers.serverList[i].id,
-                                    this.props.reduxState.servers.serverList[i].latestEvents[j].id,
-                                    this.props.reduxState.servers.serverList[i].latestEvents[j].payload
+                                     serverId,
+                                     serverEventId,
+                                     payload
                                 )}
                             >
-                                <div className='col-auto ps-1 pe-1'>
-                                    <code className='text-white-50 text-nowrap'>
-                                        {this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt}
-                                    </code>
-                                </div>
-                                <div className='col-xxl-1 col-xl-2 col-lg-2 col-md-3 ps-1 pe-1'>
-                                    <code className='text-secondary word-wrap-anywhere'>
-                                        {this.props.reduxState.servers.serverList[i].latestEvents[j].source}
+                                <div className='col-2 ps-1 pe-1'>
+                                    <code className='text-white-50 word-wrap-anywhere'>
+                                        {createdAt}
                                     </code>
                                 </div>
                                 <div className='col ps-1 pe-1'>
                                     <code className='text-white-75 word-wrap-anywhere'>
+                                        <span className='text-secondary me-2'>
+                                            {source}
+                                        </span>
                                         {payloadToShow}
                                     </code>
                                 </div>
                             </div>
                             {
                                 (this.state.exploreDialogueData !== null
-                                    && this.state.exploreDialogueData.serverId === this.props.reduxState.servers.serverList[i].id
-                                    && this.state.exploreDialogueData.serverEventId === this.props.reduxState.servers.serverList[i].latestEvents[j].id)
+                                    && this.state.exploreDialogueData.serverId === serverId
+                                    && this.state.exploreDialogueData.serverEventId === serverEventId)
                                 &&
                                 createExploreDialogueElement(this.state.exploreDialogueData)
                             }

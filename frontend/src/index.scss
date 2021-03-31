@@ -89,6 +89,20 @@ code {
   margin-right: -5px;
 }
 
+.exlorer-key-value-badge {
+  overflow-wrap: revert;
+}
+
+.exlorer-key-value-badge-key {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.exlorer-key-value-badge-value {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
 .spinning {
   width: 28px;
   height: 28px;
