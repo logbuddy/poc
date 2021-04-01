@@ -12,6 +12,7 @@ class StructuredDataExplorerContainer extends Component {
     constructor(props) {
         super(props)
         this.ref = React.createRef();
+        this.resultsRef = React.createRef();
     }
 
     handleExplorerBadgeClicked = (serverId, byName, byVal) => {
@@ -40,11 +41,16 @@ class StructuredDataExplorerContainer extends Component {
         const createValueBadgeElement = (value, clickable = true) => {
             return <div
                 className={`badge bg-success ms-1 me-1 ${clickable ? 'clickable' : ''}`}
-                onClick={() => clickable && this.handleExplorerBadgeClicked(
-                    this.props.serverId,
-                    'value',
-                    value
-                )}
+                onClick={() => {
+                    if (clickable === true) {
+                        this.handleExplorerBadgeClicked(
+                            this.props.serverId,
+                            'value',
+                            value
+                        );
+                        this.resultsRef.current.scrollIntoView();
+                    }
+                }}
             >
                 {value}
             </div>
@@ -53,11 +59,16 @@ class StructuredDataExplorerContainer extends Component {
         const createKeyBadgeElement = (key, clickable = true) => {
             return <div
                 className={`badge bg-primary ms-1 me-1 ${clickable ? 'clickable' : ''}`}
-                onClick={() => clickable && this.handleExplorerBadgeClicked(
-                    this.props.serverId,
-                    'key',
-                    key
-                )}
+                onClick={() => {
+                    if (clickable === true) {
+                        this.handleExplorerBadgeClicked(
+                            this.props.serverId,
+                            'key',
+                            key
+                        );
+                        this.resultsRef.current.scrollIntoView();
+                    }
+                }}
             >
                 {key.replaceAll(JsonHelper.separator, '.')}
             </div>
@@ -66,11 +77,16 @@ class StructuredDataExplorerContainer extends Component {
         const createKeyValueBadgeElement = (keyValue, clickable = true) => {
             return <span
                 className={`explorer-key-value-badge ${clickable ? 'clickable' : ''}`}
-                onClick={() => clickable && this.handleExplorerBadgeClicked(
-                    this.props.serverId,
-                    'keyValue',
-                    keyValue
-                )}
+                onClick={() => {
+                    if (clickable === true) {
+                        this.handleExplorerBadgeClicked(
+                            this.props.serverId,
+                            'keyValue',
+                            keyValue
+                        );
+                        this.resultsRef.current.scrollIntoView();
+                    }
+                }}
             >
                     <div className='badge bg-primary ms-1 me-0 explorer-key-value-badge-key'>
                         {keyValue.split(JsonHelper.separator).slice(0, -1).join('.')}
@@ -112,11 +128,14 @@ class StructuredDataExplorerContainer extends Component {
                                         </span>
                                         <div
                                             className='clickable mt-3'
-                                            onClick={() => this.ref.current.scrollIntoView() && this.props.onUseEventClicked(
-                                                this.props.serverId,
-                                                eventBy.id,
-                                                eventBy.payload
-                                            )}
+                                            onClick={() => {
+                                                this.props.onUseEventClicked(
+                                                    this.props.serverId,
+                                                    eventBy.id,
+                                                    eventBy.payload
+                                                );
+                                                this.ref.current.scrollIntoView();
+                                            }}
                                         >
                                             <Upload width='1.5em' height='1.5em' title='Foo' className='text-primary' />
                                         </div>
@@ -197,7 +216,7 @@ class StructuredDataExplorerContainer extends Component {
                         {keyValueElements}
                     </div>
 
-                    <h4>Results</h4>
+                    <h4 ref={this.resultsRef}>Results</h4>
                     <hr/>
 
                     <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
