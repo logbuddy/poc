@@ -67,6 +67,7 @@ exports.handler = async (event) => {
                                     'servers_id_key': record.dynamodb.NewImage['servers_id'].S + '_' + brokenDownKey,
                                     'sort_value': record.dynamodb.NewImage['sort_value'].S,
                                     'servers_id': record.dynamodb.NewImage['servers_id'].S,
+                                    'server_events_id': record.dynamodb.NewImage['id'].S,
                                     'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
                                     'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
                                     'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
@@ -185,6 +186,7 @@ exports.handler = async (event) => {
                                 'servers_id_value': record.dynamodb.NewImage['servers_id'].S + '_' + brokenDownKeyAndValue,
                                 'sort_value': record.dynamodb.NewImage['sort_value'].S,
                                 'servers_id': record.dynamodb.NewImage['servers_id'].S,
+                                'server_events_id': record.dynamodb.NewImage['id'].S,
                                 'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
                                 'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
                                 'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
