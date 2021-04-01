@@ -750,9 +750,9 @@ const handleInsertServerEventsRequest = async (event) => {
 
     const items = [];
     for (let i = 0; i < serverEvents.length; i++) {
-        const createdAt = serverEvents[i].createdAt.substring(0, 256);
-        const source = serverEvents[i].source.substring(0, 256);
-        const payload = JSON.stringify(serverEvents[i].payload).substring(0, 1024);
+        const createdAt = serverEvents[i].createdAt.substring(0, 1024);
+        const source = serverEvents[i].source.substring(0, 1024);
+        const payload = JSON.stringify(serverEvents[i].payload).substring(0, 65535);
         items.push({
             PutRequest: {
                 Item: {
