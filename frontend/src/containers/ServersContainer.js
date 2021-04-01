@@ -204,27 +204,39 @@ class ServersContainer extends Component {
                 keyValueElements.push(createKeyValueBadgeElement(keyValue));
             }
 
-            const latestEventsByElements = [];
+            const eventByElements = [];
             for (let server of this.props.reduxState.servers.serverList) {
                 if (server.id === exploreDialogueData.serverId) {
-                    for (let latestEventBy of server.latestEventsBy) {
-                        latestEventsByElements.push(
+                    for (let eventBy of server.latestEventsBy) {
+                        eventByElements.push(
                             <Fragment>
                                 <div className='row mb-3'>
                                     <div className='col-sm-2 col-auto ps-1 pe-1 pt-0'>
                                         <code className='text-white-50 word-wrap-anywhere p-0'>
-                                            {latestEventBy.createdAt}
+                                            {eventBy.createdAt}
                                             <br/>
                                             <span className='text-secondary me-2'>
-                                                {latestEventBy.source}
+                                                {eventBy.source}
                                             </span>
+                                            <div>
+                                                <span
+                                                    className='clickable'
+                                                    onClick={() => this.handleExploreDialogueOpenClicked(
+                                                        exploreDialogueData.serverId,
+                                                        eventBy.id,
+                                                        eventBy.payload
+                                                    )}
+                                                >
+                                                    Use
+                                                </span>
+                                            </div>
                                         </code>
                                     </div>
                                     <div className='col ps-1 pe-1 pt-1'>
                                         <code className='word-wrap-anywhere'>
                                             <span className='text-white-75'>
                                                 <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                                    {JSON.stringify(JSON.parse(latestEventBy.payload), null, 2)}
+                                                    {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
                                                 </SyntaxHighlighter>
                                             </span>
                                         </code>
@@ -237,89 +249,93 @@ class ServersContainer extends Component {
                 }
             }
 
-            return <div className='row bg-dark rounded mt-3 mb-4 p-0 ms-1 me-1'>
-                <div className='col p-3'>
-                    <X
-                        className='close-button float-end clickable'
-                        onClick={() => this.setState({ ...this.state, exploreDialogueData: null })}
-                    />
-                    <h3>Structured Data Explorer</h3>
-                    <hr/>
-                    <div className='mb-4'>
-                        <p>
-                            You can further explore all server log entries which contain structured data
-                            by these three dimension:
-                            {createKeyBadgeElement('key')},
-                            {createValueBadgeElement('value')},
-                            and
-                            {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value')}.
-                        </p>
-                        <p>
-                            The list below shows the keys, values, and key-value pairs identified within the current log entry.
-                        </p>
-                        <p>
-                            Clicking on any one element shows those log entries from this server that also match the selected value, key, or key-value pair.
-                        </p>
-                    </div>
+            return (
+                <div id='explorer' className='container-fluid border rounded border-dark p-0 top-0'>
+                    <div className='row bg-dark rounded m-0 p-0'>
+                        <div className='col p-3'>
+                            <X
+                                className='close-button float-end clickable'
+                                onClick={() => this.setState({ ...this.state, exploreDialogueData: null })}
+                            />
+                            <h3>Structured Data Explorer</h3>
+                            <hr/>
+                            <div className='mb-4'>
+                                <p>
+                                    You can further explore all server log entries which contain structured data
+                                    by these three dimension:
+                                    {createKeyBadgeElement('key')},
+                                    {createValueBadgeElement('value')},
+                                    and
+                                    {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value')}.
+                                </p>
+                                <p>
+                                    The list below shows the keys, values, and key-value pairs identified within the current log entry.
+                                </p>
+                                <p>
+                                    Clicking on any one element shows those log entries from this server that also match the selected value, key, or key-value pair.
+                                </p>
+                            </div>
 
-                    <hr/>
+                            <hr/>
 
-                    <div className='mb-5'>
-                        <h5>Keys</h5>
-                        {keyElements}
-                    </div>
+                            <div className='mb-5'>
+                                <h5>Keys</h5>
+                                {keyElements}
+                            </div>
 
-                    <div className='mb-5'>
-                        <h5>Values</h5>
-                        {valueElements}
-                    </div>
+                            <div className='mb-5'>
+                                <h5>Values</h5>
+                                {valueElements}
+                            </div>
 
-                    <div className='mb-5'>
-                        <h5>Keys and values</h5>
-                        {keyValueElements}
-                    </div>
+                            <div className='mb-5'>
+                                <h5>Keys and values</h5>
+                                {keyValueElements}
+                            </div>
 
-                    <h4>Results</h4>
-                    <hr/>
+                            <h4>Results</h4>
+                            <hr/>
 
-                    <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
-                        {
-                            this.props.reduxState.servers
-                                .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                .includes(exploreDialogueData.serverId)
-                            &&
-                            <Fragment>
-                                Retrieving...
-                            </Fragment>
-                        }
+                            <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
+                                {
+                                    this.props.reduxState.servers
+                                        .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                        .includes(exploreDialogueData.serverId)
+                                    &&
+                                    <Fragment>
+                                        Retrieving...
+                                    </Fragment>
+                                }
 
-                        {
-                            latestEventsByElements.length > 0
-                            &&
-                            !this.props.reduxState.servers
-                            .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                            .includes(exploreDialogueData.serverId)
-                            &&
-                            latestEventsByElements
-                        }
-
-                        {
-                            (
-                                latestEventsByElements.length === 0
-                                &&
-                                !this.props.reduxState.servers
+                                {
+                                    eventByElements.length > 0
+                                    &&
+                                    !this.props.reduxState.servers
                                     .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
                                     .includes(exploreDialogueData.serverId)
-                            )
-                            &&
-                            <span className='text-secondary'>
-                                Currently no results. Please click an element to start retrieving matching log entries.
-                            </span>
-                        }
-                    </div>
+                                    &&
+                                    eventByElements
+                                }
 
+                                {
+                                    (
+                                        eventByElements.length === 0
+                                        &&
+                                        !this.props.reduxState.servers
+                                            .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                            .includes(exploreDialogueData.serverId)
+                                    )
+                                    &&
+                                    <span className='text-secondary'>
+                                        Currently no results. Please click an element to start retrieving matching log entries.
+                                    </span>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )
         };
 
         const createFlipElement = (server, elementName) => {
@@ -474,13 +490,6 @@ class ServersContainer extends Component {
                                     </SyntaxHighlighter>
                                 </div>
                             </div>
-                            {
-                                (this.state.exploreDialogueData !== null
-                                    && this.state.exploreDialogueData.serverId === serverId
-                                    && this.state.exploreDialogueData.serverEventId === serverEventId)
-                                &&
-                                createExploreDialogueElement(this.state.exploreDialogueData)
-                            }
                             <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
                         </Fragment>
                     );
@@ -659,6 +668,15 @@ class ServersContainer extends Component {
                                         </div>
                                     </div>
                                 </div>
+
+                                {
+                                    (
+                                        this.state.exploreDialogueData !== null
+                                        && this.state.exploreDialogueData.serverId === serverId
+                                    )
+                                    &&
+                                    createExploreDialogueElement(this.state.exploreDialogueData)
+                                }
 
                                 {serverEventElements}
                             </div>
