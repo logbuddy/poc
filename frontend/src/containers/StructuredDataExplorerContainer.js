@@ -20,24 +20,20 @@ class StructuredDataExplorerContainer extends Component {
     }
 
     componentDidMount() {
-        this.titleRef.current.scrollIntoView();
+        if (this.titleRef.current !== null) {
+            this.titleRef.current.scrollIntoView();
+        }
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevProps.serverEventId !== this.props.serverEventId) {
-            this.titleRef.current.scrollIntoView();
+            if (this.titleRef.current !== null) {
+                this.titleRef.current.scrollIntoView();
+            }
         }
     }
 
     render () {
-        if (this.props.isStructured !== true) {
-            return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
-                <div className='col p-2 pb-3 pt-2'>
-                    The payload of this event is not structured.
-                </div>
-            </div>
-        }
-
         const createValueBadgeElement = (value, clickable = true) => {
             return <span
                 key={value}
@@ -136,6 +132,8 @@ class StructuredDataExplorerContainer extends Component {
                                                 this.props.onUseEventClicked(
                                                     this.props.serverId,
                                                     eventBy.id,
+                                                    eventBy.createdAt,
+                                                    eventBy.source,
                                                     eventBy.payload
                                                 );
 
@@ -146,18 +144,17 @@ class StructuredDataExplorerContainer extends Component {
                                                 );
                                             }}
                                         >
-                                            <Upload width='1.5em' height='1.5em' title='Foo' className='text-primary' />
+                                            <Upload width='1.5em' height='1.5em' className='text-primary' />
                                         </div>
                                     </code>
                                 </div>
                                 <div className='col ps-1 pe-1 pt-1'>
                                     <code className='word-wrap-anywhere'>
-                                            raw: {JSON.stringify(eventBy, null, 2)}
-                                            <span className='text-white-75'>
-                                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                                    {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
-                                                </SyntaxHighlighter>
-                                            </span>
+                                        <span className='text-white-75'>
+                                            <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                                {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
+                                            </SyntaxHighlighter>
+                                        </span>
                                     </code>
                                 </div>
                             </div>
@@ -177,93 +174,108 @@ class StructuredDataExplorerContainer extends Component {
                     />
                     <h3 ref={this.titleRef}>Structured Data Explorer</h3>
                     <hr/>
-                    <p>
-                        This is the currently loaded log entry:
-                    </p>
-                    <code className='word-wrap-anywhere'>
-                        <span className='text-white-75'>
-                            <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                {JSON.stringify(JSON.parse(this.props.payload), null, 2)}
-                            </SyntaxHighlighter>
-                        </span>
-                    </code>
-                    <div className='mb-4'>
+
+                    <Fragment>
                         <p>
-                            Based on the currently loaded log entry, you can now explore related log entries by these three dimensions:
-                            {createKeyBadgeElement('key', false)},
-                            {createValueBadgeElement('value', false)},
-                            and
-                            {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value', false)}.
+                            This is the currently loaded log entry:
                         </p>
-                        <p>
-                            The list below shows the keys, values, and key-value pairs identified within the currently loaded log entry.
-                        </p>
-                        <p>
-                            Clicking on any one element shows those log entries from this server that also match
-                            the selected value, key, or key-value pair, and displays those below under "Results".
-                        </p>
-                        <p>
-                            On each result, you can click on the
-                            <Upload width='2em' height='2em' title='Foo' className='ps-2 pe-2 text-primary' />
-                            icon in order to load that result into the explorer.
-                        </p>
-                    </div>
 
-                    <hr/>
+                        <div className='mb-2'>
+                            <code className='text-white-50 word-wrap-anywhere p-0'>
+                                {this.props.createdAt}
+                                <br/>
+                                <span className='text-secondary me-2'>
+                                    {this.props.source}
+                                </span>
+                                <br/>
+                            </code>
+                        </div>
 
-                    <div className='mb-5'>
-                        <h5>Keys</h5>
-                        {keyElements}
-                    </div>
+                        <code className='word-wrap-anywhere'>
+                            <span className='text-white-75'>
+                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                    {JSON.stringify(JSON.parse(this.props.payload), null, 2)}
+                                </SyntaxHighlighter>
+                            </span>
+                        </code>
+                        <div className='mb-4'>
+                            <p>
+                                Based on the currently loaded log entry, you can now explore related log entries on these three dimensions:
+                                {createKeyBadgeElement('key', false)},
+                                {createValueBadgeElement('value', false)},
+                                and
+                                {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value', false)}.
+                            </p>
+                            <p>
+                                The list below shows all keys, all values, and all key-value pairs identified within the currently loaded log entry.
+                            </p>
+                            <p>
+                                Clicking on any one element shows those log entries from this server that also match
+                                the selected value, key, or key-value pair, and displays them below under the "Results" headline.
+                            </p>
+                            <p>
+                                On each result, you can in turn click on the
+                                <Upload width='2em' height='2em' className='ps-2 pe-2 text-primary' />
+                                icon in order to load that log entry into the explorer.
+                            </p>
+                        </div>
 
-                    <div className='mb-5'>
-                        <h5>Values</h5>
-                        {valueElements}
-                    </div>
+                        <hr/>
 
-                    <div className='mb-5'>
-                        <h5>Keys and values</h5>
-                        {keyValueElements}
-                    </div>
+                        <div className='mb-5'>
+                            <h5>Keys</h5>
+                            {keyElements}
+                        </div>
 
-                    <h4 ref={this.resultsRef}>Results</h4>
-                    <hr/>
+                        <div className='mb-5'>
+                            <h5>Values</h5>
+                            {valueElements}
+                        </div>
 
-                    <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
-                        {
-                            this.props.reduxState.servers
-                                .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                .includes(this.props.serverId)
-                            &&
-                            <Fragment>
-                                Retrieving...
-                            </Fragment>
-                        }
+                        <div className='mb-5'>
+                            <h5>Keys and values</h5>
+                            {keyValueElements}
+                        </div>
 
-                        {
-                            eventByElements.length > 0
-                            &&
-                            !this.props.reduxState.servers
-                                .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                .includes(this.props.serverId)
-                            &&
-                            eventByElements
-                        }
+                        <h4 ref={this.resultsRef}>Results</h4>
+                        <hr/>
 
-                        {
-                            (
-                                eventByElements.length === 0
+                        <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
+                            {
+                                this.props.reduxState.servers
+                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                    .includes(this.props.serverId)
+                                &&
+                                <Fragment>
+                                    Retrieving...
+                                </Fragment>
+                            }
+
+                            {
+                                eventByElements.length > 0
                                 &&
                                 !this.props.reduxState.servers
                                     .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
                                     .includes(this.props.serverId)
-                            )
-                            &&
-                            <span className='text-secondary'>
-                                Currently no results. Please click an element to start retrieving matching log entries.
-                            </span>
-                        }
-                    </div>
+                                &&
+                                eventByElements
+                            }
+
+                            {
+                                (
+                                    eventByElements.length === 0
+                                    &&
+                                    !this.props.reduxState.servers
+                                        .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                        .includes(this.props.serverId)
+                                )
+                                &&
+                                <span className='text-secondary'>
+                            Currently no results. Please click an element to start retrieving matching log entries.
+                        </span>
+                            }
+                        </div>
+                    </Fragment>
 
                 </div>
             </div>

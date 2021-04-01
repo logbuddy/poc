@@ -82,17 +82,18 @@ class ServersContainer extends Component {
         this.setState({ ...this.state, showCopySuccessBadgeForId: id });
     }
 
-    handleExploreDialogueOpenClicked = (serverId, serverEventId, payload) => {
+    handleExploreDialogueOpenClicked = (serverId, serverEventId, createdAt, source, payload) => {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(serverId));
         this.props.dispatch(resetServerEventsByCommand());
         const structuredDataExplorerData = {
             serverId,
             serverEventId,
+            createdAt,
+            source,
             payload,
-            isStructured: false,
-            values: null,
-            keys: null,
-            keysValues: null
+            values: [],
+            keys: [],
+            keysValues: []
         };
 
         let parsedJson = null;
@@ -100,25 +101,29 @@ class ServersContainer extends Component {
             parsedJson = JSON.parse(payload);
         } catch (e) {
             console.error('Cannot parse payload into valid JSON', e);
+            return;
         }
 
         if (parsedJson === null) {
             console.error('Could not parse payload into valid JSON');
+            return;
+        } else if (typeof(parsedJson) !== 'object') {
+            console.error('JSON is not an object and therefore not explorable.');
+            return;
         } else {
             const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
+
             structuredDataExplorerData.values = JsonHelper.getBrokenDownValues(
                 parsedJson
             );
 
-            if (parsedJson !== null && typeof(parsedJson) === 'object') {
-                structuredDataExplorerData.isStructured = true;
-                structuredDataExplorerData.keys = JsonHelper.getBrokenDownKeys(
-                    keyValuePairs
-                );
-                structuredDataExplorerData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
-                    keyValuePairs
-                );
-            }
+            structuredDataExplorerData.keys = JsonHelper.getBrokenDownKeys(
+                keyValuePairs
+            );
+
+            structuredDataExplorerData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
+                keyValuePairs
+            );
         }
 
         this.setState({ ...this.state, structuredDataExplorerData });
@@ -231,6 +236,8 @@ class ServersContainer extends Component {
                     payloadToShow = payload;
                 }
 
+                let isExplorable = typeof(parsedPayload) === 'object';
+
                 const textMatchesSearchterm = (text, searchterm) => {
                     const buildRegEx = (str, keywords) => {
                         return new RegExp("(?=.*?\\b" +
@@ -262,10 +269,12 @@ class ServersContainer extends Component {
                     serverEventElements.push(
                         <Fragment key={index}>
                             <div
-                                 className='row clickable mb-3'
-                                 onClick={() => this.handleExploreDialogueOpenClicked(
+                                 className={`row mb-3 ${isExplorable && 'clickable'}`}
+                                 onClick={() => isExplorable && this.handleExploreDialogueOpenClicked(
                                      serverId,
                                      serverEventId,
+                                     createdAt,
+                                     source,
                                      payload
                                 )}
                             >
@@ -280,9 +289,21 @@ class ServersContainer extends Component {
                                     </code>
                                 </div>
                                 <div className='col-sm-12 ps-1 pe-1'>
-                                    <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                        {payloadToShow}
-                                    </SyntaxHighlighter>
+                                    {
+                                        isExplorable
+                                        &&
+                                        <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                            {payloadToShow}
+                                        </SyntaxHighlighter>
+                                    }
+
+                                    {
+                                        isExplorable
+                                        ||
+                                        <SyntaxHighlighter language="text" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                            {payloadToShow}
+                                        </SyntaxHighlighter>
+                                    }
                                 </div>
                             </div>
                             <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
@@ -471,26 +492,32 @@ class ServersContainer extends Component {
                                     )
                                     &&
                                     <StructuredDataExplorerContainer
-                                        ref={this.structuredDataExplorerRef}
                                         serverId={this.state.structuredDataExplorerData.serverId}
                                         serverEventId={this.state.structuredDataExplorerData.serverEventId}
+                                        createdAt={this.state.structuredDataExplorerData.createdAt}
+                                        source={this.state.structuredDataExplorerData.source}
                                         payload={this.state.structuredDataExplorerData.payload}
-                                        isStructured={this.state.structuredDataExplorerData.isStructured}
+                                        isExplorable={this.state.structuredDataExplorerData.isExplorable}
                                         values={this.state.structuredDataExplorerData.values}
                                         keys={this.state.structuredDataExplorerData.keys}
                                         keysValues={this.state.structuredDataExplorerData.keysValues}
                                         onCloseClicked={() => this.setState({ ...this.state, structuredDataExplorerData:null })}
-                                        onUseEventClicked={(serverId, id, payload) => this.handleExploreDialogueOpenClicked(
+                                        onUseEventClicked={(serverId, serverEventId, createdAt, source, payload) => this.handleExploreDialogueOpenClicked(
                                             serverId,
-                                            id,
+                                            serverEventId,
+                                            createdAt,
+                                            source,
                                             payload
                                         )}
                                     />
-                                    //createExploreDialogueElement(this.state.structuredDataExplorerData)
                                 }
 
                                 {
-                                    this.state.structuredDataExplorerData === null
+                                    (
+                                        this.state.structuredDataExplorerData === null
+                                        ||
+                                        this.state.structuredDataExplorerData.serverId !== serverId
+                                    )
                                     &&
                                     serverEventElements
                                 }
