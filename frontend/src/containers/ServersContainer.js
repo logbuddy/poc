@@ -260,8 +260,8 @@ class ServersContainer extends Component {
                     )
                 ) {
                     serverEventElements.push(
-                        <Fragment>
-                            <div key={index}
+                        <Fragment key={index}>
+                            <div
                                  className='row clickable mb-3'
                                  onClick={() => this.handleExploreDialogueOpenClicked(
                                      serverId,

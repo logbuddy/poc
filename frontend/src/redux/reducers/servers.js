@@ -300,7 +300,11 @@ const reducer = (state = initialState, action) => {
         const serverList = [ ...state.serverList ];
         for (let i = 0; i < serverList.length; i++) {
             if (serverId === serverList[i].id) {
-                serverList[i].latestEventsBy = serverEvents.slice(0, 999);
+                serverList[i].latestEventsBy = serverEvents
+                    .filter(
+                        serverEvent => (serverEvent.hasOwnProperty('id') && serverEvent.id !== null)
+                    )
+                    .slice(0, 999);
             }
         }
         return serverList;
