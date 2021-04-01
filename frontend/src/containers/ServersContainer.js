@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle, X } from 'react-bootstrap-icons';
+import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import {
@@ -12,11 +12,11 @@ import {
     retrieveYetUnseenServerEventsCommand,
     disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand,
-    retrieveServerEventsByCommand,
     resetServerEventsByCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import JsonHelper from '../JsonHelper.mjs';
+import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
 
 class ServersContainer extends Component {
     constructor(props) {
@@ -29,17 +29,18 @@ class ServersContainer extends Component {
             createServerTitle: '',
             showCopySuccessBadgeForId: null,
             filterEventsInputTexts,
-            exploreDialogueData: null
+            structuredDataExplorerData: null
         };
         this.copyElements = {};
     }
+
 
     isFlippedOpen = (serverId, elementName) => {
         return this.props.reduxState.servers.serverListOpenElements[elementName].includes(serverId);
     };
 
     handleRefreshClicked = () => {
-        this.setState({ ...this.state, exploreDialogueData: null });
+        this.setState({ ...this.state, structuredDataExplorerData: null });
         this.props.dispatch(retrieveServerListCommand());
     }
 
@@ -84,7 +85,7 @@ class ServersContainer extends Component {
     handleExploreDialogueOpenClicked = (serverId, serverEventId, payload) => {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(serverId));
         this.props.dispatch(resetServerEventsByCommand());
-        const exploreDialogueData = {
+        const structuredDataExplorerData = {
             serverId,
             serverEventId,
             payload,
@@ -105,26 +106,22 @@ class ServersContainer extends Component {
             console.error('Could not parse payload into valid JSON');
         } else {
             const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
-            exploreDialogueData.values = JsonHelper.getBrokenDownValues(
+            structuredDataExplorerData.values = JsonHelper.getBrokenDownValues(
                 parsedJson
             );
 
             if (parsedJson !== null && typeof(parsedJson) === 'object') {
-                exploreDialogueData.isStructured = true;
-                exploreDialogueData.keys = JsonHelper.getBrokenDownKeys(
+                structuredDataExplorerData.isStructured = true;
+                structuredDataExplorerData.keys = JsonHelper.getBrokenDownKeys(
                     keyValuePairs
                 );
-                exploreDialogueData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
+                structuredDataExplorerData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
                     keyValuePairs
                 );
             }
         }
 
-        this.setState({ ...this.state, exploreDialogueData });
-    }
-
-    handleExplorerBadgeClicked = (serverId, byName, byVal) => {
-        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
+        this.setState({ ...this.state, structuredDataExplorerData });
     }
 
     componentDidMount() {
@@ -135,208 +132,6 @@ class ServersContainer extends Component {
         if (!this.props.reduxState.session.isLoggedIn) {
             return (<Redirect to='/login' />);
         }
-
-        const createExploreDialogueElement = (exploreDialogueData) => {
-            if (exploreDialogueData.isStructured !== true) {
-                return <div className='row bg-dark rounded mt-3 mb-4 p-0'>
-                    <div className='col p-2 pb-3 pt-2'>
-                        The payload of this event is not structured.
-                    </div>
-                </div>
-            }
-
-            const createValueBadgeElement = (value) => {
-                return <div
-                    className='badge bg-success ms-1 me-1 clickable'
-                    onClick={() => this.handleExplorerBadgeClicked(
-                        exploreDialogueData.serverId,
-                        'value',
-                        value
-                    )}
-                >
-                    {value}
-                </div>
-            };
-
-            const createKeyBadgeElement = (key) => {
-                return <div
-                    className='badge bg-primary ms-1 me-1 clickable'
-                    onClick={() => this.handleExplorerBadgeClicked(
-                        exploreDialogueData.serverId,
-                        'key',
-                        key
-                    )}
-                >
-                    {key.replaceAll(JsonHelper.separator, '.')}
-                </div>
-            };
-
-            const createKeyValueBadgeElement = (keyValue) => {
-                return <span
-                    className='exlorer-key-value-badge clickable'
-                    onClick={() => this.handleExplorerBadgeClicked(
-                        exploreDialogueData.serverId,
-                        'keyValue',
-                        keyValue
-                    )}
-                >
-                    <div className='badge bg-primary ms-1 me-0 exlorer-key-value-badge-key'>
-                        {keyValue.split(JsonHelper.separator).slice(0, -1).join('.')}
-                    </div>
-                    <div className='badge bg-success ms-0 me-1 exlorer-key-value-badge-value'>
-                        {keyValue.split(JsonHelper.separator).slice(-1)}
-                    </div>
-                </span>
-            };
-
-            const valueElements = [];
-            for (let value of exploreDialogueData.values) {
-                valueElements.push(createValueBadgeElement(value));
-            }
-
-            const keyElements = [];
-            for (let key of exploreDialogueData.keys) {
-                keyElements.push(createKeyBadgeElement(key));
-            }
-
-            const keyValueElements = [];
-            for (let keyValue of exploreDialogueData.keysValues) {
-                keyValueElements.push(createKeyValueBadgeElement(keyValue));
-            }
-
-            const eventByElements = [];
-            for (let server of this.props.reduxState.servers.serverList) {
-                if (server.id === exploreDialogueData.serverId) {
-                    for (let eventBy of server.latestEventsBy) {
-                        eventByElements.push(
-                            <Fragment>
-                                <div className='row mb-3'>
-                                    <div className='col-sm-2 col-auto ps-1 pe-1 pt-0'>
-                                        <code className='text-white-50 word-wrap-anywhere p-0'>
-                                            {eventBy.createdAt}
-                                            <br/>
-                                            <span className='text-secondary me-2'>
-                                                {eventBy.source}
-                                            </span>
-                                            <div>
-                                                <span
-                                                    className='clickable'
-                                                    onClick={() => this.handleExploreDialogueOpenClicked(
-                                                        exploreDialogueData.serverId,
-                                                        eventBy.id,
-                                                        eventBy.payload
-                                                    )}
-                                                >
-                                                    Use
-                                                </span>
-                                            </div>
-                                        </code>
-                                    </div>
-                                    <div className='col ps-1 pe-1 pt-1'>
-                                        <code className='word-wrap-anywhere'>
-                                            <span className='text-white-75'>
-                                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                                    {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
-                                                </SyntaxHighlighter>
-                                            </span>
-                                        </code>
-                                    </div>
-                                </div>
-                                <hr/>
-                            </Fragment>
-                        );
-                    }
-                }
-            }
-
-            return (
-                <div id='explorer' className='container-fluid border rounded border-dark p-0 top-0'>
-                    <div className='row bg-dark rounded m-0 p-0'>
-                        <div className='col p-3'>
-                            <X
-                                className='close-button float-end clickable'
-                                onClick={() => this.setState({ ...this.state, exploreDialogueData: null })}
-                            />
-                            <h3>Structured Data Explorer</h3>
-                            <hr/>
-                            <div className='mb-4'>
-                                <p>
-                                    You can further explore all server log entries which contain structured data
-                                    by these three dimension:
-                                    {createKeyBadgeElement('key')},
-                                    {createValueBadgeElement('value')},
-                                    and
-                                    {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value')}.
-                                </p>
-                                <p>
-                                    The list below shows the keys, values, and key-value pairs identified within the current log entry.
-                                </p>
-                                <p>
-                                    Clicking on any one element shows those log entries from this server that also match the selected value, key, or key-value pair.
-                                </p>
-                            </div>
-
-                            <hr/>
-
-                            <div className='mb-5'>
-                                <h5>Keys</h5>
-                                {keyElements}
-                            </div>
-
-                            <div className='mb-5'>
-                                <h5>Values</h5>
-                                {valueElements}
-                            </div>
-
-                            <div className='mb-5'>
-                                <h5>Keys and values</h5>
-                                {keyValueElements}
-                            </div>
-
-                            <h4>Results</h4>
-                            <hr/>
-
-                            <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
-                                {
-                                    this.props.reduxState.servers
-                                        .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                        .includes(exploreDialogueData.serverId)
-                                    &&
-                                    <Fragment>
-                                        Retrieving...
-                                    </Fragment>
-                                }
-
-                                {
-                                    eventByElements.length > 0
-                                    &&
-                                    !this.props.reduxState.servers
-                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(exploreDialogueData.serverId)
-                                    &&
-                                    eventByElements
-                                }
-
-                                {
-                                    (
-                                        eventByElements.length === 0
-                                        &&
-                                        !this.props.reduxState.servers
-                                            .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                            .includes(exploreDialogueData.serverId)
-                                    )
-                                    &&
-                                    <span className='text-secondary'>
-                                        Currently no results. Please click an element to start retrieving matching log entries.
-                                    </span>
-                                }
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            )
-        };
 
         const createFlipElement = (server, elementName) => {
             const elementNameToHeadline = {
@@ -474,12 +269,12 @@ class ServersContainer extends Component {
                                      payload
                                 )}
                             >
-                                <div className='col-sm-12 ps-1 pe-1'>
+                                <div className='col-sm-12 ps-2 pe-2'>
                                     <code className='text-white-75 word-wrap-anywhere'>
                                         {createdAt}
                                     </code>
                                 </div>
-                                <div className='col-sm-12 ps-1 pe-1 mb-2'>
+                                <div className='col-sm-12 ps-2 pe-2 mb-2'>
                                     <code className='text-white-50 word-wrap-anywhere'>
                                         {source}
                                     </code>
@@ -647,10 +442,10 @@ class ServersContainer extends Component {
                             &&
                             this.props.reduxState.servers.serverList[i].latestEvents.length > 0
                             &&
-                            <div className='container-fluid w-100 bg-deepdark pt-2 pb-2 ps-4 pe-3 rounded border border-dark border-3'>
+                            <div className='container-fluid bg-deepdark rounded border border-dark border-3'>
 
                                 <div key='filters' className='row'>
-                                    <div className='col ms-0 ps-0 me-1 pe-0 mb-2 mt-1'>
+                                    <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
                                         <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
                                         <div className='input-group'>
                                             <div className='input-group-text bg-dark border-dark'>Filter events</div>
@@ -671,11 +466,27 @@ class ServersContainer extends Component {
 
                                 {
                                     (
-                                        this.state.exploreDialogueData !== null
-                                        && this.state.exploreDialogueData.serverId === serverId
+                                        this.state.structuredDataExplorerData !== null
+                                        && this.state.structuredDataExplorerData.serverId === serverId
                                     )
                                     &&
-                                    createExploreDialogueElement(this.state.exploreDialogueData)
+                                    <StructuredDataExplorerContainer
+                                        ref={this.structuredDataExplorerRef}
+                                        serverId={this.state.structuredDataExplorerData.serverId}
+                                        serverEventId={this.state.structuredDataExplorerData.serverEventId}
+                                        payload={this.state.structuredDataExplorerData.payload}
+                                        isStructured={this.state.structuredDataExplorerData.isStructured}
+                                        values={this.state.structuredDataExplorerData.values}
+                                        keys={this.state.structuredDataExplorerData.keys}
+                                        keysValues={this.state.structuredDataExplorerData.keysValues}
+                                        onCloseClicked={() => this.setState({ ...this.state, structuredDataExplorerData:null })}
+                                        onUseEventClicked={(serverId, id, payload) => this.handleExploreDialogueOpenClicked(
+                                            serverId,
+                                            id,
+                                            payload
+                                        )}
+                                    />
+                                    //createExploreDialogueElement(this.state.structuredDataExplorerData)
                                 }
 
                                 {serverEventElements}
