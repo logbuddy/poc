@@ -489,7 +489,11 @@ class ServersContainer extends Component {
                                     //createExploreDialogueElement(this.state.structuredDataExplorerData)
                                 }
 
-                                {serverEventElements}
+                                {
+                                    this.state.structuredDataExplorerData === null
+                                    &&
+                                    serverEventElements
+                                }
                             </div>
                         }
 
