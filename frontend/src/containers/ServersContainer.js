@@ -85,7 +85,6 @@ class ServersContainer extends Component {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(event.serverId));
         this.props.dispatch(resetServerEventsByCommand());
         this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: event });
-        console.debug(event);
     }
 
     componentDidMount() {
@@ -421,27 +420,6 @@ class ServersContainer extends Component {
                             this.props.reduxState.servers.serverList[i].latestEvents.length > 0
                             &&
                             <div className='container-fluid bg-deepdark rounded border border-dark border-3'>
-
-                                <div key='filters' className='row'>
-                                    <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
-                                        <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
-                                        <div className='input-group'>
-                                            <div className='input-group-text bg-dark border-dark'>Filter events</div>
-                                            <input
-                                                type='text'
-                                                className='form-control bg-secondary text-white-50 border-dark'
-                                                id='filter-events-input'
-                                                placeholder=''
-                                                value={this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id]}
-                                                onChange={
-                                                    (event) =>
-                                                        this.handleChangeFilterEventsInputText(event, this.props.reduxState.servers.serverList[i].id)
-                                                }
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
                                 {
                                     (
                                         this.state.eventLoadedInStructuredDataExplorer !== null
@@ -466,7 +444,28 @@ class ServersContainer extends Component {
                                         this.state.eventLoadedInStructuredDataExplorer.serverId !== serverId
                                     )
                                     &&
-                                    serverEventElements
+                                    <Fragment>
+                                        <div key='filters' className='row'>
+                                            <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
+                                                <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
+                                                <div className='input-group'>
+                                                    <div className='input-group-text bg-dark border-dark'>Filter events</div>
+                                                    <input
+                                                        type='text'
+                                                        className='form-control bg-secondary text-white-50 border-dark'
+                                                        id='filter-events-input'
+                                                        placeholder=''
+                                                        value={this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id]}
+                                                        onChange={
+                                                            (event) =>
+                                                                this.handleChangeFilterEventsInputText(event, this.props.reduxState.servers.serverList[i].id)
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {serverEventElements}
+                                    </Fragment>
                                 }
                             </div>
                         }
