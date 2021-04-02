@@ -4,7 +4,7 @@ const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
 const AWS_REGION = 'eu-central-1';
 
 
-const consoleOp = false;
+const consoleOp = true;
 const _console = {};
 _console.debug = (...data) => {
     if (consoleOp) console.debug(...data);
@@ -589,9 +589,9 @@ const handleRetrieveServerEventsByRequest = async (event) => {
         return unknownWebappApiKeyIdResponse;
     }
 
-    if (   !event.queryStringParameters.hasOwnProperty('byName')
-        || !['key', 'value', 'keyValue'].includes(event.queryStringParameters.byName)
-        || !event.queryStringParameters.hasOwnProperty('byVal')
+    if (   !event.queryStringParameters.hasOwnProperty('byName[0]')
+        || !['key', 'value', 'keyValue'].includes(event.queryStringParameters['byName[0]'])
+        || !event.queryStringParameters.hasOwnProperty('byVal[0]')
         || !event.queryStringParameters.hasOwnProperty('serverId')
     ) {
         return {
@@ -605,8 +605,6 @@ const handleRetrieveServerEventsByRequest = async (event) => {
         };
     }
 
-    const reqByName = event.queryStringParameters.byName;
-    const reqByVal = event.queryStringParameters.byVal;
     const reqServerId = event.queryStringParameters.serverId;
 
     const serverBelongsToUser = await new Promise((resolve, reject) => {
@@ -642,39 +640,76 @@ const handleRetrieveServerEventsByRequest = async (event) => {
         };
     }
 
-    const serverEvents = await new Promise((resolve, reject) => {
-        const params = {
-            TableName: byNameToTablename[reqByName],
-            Limit: 250,
-            ScanIndexForward: false,
-            KeyConditionExpression: byNameToPk[reqByName] + ' = :pk',
-            ExpressionAttributeValues: {
-                ':pk': reqServerId + '_' + reqByVal
-            }
-        };
-        docClient.query(params, (err, data) => {
-            if (err) {
-                _console.error('docClient.query', err);
-                reject(err);
-            } else {
-                _console.log(data);
-                let serverEvents = [];
-                for (let i = 0; i < data.Count; i++) {
-                    serverEvents.push({
-                        id: data.Items[i].server_events_id,
-                        serverId: data.Items[i].servers_id,
-                        userId: data.Items[i].users_id,
-                        receivedAt: data.Items[i].received_at,
-                        sortValue: data.Items[i].sort_value,
-                        createdAt: data.Items[i].server_event_created_at,
-                        source: data.Items[i].server_event_source,
-                        payload: data.Items[i].server_event_payload,
-                    });
+    let i = 0;
+    let exhausted = false;
+    let serverEvents = [];
+    const promises = [];
+    while (!exhausted) {
+        if (!event.queryStringParameters.hasOwnProperty(`byName[${i}]`)) {
+            exhausted = true;
+            continue;
+        }
+        const reqByName = event.queryStringParameters[`byName[${i}]`];
+        const reqByVal = event.queryStringParameters[`byVal[${i}]`];
+
+        i++;
+
+        promises.push(
+            new Promise((resolve, reject) => {
+                const params = {
+                    TableName: byNameToTablename[reqByName],
+                    Limit: 250,
+                    ScanIndexForward: false,
+                    KeyConditionExpression: byNameToPk[reqByName] + ' = :pk',
+                    ExpressionAttributeValues: {
+                        ':pk': reqServerId + '_' + reqByVal
+                    }
+                };
+                docClient.query(params, (err, data) => {
+                    if (err) {
+                        _console.error('docClient.query', err);
+                        reject(err);
+                    } else {
+                        _console.log(data);
+                        let serverEvents = [];
+                        for (let i = 0; i < data.Count; i++) {
+                            serverEvents.push({
+                                id: data.Items[i].server_events_id,
+                                serverId: data.Items[i].servers_id,
+                                userId: data.Items[i].users_id,
+                                receivedAt: data.Items[i].received_at,
+                                sortValue: data.Items[i].sort_value,
+                                createdAt: data.Items[i].server_event_created_at,
+                                source: data.Items[i].server_event_source,
+                                payload: data.Items[i].server_event_payload,
+                            });
+                        }
+                        resolve(serverEvents);
+                    }
+                });
+            })
+        );
+    }
+
+    const serverEventResultsets = await Promise.all(promises);
+
+    let first = true;
+    for (let serverEventResultset of serverEventResultsets) {
+        if (first) {
+            serverEvents = serverEventResultset;
+            first = false;
+        } else {
+            const remainingServerEvents = [];
+            for (let serverEvent of serverEvents) {
+                for (let serverEventResult of serverEventResultset) {
+                    if (serverEventResult.id === serverEvent.id) {
+                        remainingServerEvents.push(serverEvent);
+                    }
                 }
-                resolve(serverEvents);
             }
-        });
-    });
+            serverEvents = remainingServerEvents;
+        }
+    }
 
     return {
         statusCode: 200,

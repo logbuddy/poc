@@ -13,14 +13,15 @@ class StructuredDataExplorerContainer extends Component {
         super(props)
         this.titleRef = React.createRef();
         this.resultsRef = React.createRef();
-
         this.state = {
             values: [],
             keys: [],
             keysValues: [],
             selectedAttributes: []
         };
+    }
 
+    calculateAttributes = () => {
         let parsedJson = null;
         try {
             parsedJson = JSON.parse(this.props.event.payload);
@@ -31,18 +32,31 @@ class StructuredDataExplorerContainer extends Component {
 
         if (parsedJson === null) {
             console.error('Could not parse payload into valid JSON');
+            this.setState({
+                values: [],
+                keys: [],
+                keysValues: [],
+                selectedAttributes: []
+            });
         } else if (typeof(parsedJson) !== 'object') {
             console.error('JSON is not an object and therefore not explorable.');
+            this.setState({
+                values: [],
+                keys: [],
+                keysValues: [],
+                selectedAttributes: []
+            });
         } else {
             const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
 
-            this.state = { ...this.state, values: JsonHelper.getBrokenDownValues(parsedJson) };
-
-            this.state = { ...this.state, keys: JsonHelper.getBrokenDownKeys(keyValuePairs) };
-
-            this.state = { ...this.state, keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs) };
+            this.setState({
+                ...this.state,
+                values: JsonHelper.getBrokenDownValues(parsedJson),
+                keys: JsonHelper.getBrokenDownKeys(keyValuePairs),
+                keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs)
+            });
         }
-    }
+    };
 
     handleSelectAttributeClicked = (serverId, byName, byVal) => {
         this.setState(
@@ -83,10 +97,12 @@ class StructuredDataExplorerContainer extends Component {
         if (this.titleRef.current !== null) {
             this.titleRef.current.scrollIntoView();
         }
+        this.calculateAttributes();
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevProps.event.id !== this.props.event.id) {
+            this.calculateAttributes();
             if (this.titleRef.current !== null) {
                 this.titleRef.current.scrollIntoView();
             }
@@ -437,7 +453,23 @@ class StructuredDataExplorerContainer extends Component {
                             {keyValueElements}
                         </div>
 
-                        <h4 ref={this.resultsRef}>Results</h4>
+                        <h4 ref={this.resultsRef}>
+                            {
+                                eventByElements.length > 0
+                                &&
+                                <Fragment>{eventByElements.length}&nbsp;</Fragment>
+                            }
+                            {
+                                eventByElements.length === 1
+                                &&
+                                <Fragment>Result</Fragment>
+                            }
+                            {
+                                eventByElements.length !== 1
+                                &&
+                                <Fragment>Results</Fragment>
+                            }
+                        </h4>
                         <hr/>
                         Filtered by: {selectedAttributeElements}
                         <hr/>
