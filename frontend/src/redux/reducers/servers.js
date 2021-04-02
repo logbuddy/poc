@@ -181,13 +181,21 @@ export const resetServerEventsByCommand = () => ({
     type: 'RESET_SERVER_EVENTS_BY_COMMAND'
 });
 
-export const retrieveServerEventsByCommand = (serverId, byName, byVal) => (dispatch, getState) => {
+export const retrieveServerEventsByCommand = (serverId, attributes) => (dispatch, getState) => {
 
     dispatch(retrieveServerEventsByStartedEvent(serverId));
 
+    let path = `/server-events-by?serverId=${encodeURIComponent(serverId)}`;
+    let i = 0;
+    console.debug(attributes);
+    for (let attribute of attributes) {
+        path = path + `&byName[${i}]=${encodeURIComponent(attribute.byName)}&byVal[${i}]=${encodeURIComponent(attribute.byVal)}`;
+        i++;
+    }
+
     let responseWasOk = true;
     apiFetch(
-        `/server-events-by?serverId=${encodeURIComponent(serverId)}&byName=${encodeURIComponent(byName)}&byVal=${encodeURIComponent(byVal)}`,
+        path,
         'GET',
         getState().session.webappApiKeyId
     )

@@ -18,7 +18,7 @@ class StructuredDataExplorerContainer extends Component {
             values: [],
             keys: [],
             keysValues: [],
-            selectedBadgeItems: []
+            selectedAttributes: []
         };
 
         let parsedJson = null;
@@ -44,38 +44,39 @@ class StructuredDataExplorerContainer extends Component {
         }
     }
 
-    handleSelectBadgeClicked = (serverId, byName, byVal) => {
-        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
-        this.setState({
-            ...this.state,
-            selectedBadgeItems: [{ byName, byVal }]
-        });
+    handleSelectAttributeClicked = (serverId, byName, byVal) => {
+        this.setState(
+            {
+                    ...this.state,
+                    selectedAttributes: [{ byName, byVal }]
+            },
+            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
+        );
     }
 
-    handleAddBadgeClicked = (serverId, byName, byVal) => {
-        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
-        for (let selectedBadgeItem of this.state.selectedBadgeItems) {
-            if (selectedBadgeItem.byName === byName && selectedBadgeItem.byVal === byVal) {
-                return;
-            }
-        }
-        this.setState({
-            ...this.state,
-            selectedBadgeItems: [...this.state.selectedBadgeItems, { byName, byVal }]
-        });
+    handleAddAttributeClicked = (serverId, byName, byVal) => {
+        this.setState(
+            {
+                ...this.state,
+                selectedAttributes: [...this.state.selectedAttributes, { byName, byVal }]
+            },
+            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
+        );
     }
 
-    handleRemoveBadgeClicked = (serverId, byName, byVal) => {
-        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
-        this.setState({
-            ...this.state,
-            selectedBadgeItems: [
-                ...this.state.selectedBadgeItems.filter(badgeData =>
-                       badgeData.byName !== byName
-                    || badgeData.byVal !== byVal
-                )
-            ]
-        });
+    handleRemoveAttributeClicked = (serverId, byName, byVal) => {
+        this.setState(
+            {
+                ...this.state,
+                selectedAttributes: [
+                    ...this.state.selectedAttributes.filter(attributeData =>
+                           attributeData.byName !== byName
+                        || attributeData.byVal !== byVal
+                    )
+                ]
+            },
+            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
+        );
     }
 
     componentDidMount() {
@@ -93,27 +94,27 @@ class StructuredDataExplorerContainer extends Component {
     }
 
     render () {
-        const createBadgeElement = (byName, byVal, clickable = true, plus = true, minus = false) => {
+        const createAttributeElement = (byName, byVal, clickable = true, plus = true, minus = false) => {
             if (byName === 'value') {
-                return createValueBadgeElement(byVal, clickable, plus, minus);
+                return createValueAttributeElement(byVal, clickable, plus, minus);
             }
             if (byName === 'key') {
-                return createKeyBadgeElement(byVal, clickable, plus, minus);
+                return createKeyAttributeElement(byVal, clickable, plus, minus);
             }
             if (byName === 'keyValue') {
-                return createKeyValueBadgeElement(byVal, clickable, plus, minus);
+                return createKeyValueAttributeElement(byVal, clickable, plus, minus);
             }
             throw new Error('Unknown byName');
         };
 
-        const createValueBadgeElement = (value, clickable = true, plus = true, minus = false) => {
+        const createValueAttributeElement = (value, clickable = true, plus = true, minus = false) => {
             return (
                 <Fragment key={value}>
                     <span
                         className={`badge bg-success ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
                         onClick={() => {
                             if (clickable === true) {
-                                this.handleSelectBadgeClicked(
+                                this.handleSelectAttributeClicked(
                                     this.props.event.serverId,
                                     'value',
                                     value
@@ -131,7 +132,7 @@ class StructuredDataExplorerContainer extends Component {
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
                                 if (clickable === true) {
-                                    this.handleAddBadgeClicked(
+                                    this.handleAddAttributeClicked(
                                         this.props.event.serverId,
                                         'value',
                                         value
@@ -150,7 +151,7 @@ class StructuredDataExplorerContainer extends Component {
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
                                 if (clickable === true) {
-                                    this.handleRemoveBadgeClicked(
+                                    this.handleRemoveAttributeClicked(
                                         this.props.event.serverId,
                                         'value',
                                         value
@@ -166,14 +167,14 @@ class StructuredDataExplorerContainer extends Component {
             )
         };
 
-        const createKeyBadgeElement = (key, clickable = true, plus = true, minus = false) => {
+        const createKeyAttributeElement = (key, clickable = true, plus = true, minus = false) => {
             return (
                 <Fragment key={key}>
                     <span
                         className={`badge bg-primary ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
                         onClick={() => {
                             if (clickable === true) {
-                                this.handleSelectBadgeClicked(
+                                this.handleSelectAttributeClicked(
                                     this.props.event.serverId,
                                     'key',
                                     key
@@ -191,7 +192,7 @@ class StructuredDataExplorerContainer extends Component {
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
                                 if (clickable === true) {
-                                    this.handleAddBadgeClicked(
+                                    this.handleAddAttributeClicked(
                                         this.props.event.serverId,
                                         'key',
                                         key
@@ -210,7 +211,7 @@ class StructuredDataExplorerContainer extends Component {
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
                                 if (clickable === true) {
-                                    this.handleRemoveBadgeClicked(
+                                    this.handleRemoveAttributeClicked(
                                         this.props.event.serverId,
                                         'key',
                                         key
@@ -226,14 +227,14 @@ class StructuredDataExplorerContainer extends Component {
             )
         };
 
-        const createKeyValueBadgeElement = (keyValue, clickable = true, plus = true, minus = false) => {
+        const createKeyValueAttributeElement = (keyValue, clickable = true, plus = true, minus = false) => {
             return (
                 <Fragment key={keyValue}>
                     <span
                         className={`explorer-key-value-badge ${clickable ? 'clickable' : ''}`}
                         onClick={() => {
                             if (clickable === true) {
-                                this.handleSelectBadgeClicked(
+                                this.handleSelectAttributeClicked(
                                     this.props.event.serverId,
                                     'keyValue',
                                     keyValue
@@ -256,7 +257,7 @@ class StructuredDataExplorerContainer extends Component {
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
                                 if (clickable === true) {
-                                    this.handleAddBadgeClicked(
+                                    this.handleAddAttributeClicked(
                                         this.props.event.serverId,
                                         'keyValue',
                                         keyValue
@@ -275,7 +276,7 @@ class StructuredDataExplorerContainer extends Component {
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
                                 if (clickable === true) {
-                                    this.handleRemoveBadgeClicked(
+                                    this.handleRemoveAttributeClicked(
                                         this.props.event.serverId,
                                         'keyValue',
                                         keyValue
@@ -293,17 +294,17 @@ class StructuredDataExplorerContainer extends Component {
 
         const valueElements = [];
         for (let value of this.state.values) {
-            valueElements.push(createValueBadgeElement(value));
+            valueElements.push(createValueAttributeElement(value));
         }
 
         const keyElements = [];
         for (let key of this.state.keys) {
-            keyElements.push(createKeyBadgeElement(key));
+            keyElements.push(createKeyAttributeElement(key));
         }
 
         const keyValueElements = [];
         for (let keyValue of this.state.keysValues) {
-            keyValueElements.push(createKeyValueBadgeElement(keyValue));
+            keyValueElements.push(createKeyValueAttributeElement(keyValue));
         }
 
         const eventByElements = [];
@@ -353,10 +354,10 @@ class StructuredDataExplorerContainer extends Component {
             }
         }
 
-        const selectedBadgeItemElements = [];
-        for (let selectedBadgeItem of this.state.selectedBadgeItems) {
-            selectedBadgeItemElements.push(
-                createBadgeElement(selectedBadgeItem.byName, selectedBadgeItem.byVal, true, false, true)
+        const selectedAttributeElements = [];
+        for (let selectedAttribute of this.state.selectedAttributes) {
+            selectedAttributeElements.push(
+                createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
             );
         }
 
@@ -396,10 +397,10 @@ class StructuredDataExplorerContainer extends Component {
                         <div className='mb-4'>
                             <p>
                                 Based on the currently loaded log entry, you can now explore related log entries on these three dimensions:
-                                {createKeyBadgeElement('key', false, false)},
-                                {createValueBadgeElement('value', false, false)},
+                                {createKeyAttributeElement('key', false, false)},
+                                {createValueAttributeElement('value', false, false)},
                                 and
-                                {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value', false, false)}.
+                                {createKeyValueAttributeElement('key' + JsonHelper.separator + 'value', false, false)}.
                             </p>
                             <p>
                                 The list below shows all keys, all values, and all key-value pairs identified within the currently loaded log entry.
@@ -438,7 +439,7 @@ class StructuredDataExplorerContainer extends Component {
 
                         <h4 ref={this.resultsRef}>Results</h4>
                         <hr/>
-                        Filtered by: {selectedBadgeItemElements}
+                        Filtered by: {selectedAttributeElements}
                         <hr/>
                         <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
                             {

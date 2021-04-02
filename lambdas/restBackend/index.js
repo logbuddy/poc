@@ -599,7 +599,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
             headers: corsHeaders,
             body: JSON.stringify({
                 message: 'Problem with query string parameters',
-                expectedQueryStringParameters: { byName: 'key|value|keyValue', byVal: 'x', serverId: 'y' },
+                expectedQueryStringParameters: { serverId: 'y', 'byName[n]': 'key|value|keyValue', 'byName[n]': 'x' },
                 actualQueryStringParameters: event.queryStringParameters
             }, null, 2)
         };
