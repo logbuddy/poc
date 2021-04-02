@@ -157,7 +157,7 @@ class AppContainer extends Component {
                                         </p>
                                         <p className='bg-dark rounded p-3 pt-1 pb-2'>
                                             <code className='tiny text-info'>
-                                                bash -c "$(curl -fsSL https://raw.githubusercontent.com/logbuddy/bash-clients/main/src/sl-install)"
+                                                bash -c "$(curl -fsSL https://raw.githubusercontent.com/logbuddy/bash-clients/main/src/lb-install)"
                                             </code>
                                         </p>
                                         <p>
