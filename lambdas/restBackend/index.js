@@ -363,6 +363,9 @@ const handleRetrieveServerList = async (event) => {
             }
             serversFromDb[i].latestEvents.push({
                 id: id,
+                serverId: serverEventsFromDbResult.Items[j].servers_id,
+                userId: serverEventsFromDbResult.Items[j].users_id,
+                receivedAt: serverEventsFromDbResult.Items[j].received_at,
                 sortValue: serverEventsFromDbResult.Items[j].sort_value,
                 createdAt: serverEventsFromDbResult.Items[j].server_event_created_at,
                 source: serverEventsFromDbResult.Items[j].server_event_source,
@@ -545,6 +548,9 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
                         }
                         serverEvents.push({
                             id: id,
+                            serverId: data.Items[i].servers_id,
+                            userId: data.Items[i].users_id,
+                            receivedAt: data.Items[i].received_at,
                             sortValue: data.Items[i].sort_value,
                             createdAt: data.Items[i].server_event_created_at,
                             source: data.Items[i].server_event_source,
@@ -656,6 +662,9 @@ const handleRetrieveServerEventsByRequest = async (event) => {
                 for (let i = 0; i < data.Count; i++) {
                     serverEvents.push({
                         id: data.Items[i].server_events_id,
+                        serverId: data.Items[i].servers_id,
+                        userId: data.Items[i].users_id,
+                        receivedAt: data.Items[i].received_at,
                         sortValue: data.Items[i].sort_value,
                         createdAt: data.Items[i].server_event_created_at,
                         source: data.Items[i].server_event_source,
