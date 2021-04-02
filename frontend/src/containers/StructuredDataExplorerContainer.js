@@ -6,7 +6,7 @@ import {
 import JsonHelper from '../JsonHelper.mjs';
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
-import { X, Upload } from "react-bootstrap-icons";
+import { X, Upload, PlusCircle, DashCircle } from "react-bootstrap-icons";
 
 class StructuredDataExplorerContainer extends Component {
     constructor(props) {
@@ -17,7 +17,8 @@ class StructuredDataExplorerContainer extends Component {
         this.state = {
             values: [],
             keys: [],
-            keysValues: []
+            keysValues: [],
+            selectedBadgeItems: []
         };
 
         let parsedJson = null;
@@ -43,8 +44,38 @@ class StructuredDataExplorerContainer extends Component {
         }
     }
 
-    handleExplorerBadgeClicked = (serverId, byName, byVal) => {
+    handleSelectBadgeClicked = (serverId, byName, byVal) => {
         this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
+        this.setState({
+            ...this.state,
+            selectedBadgeItems: [{ byName, byVal }]
+        });
+    }
+
+    handleAddBadgeClicked = (serverId, byName, byVal) => {
+        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
+        for (let selectedBadgeItem of this.state.selectedBadgeItems) {
+            if (selectedBadgeItem.byName === byName && selectedBadgeItem.byVal === byVal) {
+                return;
+            }
+        }
+        this.setState({
+            ...this.state,
+            selectedBadgeItems: [...this.state.selectedBadgeItems, { byName, byVal }]
+        });
+    }
+
+    handleRemoveBadgeClicked = (serverId, byName, byVal) => {
+        this.props.dispatch(retrieveServerEventsByCommand(serverId, byName, byVal));
+        this.setState({
+            ...this.state,
+            selectedBadgeItems: [
+                ...this.state.selectedBadgeItems.filter(badgeData =>
+                       badgeData.byName !== byName
+                    || badgeData.byVal !== byVal
+                )
+            ]
+        });
     }
 
     componentDidMount() {
@@ -62,66 +93,202 @@ class StructuredDataExplorerContainer extends Component {
     }
 
     render () {
-        const createValueBadgeElement = (value, clickable = true) => {
-            return <span
-                key={value}
-                className={`badge bg-success ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
-                onClick={() => {
-                    if (clickable === true) {
-                        this.handleExplorerBadgeClicked(
-                            this.props.event.serverId,
-                            'value',
-                            value
-                        );
-                        this.resultsRef.current.scrollIntoView();
-                    }
-                }}
-            >
-                {value}
-            </span>
+        const createBadgeElement = (byName, byVal, clickable = true, plus = true, minus = false) => {
+            if (byName === 'value') {
+                return createValueBadgeElement(byVal, clickable, plus, minus);
+            }
+            if (byName === 'key') {
+                return createKeyBadgeElement(byVal, clickable, plus, minus);
+            }
+            if (byName === 'keyValue') {
+                return createKeyValueBadgeElement(byVal, clickable, plus, minus);
+            }
+            throw new Error('Unknown byName');
         };
 
-        const createKeyBadgeElement = (key, clickable = true) => {
-            return <span
-                key={key}
-                className={`badge bg-primary ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
-                onClick={() => {
-                    if (clickable === true) {
-                        this.handleExplorerBadgeClicked(
-                            this.props.event.serverId,
-                            'key',
-                            key
-                        );
-                        this.resultsRef.current.scrollIntoView();
+        const createValueBadgeElement = (value, clickable = true, plus = true, minus = false) => {
+            return (
+                <Fragment key={value}>
+                    <span
+                        className={`badge bg-success ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
+                        onClick={() => {
+                            if (clickable === true) {
+                                this.handleSelectBadgeClicked(
+                                    this.props.event.serverId,
+                                    'value',
+                                    value
+                                );
+                                this.resultsRef.current.scrollIntoView();
+                            }
+                        }}
+                    >
+                        {value}
+                    </span>
+                    {
+                        plus
+                        &&
+                        <span
+                            className={`${clickable ? 'clickable' : ''} me-3`}
+                            onClick={() => {
+                                if (clickable === true) {
+                                    this.handleAddBadgeClicked(
+                                        this.props.event.serverId,
+                                        'value',
+                                        value
+                                    );
+                                    this.resultsRef.current.scrollIntoView();
+                                }
+                            }}
+                        >
+                            <PlusCircle/>
+                        </span>
                     }
-                }}
-            >
-                {key.replaceAll(JsonHelper.separator, '.')}
-            </span>
+                    {
+                        minus
+                        &&
+                        <span
+                            className={`${clickable ? 'clickable' : ''} me-3`}
+                            onClick={() => {
+                                if (clickable === true) {
+                                    this.handleRemoveBadgeClicked(
+                                        this.props.event.serverId,
+                                        'value',
+                                        value
+                                    );
+                                    this.resultsRef.current.scrollIntoView();
+                                }
+                            }}
+                        >
+                            <DashCircle/>
+                        </span>
+                    }
+                </Fragment>
+            )
         };
 
-        const createKeyValueBadgeElement = (keyValue, clickable = true) => {
-            return <span
-                key={keyValue}
-                className={`explorer-key-value-badge ${clickable ? 'clickable' : ''}`}
-                onClick={() => {
-                    if (clickable === true) {
-                        this.handleExplorerBadgeClicked(
-                            this.props.event.serverId,
-                            'keyValue',
-                            keyValue
-                        );
-                        this.resultsRef.current.scrollIntoView();
+        const createKeyBadgeElement = (key, clickable = true, plus = true, minus = false) => {
+            return (
+                <Fragment key={key}>
+                    <span
+                        className={`badge bg-primary ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
+                        onClick={() => {
+                            if (clickable === true) {
+                                this.handleSelectBadgeClicked(
+                                    this.props.event.serverId,
+                                    'key',
+                                    key
+                                );
+                                this.resultsRef.current.scrollIntoView();
+                            }
+                        }}
+                    >
+                        {key.replaceAll(JsonHelper.separator, '.')}
+                    </span>
+                    {
+                        plus
+                        &&
+                        <span
+                            className={`${clickable ? 'clickable' : ''} me-3`}
+                            onClick={() => {
+                                if (clickable === true) {
+                                    this.handleAddBadgeClicked(
+                                        this.props.event.serverId,
+                                        'key',
+                                        key
+                                    );
+                                    this.resultsRef.current.scrollIntoView();
+                                }
+                            }}
+                        >
+                            <PlusCircle/>
+                        </span>
                     }
-                }}
-            >
-                    <span className='badge bg-primary ms-1 me-0 mb-1 explorer-key-value-badge-key'>
-                        {keyValue.split(JsonHelper.separator).slice(0, -1).join('.')}
+                    {
+                        minus
+                        &&
+                        <span
+                            className={`${clickable ? 'clickable' : ''} me-3`}
+                            onClick={() => {
+                                if (clickable === true) {
+                                    this.handleRemoveBadgeClicked(
+                                        this.props.event.serverId,
+                                        'key',
+                                        key
+                                    );
+                                    this.resultsRef.current.scrollIntoView();
+                                }
+                            }}
+                        >
+                            <DashCircle/>
+                        </span>
+                    }
+                </Fragment>
+            )
+        };
+
+        const createKeyValueBadgeElement = (keyValue, clickable = true, plus = true, minus = false) => {
+            return (
+                <Fragment key={keyValue}>
+                    <span
+                        className={`explorer-key-value-badge ${clickable ? 'clickable' : ''}`}
+                        onClick={() => {
+                            if (clickable === true) {
+                                this.handleSelectBadgeClicked(
+                                    this.props.event.serverId,
+                                    'keyValue',
+                                    keyValue
+                                );
+                                this.resultsRef.current.scrollIntoView();
+                            }
+                        }}
+                    >
+                        <span className='badge bg-primary ms-1 me-0 mb-1 explorer-key-value-badge-key'>
+                            {keyValue.split(JsonHelper.separator).slice(0, -1).join('.')}
+                        </span>
+                        <span className='badge bg-success ms-0 me-1 mb-1 explorer-key-value-badge-value'>
+                            {keyValue.split(JsonHelper.separator).slice(-1)}
+                        </span>
                     </span>
-                    <span className='badge bg-success ms-0 me-1 mb-1 explorer-key-value-badge-value'>
-                        {keyValue.split(JsonHelper.separator).slice(-1)}
-                    </span>
-                </span>
+                    {
+                        plus
+                        &&
+                        <span
+                            className={`${clickable ? 'clickable' : ''} me-3`}
+                            onClick={() => {
+                                if (clickable === true) {
+                                    this.handleAddBadgeClicked(
+                                        this.props.event.serverId,
+                                        'keyValue',
+                                        keyValue
+                                    );
+                                    this.resultsRef.current.scrollIntoView();
+                                }
+                            }}
+                        >
+                            <PlusCircle/>
+                        </span>
+                    }
+                    {
+                        minus
+                        &&
+                        <span
+                            className={`${clickable ? 'clickable' : ''} me-3`}
+                            onClick={() => {
+                                if (clickable === true) {
+                                    this.handleRemoveBadgeClicked(
+                                        this.props.event.serverId,
+                                        'keyValue',
+                                        keyValue
+                                    );
+                                    this.resultsRef.current.scrollIntoView();
+                                }
+                            }}
+                        >
+                            <DashCircle/>
+                        </span>
+                    }
+                </Fragment>
+            )
         };
 
         const valueElements = [];
@@ -186,6 +353,13 @@ class StructuredDataExplorerContainer extends Component {
             }
         }
 
+        const selectedBadgeItemElements = [];
+        for (let selectedBadgeItem of this.state.selectedBadgeItems) {
+            selectedBadgeItemElements.push(
+                createBadgeElement(selectedBadgeItem.byName, selectedBadgeItem.byVal, true, false, true)
+            );
+        }
+
         return (
             <div className='row'>
                 <div className='col p-2 ms-1 me-1 mb-2 mt-1 bg-dark rounded'>
@@ -222,10 +396,10 @@ class StructuredDataExplorerContainer extends Component {
                         <div className='mb-4'>
                             <p>
                                 Based on the currently loaded log entry, you can now explore related log entries on these three dimensions:
-                                {createKeyBadgeElement('key', false)},
-                                {createValueBadgeElement('value', false)},
+                                {createKeyBadgeElement('key', false, false)},
+                                {createValueBadgeElement('value', false, false)},
                                 and
-                                {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value', false)}.
+                                {createKeyValueBadgeElement('key' + JsonHelper.separator + 'value', false, false)}.
                             </p>
                             <p>
                                 The list below shows all keys, all values, and all key-value pairs identified within the currently loaded log entry.
@@ -233,6 +407,10 @@ class StructuredDataExplorerContainer extends Component {
                             <p>
                                 Clicking on any one element shows those log entries from this server that also match
                                 the selected value, key, or key-value pair, and displays them below under the "Results" headline.
+                            </p>
+                            <p>
+                                Click the <PlusCircle/> icon of another value, key, or key-value pair to further filter down the
+                                resulting list of log entries.
                             </p>
                             <p>
                                 On each result, you can in turn click on the
@@ -260,7 +438,8 @@ class StructuredDataExplorerContainer extends Component {
 
                         <h4 ref={this.resultsRef}>Results</h4>
                         <hr/>
-
+                        Filtered by: {selectedBadgeItemElements}
+                        <hr/>
                         <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
                             {
                                 this.props.reduxState.servers
@@ -292,8 +471,8 @@ class StructuredDataExplorerContainer extends Component {
                                 )
                                 &&
                                 <span className='text-secondary'>
-                            Currently no results. Please click an element to start retrieving matching log entries.
-                        </span>
+                                    Currently no results. Please click an element to start retrieving matching log entries.
+                                </span>
                             }
                         </div>
                     </Fragment>
