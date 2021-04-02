@@ -13,6 +13,34 @@ class StructuredDataExplorerContainer extends Component {
         super(props)
         this.titleRef = React.createRef();
         this.resultsRef = React.createRef();
+
+        this.state = {
+            values: [],
+            keys: [],
+            keysValues: []
+        };
+
+        let parsedJson = null;
+        try {
+            parsedJson = JSON.parse(this.props.event.payload);
+        } catch (e) {
+            console.error('Cannot parse event payload into valid JSON', e);
+            return;
+        }
+
+        if (parsedJson === null) {
+            console.error('Could not parse payload into valid JSON');
+        } else if (typeof(parsedJson) !== 'object') {
+            console.error('JSON is not an object and therefore not explorable.');
+        } else {
+            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
+
+            this.state = { ...this.state, values: JsonHelper.getBrokenDownValues(parsedJson) };
+
+            this.state = { ...this.state, keys: JsonHelper.getBrokenDownKeys(keyValuePairs) };
+
+            this.state = { ...this.state, keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs) };
+        }
     }
 
     handleExplorerBadgeClicked = (serverId, byName, byVal) => {
@@ -26,7 +54,7 @@ class StructuredDataExplorerContainer extends Component {
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if (prevProps.serverEventId !== this.props.serverEventId) {
+        if (prevProps.event.id !== this.props.event.id) {
             if (this.titleRef.current !== null) {
                 this.titleRef.current.scrollIntoView();
             }
@@ -41,7 +69,7 @@ class StructuredDataExplorerContainer extends Component {
                 onClick={() => {
                     if (clickable === true) {
                         this.handleExplorerBadgeClicked(
-                            this.props.serverId,
+                            this.props.event.serverId,
                             'value',
                             value
                         );
@@ -60,7 +88,7 @@ class StructuredDataExplorerContainer extends Component {
                 onClick={() => {
                     if (clickable === true) {
                         this.handleExplorerBadgeClicked(
-                            this.props.serverId,
+                            this.props.event.serverId,
                             'key',
                             key
                         );
@@ -79,7 +107,7 @@ class StructuredDataExplorerContainer extends Component {
                 onClick={() => {
                     if (clickable === true) {
                         this.handleExplorerBadgeClicked(
-                            this.props.serverId,
+                            this.props.event.serverId,
                             'keyValue',
                             keyValue
                         );
@@ -97,23 +125,23 @@ class StructuredDataExplorerContainer extends Component {
         };
 
         const valueElements = [];
-        for (let value of this.props.values) {
+        for (let value of this.state.values) {
             valueElements.push(createValueBadgeElement(value));
         }
 
         const keyElements = [];
-        for (let key of this.props.keys) {
+        for (let key of this.state.keys) {
             keyElements.push(createKeyBadgeElement(key));
         }
 
         const keyValueElements = [];
-        for (let keyValue of this.props.keysValues) {
+        for (let keyValue of this.state.keysValues) {
             keyValueElements.push(createKeyValueBadgeElement(keyValue));
         }
 
         const eventByElements = [];
         for (let server of this.props.reduxState.servers.serverList) {
-            if (server.id === this.props.serverId) {
+            if (server.id === this.props.event.serverId) {
                 for (let eventBy of server.latestEventsBy) {
                     eventByElements.push(
                         <Fragment key={eventBy.id}>
@@ -129,17 +157,10 @@ class StructuredDataExplorerContainer extends Component {
                                         <div
                                             className='clickable mt-3'
                                             onClick={() => {
-                                                this.props.onUseEventClicked(
-                                                    this.props.serverId,
-                                                    eventBy.id,
-                                                    eventBy.createdAt,
-                                                    eventBy.source,
-                                                    eventBy.payload
-                                                );
-
+                                                this.props.onUseEventClicked(eventBy);
                                                 // For some reason this only works ALL the time if we fire it asynchronously:
                                                 setTimeout(
-                                                    () => this.titleRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+                                                    () => this.titleRef.current.scrollIntoView(),
                                                     1
                                                 );
                                             }}
@@ -170,7 +191,7 @@ class StructuredDataExplorerContainer extends Component {
                 <div className='col p-2 ms-1 me-1 mb-2 mt-1 bg-dark rounded'>
                     <X
                         className='close-button float-end clickable pe-1 pt-1'
-                        onClick={() => this.props.onCloseClicked() }
+                        onClick={this.props.onCloseClicked}
                     />
                     <h3 ref={this.titleRef}>Structured Data Explorer</h3>
                     <hr/>
@@ -182,10 +203,10 @@ class StructuredDataExplorerContainer extends Component {
 
                         <div className='mb-2'>
                             <code className='text-white-50 word-wrap-anywhere p-0'>
-                                {this.props.createdAt}
+                                {this.props.event.createdAt}
                                 <br/>
                                 <span className='text-secondary me-2'>
-                                    {this.props.source}
+                                    {this.props.event.source}
                                 </span>
                                 <br/>
                             </code>
@@ -194,7 +215,7 @@ class StructuredDataExplorerContainer extends Component {
                         <code className='word-wrap-anywhere'>
                             <span className='text-white-75'>
                                 <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                    {JSON.stringify(JSON.parse(this.props.payload), null, 2)}
+                                    {JSON.stringify(JSON.parse(this.props.event.payload), null, 2)}
                                 </SyntaxHighlighter>
                             </span>
                         </code>
@@ -244,7 +265,7 @@ class StructuredDataExplorerContainer extends Component {
                             {
                                 this.props.reduxState.servers
                                     .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(this.props.serverId)
+                                    .includes(this.props.event.serverId)
                                 &&
                                 <Fragment>
                                     Retrieving...
@@ -256,7 +277,7 @@ class StructuredDataExplorerContainer extends Component {
                                 &&
                                 !this.props.reduxState.servers
                                     .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(this.props.serverId)
+                                    .includes(this.props.event.serverId)
                                 &&
                                 eventByElements
                             }
@@ -267,7 +288,7 @@ class StructuredDataExplorerContainer extends Component {
                                     &&
                                     !this.props.reduxState.servers
                                         .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                        .includes(this.props.serverId)
+                                        .includes(this.props.event.serverId)
                                 )
                                 &&
                                 <span className='text-secondary'>

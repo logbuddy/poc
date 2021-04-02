@@ -15,7 +15,6 @@ import {
     resetServerEventsByCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
-import JsonHelper from '../JsonHelper.mjs';
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
 
 class ServersContainer extends Component {
@@ -29,7 +28,7 @@ class ServersContainer extends Component {
             createServerTitle: '',
             showCopySuccessBadgeForId: null,
             filterEventsInputTexts,
-            structuredDataExplorerData: null
+            eventLoadedInStructuredDataExplorer: null
         };
         this.copyElements = {};
     }
@@ -40,7 +39,7 @@ class ServersContainer extends Component {
     };
 
     handleRefreshClicked = () => {
-        this.setState({ ...this.state, structuredDataExplorerData: null });
+        this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: null });
         this.props.dispatch(retrieveServerListCommand());
     }
 
@@ -82,51 +81,11 @@ class ServersContainer extends Component {
         this.setState({ ...this.state, showCopySuccessBadgeForId: id });
     }
 
-    handleExploreDialogueOpenClicked = (serverId, serverEventId, createdAt, source, payload) => {
-        this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(serverId));
+    handleLoadEventIntoStructuredDataExplorerClicked = (event) => {
+        this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(event.serverId));
         this.props.dispatch(resetServerEventsByCommand());
-        const structuredDataExplorerData = {
-            serverId,
-            serverEventId,
-            createdAt,
-            source,
-            payload,
-            values: [],
-            keys: [],
-            keysValues: []
-        };
-
-        let parsedJson = null;
-        try {
-            parsedJson = JSON.parse(payload);
-        } catch (e) {
-            console.error('Cannot parse payload into valid JSON', e);
-            return;
-        }
-
-        if (parsedJson === null) {
-            console.error('Could not parse payload into valid JSON');
-            return;
-        } else if (typeof(parsedJson) !== 'object') {
-            console.error('JSON is not an object and therefore not explorable.');
-            return;
-        } else {
-            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
-
-            structuredDataExplorerData.values = JsonHelper.getBrokenDownValues(
-                parsedJson
-            );
-
-            structuredDataExplorerData.keys = JsonHelper.getBrokenDownKeys(
-                keyValuePairs
-            );
-
-            structuredDataExplorerData.keysValues = JsonHelper.getBrokenDownKeysAndValues(
-                keyValuePairs
-            );
-        }
-
-        this.setState({ ...this.state, structuredDataExplorerData });
+        this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: event });
+        console.debug(event);
     }
 
     componentDidMount() {
@@ -221,7 +180,6 @@ class ServersContainer extends Component {
             const serverEventElements = [];
             let index = 0;
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
-                const serverEventId = this.props.reduxState.servers.serverList[i].latestEvents[j].id;
                 const createdAt = this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt;
                 const source = this.props.reduxState.servers.serverList[i].latestEvents[j].source;
                 const payload = this.props.reduxState.servers.serverList[i].latestEvents[j].payload;
@@ -270,13 +228,12 @@ class ServersContainer extends Component {
                         <Fragment key={index}>
                             <div
                                  className={`row mb-3 ${isExplorable && 'clickable'}`}
-                                 onClick={() => isExplorable && this.handleExploreDialogueOpenClicked(
-                                     serverId,
-                                     serverEventId,
-                                     createdAt,
-                                     source,
-                                     payload
-                                )}
+                                 onClick={() =>
+                                     isExplorable
+                                     && this.handleLoadEventIntoStructuredDataExplorerClicked(
+                                         this.props.reduxState.servers.serverList[i].latestEvents[j]
+                                     )
+                                 }
                             >
                                 <div className='col-sm-12 ps-2 pe-2'>
                                     <code className='text-white-75 word-wrap-anywhere'>
@@ -487,36 +444,26 @@ class ServersContainer extends Component {
 
                                 {
                                     (
-                                        this.state.structuredDataExplorerData !== null
-                                        && this.state.structuredDataExplorerData.serverId === serverId
+                                        this.state.eventLoadedInStructuredDataExplorer !== null
+                                        && this.state.eventLoadedInStructuredDataExplorer.serverId === serverId
                                     )
                                     &&
                                     <StructuredDataExplorerContainer
-                                        serverId={this.state.structuredDataExplorerData.serverId}
-                                        serverEventId={this.state.structuredDataExplorerData.serverEventId}
-                                        createdAt={this.state.structuredDataExplorerData.createdAt}
-                                        source={this.state.structuredDataExplorerData.source}
-                                        payload={this.state.structuredDataExplorerData.payload}
-                                        isExplorable={this.state.structuredDataExplorerData.isExplorable}
-                                        values={this.state.structuredDataExplorerData.values}
-                                        keys={this.state.structuredDataExplorerData.keys}
-                                        keysValues={this.state.structuredDataExplorerData.keysValues}
-                                        onCloseClicked={() => this.setState({ ...this.state, structuredDataExplorerData:null })}
-                                        onUseEventClicked={(serverId, serverEventId, createdAt, source, payload) => this.handleExploreDialogueOpenClicked(
-                                            serverId,
-                                            serverEventId,
-                                            createdAt,
-                                            source,
-                                            payload
-                                        )}
+                                        event={this.state.eventLoadedInStructuredDataExplorer}
+                                        onCloseClicked={
+                                            () => this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: null })
+                                        }
+                                        onUseEventClicked={(event) =>
+                                            this.handleLoadEventIntoStructuredDataExplorerClicked(event)
+                                        }
                                     />
                                 }
 
                                 {
                                     (
-                                        this.state.structuredDataExplorerData === null
+                                        this.state.eventLoadedInStructuredDataExplorer === null
                                         ||
-                                        this.state.structuredDataExplorerData.serverId !== serverId
+                                        this.state.eventLoadedInStructuredDataExplorer.serverId !== serverId
                                     )
                                     &&
                                     serverEventElements
