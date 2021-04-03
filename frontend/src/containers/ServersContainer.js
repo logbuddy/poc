@@ -17,21 +17,32 @@ import {
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
 import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
+import PaginatorPresentational from "../presentationals/PaginatorPresentational";
+
+const itemsPerPage = 25;
 
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
+
         let filterEventsInputTexts = {};
         for (let i = 0; i < this.props.reduxState.servers.serverList; i++) {
             filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id] = '';
         }
+
+        let currentLatestEventsPages = {};
+        for (let server of this.props.reduxState.servers.serverList) {
+            currentLatestEventsPages[server.id] = 1;
+        }
+
         this.state = {
             mouseIsOnDisableShowEventPayloadElement: false,
             mouseIsOnEnableShowEventPayloadElement: false,
             createServerTitle: '',
             showCopySuccessBadgeForId: null,
             filterEventsInputTexts,
-            eventLoadedInStructuredDataExplorer: null
+            eventLoadedInStructuredDataExplorer: null,
+            currentLatestEventsPages: currentLatestEventsPages
         };
         this.copyElements = {};
     }
@@ -88,6 +99,15 @@ class ServersContainer extends Component {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(event.serverId));
         this.props.dispatch(resetServerEventsByCommand());
         this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: event });
+    }
+
+    handleCurrentLatestEventsPageClicked = (serverId, page) => {
+        const newState = { ...this.state.currentLatestEventsPages };
+        newState[serverId] = page;
+        this.setState({
+            ...this.state,
+            currentLatestEventsPages: { ...newState }
+        });
     }
 
     componentDidMount() {
@@ -203,17 +223,25 @@ class ServersContainer extends Component {
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const server = this.props.reduxState.servers.serverList[i];
             const serverId = server.id;
-            const latestEvents = server.latestEvents.filter((event) => {
-                if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false) {
-                    return true;
-                } else {
-                    return textMatchesSearchterm(`${event.createdAt} ${event.source} ${event.payload}`, this.state.filterEventsInputTexts[serverId]);
-                }
-            });
+            const filteredLatestEvents = server.latestEvents
+                .filter((event) => {
+                    if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false) {
+                        return true;
+                    } else {
+                        return textMatchesSearchterm(`${event.createdAt} ${event.source} ${event.payload}`, this.state.filterEventsInputTexts[serverId]);
+                    }
+                })
+            ;
+            const filteredLatestEventsForCurrentPage = filteredLatestEvents
+                .slice(
+                    (this.state.currentLatestEventsPages[server.id] - 1) * itemsPerPage,
+                    ((this.state.currentLatestEventsPages[server.id] - 1) * itemsPerPage) + itemsPerPage
+                )
+            ;
             const serverEventElements = [];
             let index = 0;
-            for (let j=0; j < latestEvents.length; j++) {
-                const event = latestEvents[j];
+            for (let j=0; j < filteredLatestEventsForCurrentPage.length; j++) {
+                const event = filteredLatestEventsForCurrentPage[j];
                 const createdAt = event.createdAt;
                 const source = event.source;
                 const payload = event.payload;
@@ -491,7 +519,33 @@ class ServersContainer extends Component {
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <PaginatorPresentational
+                                            numberOfItems={filteredLatestEvents.length}
+                                            itemsPerPage={itemsPerPage}
+                                            currentPage={this.state.currentLatestEventsPages[server.id]}
+                                            onPageClicked={(page) =>
+                                                this.handleCurrentLatestEventsPageClicked(
+                                                    server.id,
+                                                    page
+                                                )
+                                            }
+                                        />
+
                                         {serverEventElements}
+
+                                        <PaginatorPresentational
+                                            numberOfItems={filteredLatestEvents.length}
+                                            itemsPerPage={itemsPerPage}
+                                            currentPage={this.state.currentLatestEventsPages[server.id]}
+                                            onPageClicked={(page) =>
+                                                this.handleCurrentLatestEventsPageClicked(
+                                                    server.id,
+                                                    page
+                                                )
+                                            }
+                                        />
+
                                     </Fragment>
                                 }
                             </div>
