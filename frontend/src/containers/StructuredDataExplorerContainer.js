@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import {connect} from "react-redux";
+import {connect} from 'react-redux';
 import {
     retrieveServerEventsByCommand,
 } from '../redux/reducers/servers';
 import JsonHelper from '../JsonHelper.mjs';
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
-import { X, Upload, PlusCircle, DashCircle } from "react-bootstrap-icons";
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
+import { X, Upload, PlusCircle, DashCircle } from 'react-bootstrap-icons';
 
 class StructuredDataExplorerContainer extends Component {
     constructor(props) {
