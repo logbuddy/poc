@@ -28,7 +28,6 @@ const DayzEventSkinPresentational = ({event}) => {
                             </div>
                         </SkinBox>
                     );
-                    break;
                 case 'PlayerKilled':
                     if (parsedPayload.action.cause === 'NATURAL') {
                         return (
@@ -67,7 +66,6 @@ const DayzEventSkinPresentational = ({event}) => {
                             </div>
                         </SkinBox>
                     );
-                    break;
                 default:
                     return <Fragment/>;
             }
