@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
+import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, FileEarmarkCode, FileEarmarkCodeFill, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import {
@@ -12,7 +12,7 @@ import {
     retrieveYetUnseenServerEventsCommand,
     disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand,
-    resetServerEventsByCommand
+    resetServerEventsByCommand, disableShowEventPayloadCommand, enableShowEventPayloadCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
@@ -26,6 +26,8 @@ class ServersContainer extends Component {
             filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id] = '';
         }
         this.state = {
+            mouseIsOnDisableShowEventPayloadElement: false,
+            mouseIsOnEnableShowEventPayloadElement: false,
             createServerTitle: '',
             showCopySuccessBadgeForId: null,
             filterEventsInputTexts,
@@ -118,7 +120,8 @@ class ServersContainer extends Component {
                             elementName === 'latestEvents'
                             &&
                             <Fragment>
-                                <div className='small float-end text-light mb-2'>
+                                <hr className='text-dark'/>
+                                <div className='small text-light mb-2'>
                                     {
                                         this.props.reduxState
                                             .servers
@@ -157,7 +160,7 @@ class ServersContainer extends Component {
                                         </div>
                                     }
                                 </div>
-                                <hr className='float-none text-dark'/>
+                                <hr className='text-dark'/>
                             </Fragment>
                         }
                     </div>
@@ -257,9 +260,13 @@ class ServersContainer extends Component {
                                                 &&
                                                 <DayzEventSkinPresentational event={event} />
                                             }
-                                            <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                                {payloadToShow}
-                                            </SyntaxHighlighter>
+                                            {
+                                                this.props.reduxState.servers.showEventPayload
+                                                &&
+                                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                                    {payloadToShow}
+                                                </SyntaxHighlighter>
+                                            }
                                         </Fragment>
                                     }
 
@@ -296,7 +303,16 @@ class ServersContainer extends Component {
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-primary col server-headline-icon'>
-                                <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1 pe-1' alt='LogBuddy Icon' />
+                                {
+                                    this.props.reduxState.servers.serverList[i].type === 'dayz'
+                                    &&
+                                    <img src='assets/images/event-skins/dayz/dayz-logo.png' width='26' className='pt-1 pe-1' alt='DayZ Logo' />
+                                }
+                                {
+                                    this.props.reduxState.servers.serverList[i].type === 'default'
+                                    &&
+                                    <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1 pe-1' alt='LogBuddy Icon' />
+                                }
                             </div>
                             <div className='col server-headline-title'>
                                 <h4 className='mb-0'>{this.props.reduxState.servers.serverList[i].title}</h4>
@@ -514,19 +530,77 @@ class ServersContainer extends Component {
 
         return (
             <div className='m-4'>
-                <div className='text-end float-end'>
-                    <Fragment>
-                        {
-                            this.props.reduxState.servers.retrieveServerListOperation.isRunning
-                            &&
-                            <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
-                        }
-                        {
-                            this.props.reduxState.servers.retrieveServerListOperation.isRunning
-                            ||
-                            <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
-                        }
-                    </Fragment>
+                <div className='navbar navbar-expand'>
+                    <ul className='navbar-nav ms-auto'>
+                        <li className='nav-item text-center'>
+                            {
+                                this.props.reduxState.servers.showEventPayload
+                                &&
+                                <Fragment>
+                                    {
+                                        this.state.mouseIsOnDisableShowEventPayloadElement
+                                        &&
+                                        <span className='tiny'>Showing JSON payloads. Click to disable.</span>
+                                    }
+                                    <FileEarmarkCodeFill
+                                        width='1.5em'
+                                        height='1.5em'
+                                        className='clickable'
+                                        onMouseOver={() => this.setState({
+                                            ...this.state,
+                                            mouseIsOnDisableShowEventPayloadElement: true,
+                                            mouseIsOnEnableShowEventPayloadElement: false
+                                        })}
+                                        onMouseOut={() => this.setState({
+                                            ...this.state,
+                                            mouseIsOnDisableShowEventPayloadElement: false,
+                                            mouseIsOnEnableShowEventPayloadElement: false
+                                        })}
+                                        onClick={() => this.props.dispatch(disableShowEventPayloadCommand())}
+                                    />
+                                </Fragment>
+                            }
+                            {
+                                this.props.reduxState.servers.showEventPayload
+                                ||
+                                <Fragment>
+                                    {
+                                        this.state.mouseIsOnEnableShowEventPayloadElement
+                                        &&
+                                        <span className='tiny'>Not showing JSON payloads. Click to enable.</span>
+                                    }
+                                    <FileEarmarkCode
+                                        width='1.5em'
+                                        height='1.5em'
+                                        className='clickable'
+                                        onMouseOver={() => this.setState({
+                                            ...this.state,
+                                            mouseIsOnDisableShowEventPayloadElement: false,
+                                            mouseIsOnEnableShowEventPayloadElement: true
+                                        })}
+                                        onMouseOut={() => this.setState({
+                                            ...this.state,
+                                            mouseIsOnDisableShowEventPayloadElement: false,
+                                            mouseIsOnEnableShowEventPayloadElement: false
+                                        })}
+                                        onClick={() => this.props.dispatch(enableShowEventPayloadCommand())}
+                                    />
+                                </Fragment>
+                            }
+                        </li>
+                        <li className='nav-item text-center'>
+                            {
+                                this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                &&
+                                <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
+                            }
+                            {
+                                this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                ||
+                                <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
+                            }
+                        </li>
+                    </ul>
                 </div>
 
                 <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />

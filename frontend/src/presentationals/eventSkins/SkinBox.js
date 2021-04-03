@@ -1,7 +1,8 @@
 import React from 'react';
 
-const SkinBox = ({type, children}) => (
+const SkinBox = ({type, logo, children}) => (
     <div className={`mt-2 mb-2 alert alert-${type}`}>
+        <div className='ms-2 float-end'>{logo}</div>
         {children}
     </div>
 );

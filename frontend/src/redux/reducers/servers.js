@@ -1,6 +1,7 @@
 import { apiFetch } from '../util';
 
 const initialState = {
+    showEventPayload: true,
     flipAllLatestEventsElementsOpen: false,
     retrieveServerListOperation: {
         isRunning: false,
@@ -22,6 +23,14 @@ const initialState = {
         latestEvents: []
     }
 };
+
+export const disableShowEventPayloadCommand = () => ({
+    type: 'DISABLE_SHOW_EVENT_PAYLOAD_COMMAND'
+});
+
+export const enableShowEventPayloadCommand = () => ({
+    type: 'ENABLE_SHOW_EVENT_PAYLOAD_COMMAND'
+});
 
 export const disableFlipAllLatestEventsElementsOpenCommand = () => ({
     type: 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND'
@@ -327,6 +336,18 @@ const reducer = (state = initialState, action) => {
     };
 
     switch (action.type) {
+
+        case 'DISABLE_SHOW_EVENT_PAYLOAD_COMMAND':
+            return {
+                ...state,
+                showEventPayload: false,
+            };
+
+        case 'ENABLE_SHOW_EVENT_PAYLOAD_COMMAND':
+            return {
+                ...state,
+                showEventPayload: true,
+            };
 
         case 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND':
             return {

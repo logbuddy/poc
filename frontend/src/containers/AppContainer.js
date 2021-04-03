@@ -19,13 +19,11 @@ const Navigation = (params) => (
             {
                 useLocation().pathname === '/'
                 ||
-                <ul className='navbar-nav me-auto'>
-                    <li className='nav-item pe-2'>
-                        <NavLink className='nav-link p-0' activeClassName='active' to='/'>
-                            <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1' alt='LogBuddy Icon' />
-                        </NavLink>
-                    </li>
-                </ul>
+                <li className='nav-item pe-2'>
+                    <NavLink className='nav-link p-0' activeClassName='active' to='/'>
+                        <img src='assets/images/logbuddy-icon.png' width='26' className='pt-1' alt='LogBuddy Icon' />
+                    </NavLink>
+                </li>
             }
             {
                 params.reduxState.session.isLoggedIn
@@ -76,7 +74,7 @@ class AppContainer extends Component {
                             {
                                 this.props.reduxState.session.isLoggedIn
                                 &&
-                                <ul className="navbar-nav ml-auto">
+                                <ul className="navbar-nav ms-auto">
                                     {
                                         this.state.showLogoutCta
                                         ||

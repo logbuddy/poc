@@ -362,9 +362,13 @@ class StructuredDataExplorerContainer extends Component {
                                                 &&
                                                 <DayzEventSkinPresentational event={eventBy} />
                                             }
-                                            <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                                {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
-                                            </SyntaxHighlighter>
+                                            {
+                                                this.props.reduxState.servers.showEventPayload
+                                                &&
+                                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                                    {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
+                                                </SyntaxHighlighter>
+                                            }
                                         </span>
                                     </code>
                                 </div>
@@ -417,9 +421,13 @@ class StructuredDataExplorerContainer extends Component {
 
                         <code className='word-wrap-anywhere'>
                             <span className='text-white-75'>
-                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                    {JSON.stringify(JSON.parse(this.props.event.payload), null, 2)}
-                                </SyntaxHighlighter>
+                                {
+                                    this.props.reduxState.servers.showEventPayload
+                                    &&
+                                    <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                        {JSON.stringify(JSON.parse(this.props.event.payload), null, 2)}
+                                    </SyntaxHighlighter>
+                                }
                             </span>
                         </code>
                         <div className='mb-4'>
