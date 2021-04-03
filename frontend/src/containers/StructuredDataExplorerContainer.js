@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import {connect} from 'react-redux';
 import {
+    resetServerEventsByCommand,
     retrieveServerEventsByCommand,
 } from '../redux/reducers/servers';
 import JsonHelper from '../JsonHelper.mjs';
@@ -90,7 +91,13 @@ class StructuredDataExplorerContainer extends Component {
                     )
                 ]
             },
-            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
+            () => {
+                if (this.state.selectedAttributes.length > 0) {
+                    this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes));
+                } else {
+                    this.props.dispatch(resetServerEventsByCommand());
+                }
+            }
         );
     }
 
@@ -490,8 +497,14 @@ class StructuredDataExplorerContainer extends Component {
                                 <Fragment>Results</Fragment>
                             }
                         </h4>
-                        <hr/>
-                        Filtered by: {selectedAttributeElements}
+                        {
+                            eventByElements.length > 0
+                            &&
+                            <Fragment>
+                                <hr/>
+                                Filtered by: {selectedAttributeElements}
+                            </Fragment>
+                        }
                         <hr/>
                         <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
                             {
