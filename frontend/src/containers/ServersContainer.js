@@ -31,7 +31,9 @@ class ServersContainer extends Component {
         }
 
         let currentLatestEventsPages = {};
+        console.log('this.props.reduxState.servers.serverList.length', this.props.reduxState.servers.serverList.length);
         for (let server of this.props.reduxState.servers.serverList) {
+            console.log('this.props.reduxState.servers.serverList server', server);
             currentLatestEventsPages[server.id] = 1;
         }
 
@@ -238,6 +240,8 @@ class ServersContainer extends Component {
                     ((this.state.currentLatestEventsPages[server.id] - 1) * itemsPerPage) + itemsPerPage
                 )
             ;
+            console.debug('filteredLatestEventsForCurrentPage.length', filteredLatestEventsForCurrentPage.length);
+
             const serverEventElements = [];
             let index = 0;
             for (let j=0; j < filteredLatestEventsForCurrentPage.length; j++) {
@@ -520,31 +524,41 @@ class ServersContainer extends Component {
                                             </div>
                                         </div>
 
-                                        <PaginatorPresentational
-                                            numberOfItems={filteredLatestEvents.length}
-                                            itemsPerPage={itemsPerPage}
-                                            currentPage={this.state.currentLatestEventsPages[server.id]}
-                                            onPageClicked={(page) =>
-                                                this.handleCurrentLatestEventsPageClicked(
-                                                    server.id,
-                                                    page
-                                                )
-                                            }
-                                        />
+                                        <div className='row'>
+                                            <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
+
+                                                <PaginatorPresentational
+                                                numberOfItems={filteredLatestEvents.length}
+                                                itemsPerPage={itemsPerPage}
+                                                currentPage={this.state.currentLatestEventsPages[server.id]}
+                                                onPageClicked={(page) =>
+                                                    this.handleCurrentLatestEventsPageClicked(
+                                                        server.id,
+                                                        page
+                                                    )
+                                                }
+                                            />
+                                            </div>
+                                        </div>
 
                                         {serverEventElements}
 
-                                        <PaginatorPresentational
-                                            numberOfItems={filteredLatestEvents.length}
-                                            itemsPerPage={itemsPerPage}
-                                            currentPage={this.state.currentLatestEventsPages[server.id]}
-                                            onPageClicked={(page) =>
-                                                this.handleCurrentLatestEventsPageClicked(
-                                                    server.id,
-                                                    page
-                                                )
-                                            }
-                                        />
+                                        <div className='row'>
+                                            <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
+
+                                                <PaginatorPresentational
+                                                    numberOfItems={filteredLatestEvents.length}
+                                                    itemsPerPage={itemsPerPage}
+                                                    currentPage={this.state.currentLatestEventsPages[server.id]}
+                                                    onPageClicked={(page) =>
+                                                        this.handleCurrentLatestEventsPageClicked(
+                                                            server.id,
+                                                            page
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
 
                                     </Fragment>
                                 }

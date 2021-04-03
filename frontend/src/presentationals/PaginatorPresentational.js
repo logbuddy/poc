@@ -12,6 +12,7 @@ const PaginatorPresentational = ({numberOfItems, itemsPerPage, currentPage, onPa
     for (let i = 0; i < numberOfPages; i++) {
         pageElements.push(
             <span
+                key={i}
                 className={`
                     me-1
                     badge
@@ -30,10 +31,8 @@ const PaginatorPresentational = ({numberOfItems, itemsPerPage, currentPage, onPa
     }
 
     return (
-        <div className='row bg-dark p-2 rounded'>
-            <div className='col'>
-                {pageElements}
-            </div>
+        <div className='bg-dark rounded p-2'>
+            {pageElements}
         </div>
     );
 };
