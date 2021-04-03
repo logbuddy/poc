@@ -99,6 +99,28 @@ class ServersContainer extends Component {
             return (<Redirect to='/login' />);
         }
 
+        const textMatchesSearchterm = (text, searchterm) => {
+            const buildRegEx = (str, keywords) => {
+                return new RegExp("(?=.*?\\b" +
+                    keywords
+                        .split(" ")
+                        .join(")(?=.*?\\b") +
+                    ").*",
+                    "i"
+                );
+            }
+
+            const test = (str, keywords, expected) => {
+                return buildRegEx(str, keywords).test(str) === expected
+            }
+
+            if (searchterm.substr(0, 1) === '!') {
+                return test(text, searchterm.substr(1), false);
+            } else {
+                return test(text, searchterm, true);
+            }
+        };
+
         const createFlipElement = (server, elementName) => {
             const elementNameToHeadline = {
                 information: 'Information',
@@ -179,15 +201,22 @@ class ServersContainer extends Component {
 
         const serverListElements = [];
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
-            const serverId = this.props.reduxState.servers.serverList[i].id;
+            const server = this.props.reduxState.servers.serverList[i];
+            const serverId = server.id;
+            const latestEvents = server.latestEvents.filter((event) => {
+                if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false) {
+                    return true;
+                } else {
+                    return textMatchesSearchterm(`${event.createdAt} ${event.source} ${event.payload}`, this.state.filterEventsInputTexts[serverId]);
+                }
+            });
             const serverEventElements = [];
             let index = 0;
-            for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
-                const server = this.props.reduxState.servers.serverList[i];
-                const event = this.props.reduxState.servers.serverList[i].latestEvents[j];
-                const createdAt = this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt;
-                const source = this.props.reduxState.servers.serverList[i].latestEvents[j].source;
-                const payload = this.props.reduxState.servers.serverList[i].latestEvents[j].payload;
+            for (let j=0; j < latestEvents.length; j++) {
+                const event = latestEvents[j];
+                const createdAt = event.createdAt;
+                const source = event.source;
+                const payload = event.payload;
                 let parsedPayload = '';
                 try {
                     parsedPayload = JSON.parse(payload);
@@ -201,89 +230,60 @@ class ServersContainer extends Component {
 
                 let isExplorable = typeof(parsedPayload) === 'object';
 
-                const textMatchesSearchterm = (text, searchterm) => {
-                    const buildRegEx = (str, keywords) => {
-                        return new RegExp("(?=.*?\\b" +
-                            keywords
-                                .split(" ")
-                                .join(")(?=.*?\\b") +
-                            ").*",
-                            "i"
-                        );
-                    }
-
-                    const test = (str, keywords, expected) => {
-                        return buildRegEx(str, keywords).test(str) === expected
-                    }
-
-                    if (searchterm.substr(0, 1) === '!') {
-                        return test(text, searchterm.substr(1), false);
-                    } else {
-                        return test(text, searchterm, true);
-                    }
-                };
-
-                if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false
-                    ||
-                    (     this.state.filterEventsInputTexts.hasOwnProperty(serverId)
-                       && textMatchesSearchterm(`${createdAt} ${source} ${payload}`, this.state.filterEventsInputTexts[serverId])
-                    )
-                ) {
-                    serverEventElements.push(
-                        <Fragment key={index}>
-                            <div
-                                 className={`row mb-3 ${isExplorable && 'clickable'}`}
-                                 onClick={() =>
-                                     isExplorable
-                                     && this.handleLoadEventIntoStructuredDataExplorerClicked(
-                                         this.props.reduxState.servers.serverList[i].latestEvents[j]
-                                     )
-                                 }
-                            >
-                                <div className='col-sm-12 ps-2 pe-2'>
-                                    <code className='text-white-75 word-wrap-anywhere'>
-                                        {createdAt}
-                                    </code>
-                                </div>
-                                <div className='col-sm-12 ps-2 pe-2 mb-2'>
-                                    <code className='text-white-50 word-wrap-anywhere'>
-                                        {source}
-                                    </code>
-                                </div>
-                                <div className='col-sm-12 ps-1 pe-1'>
-                                    {
-                                        isExplorable
-                                        &&
-                                        <Fragment>
-                                            {
-                                                server.type === 'dayz'
-                                                &&
-                                                <DayzEventSkinPresentational event={event} />
-                                            }
-                                            {
-                                                this.props.reduxState.servers.showEventPayload
-                                                &&
-                                                <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                                    {payloadToShow}
-                                                </SyntaxHighlighter>
-                                            }
-                                        </Fragment>
-                                    }
-
-                                    {
-                                        isExplorable
-                                        ||
-                                        <SyntaxHighlighter language="text" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                            {payloadToShow}
-                                        </SyntaxHighlighter>
-                                    }
-                                </div>
+                serverEventElements.push(
+                    <Fragment key={index}>
+                        <div
+                             className={`row mb-3 ${isExplorable && 'clickable'}`}
+                             onClick={() =>
+                                 isExplorable
+                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(
+                                     this.props.reduxState.servers.serverList[i].latestEvents[j]
+                                 )
+                             }
+                        >
+                            <div className='col-sm-12 ps-2 pe-2'>
+                                <code className='text-white-75 word-wrap-anywhere'>
+                                    {createdAt}
+                                </code>
                             </div>
-                            <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
-                        </Fragment>
-                    );
-                    index = index + 1;
-                }
+                            <div className='col-sm-12 ps-2 pe-2 mb-2'>
+                                <code className='text-white-50 word-wrap-anywhere'>
+                                    {source}
+                                </code>
+                            </div>
+                            <div className='col-sm-12 ps-1 pe-1'>
+                                {
+                                    isExplorable
+                                    &&
+                                    <Fragment>
+                                        {
+                                            server.type === 'dayz'
+                                            &&
+                                            <DayzEventSkinPresentational event={event} />
+                                        }
+                                        {
+                                            this.props.reduxState.servers.showEventPayload
+                                            &&
+                                            <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                                {payloadToShow}
+                                            </SyntaxHighlighter>
+                                        }
+                                    </Fragment>
+                                }
+
+                                {
+                                    isExplorable
+                                    ||
+                                    <SyntaxHighlighter language="text" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                        {payloadToShow}
+                                    </SyntaxHighlighter>
+                                }
+                            </div>
+                        </div>
+                        <div key={j + 'gutter'} className='d-md-none d-sm-block border-top border-dark'>&nbsp;</div>
+                    </Fragment>
+                );
+                index = index + 1;
             }
 
             const sampleCurlCommand = `curl \\
