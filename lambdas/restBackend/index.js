@@ -316,11 +316,16 @@ const handleRetrieveServerList = async (event) => {
     _console.debug('res', serversFromDbResult);
 
     for (let i = 0; i < serversFromDbResult.Items.length; i++) {
+        let type = 'default';
+        if (serversFromDbResult.Items[i].hasOwnProperty('type')) {
+            type = serversFromDbResult.Items[i].type;
+        }
         serversFromDb.push({
             id: serversFromDbResult.Items[i].id,
             userId: serversFromDbResult.Items[i].users_id,
             apiKeyId: serversFromDbResult.Items[i].logging_api_key_id,
             title: serversFromDbResult.Items[i].title,
+            type,
             latestEventSortValue: null,
             latestEvents: [],
             latestEventsBy: []

@@ -16,6 +16,7 @@ import {
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
+import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
 
 class ServersContainer extends Component {
     constructor(props) {
@@ -179,6 +180,8 @@ class ServersContainer extends Component {
             const serverEventElements = [];
             let index = 0;
             for (let j=0; j < this.props.reduxState.servers.serverList[i].latestEvents.length; j++) {
+                const server = this.props.reduxState.servers.serverList[i];
+                const event = this.props.reduxState.servers.serverList[i].latestEvents[j];
                 const createdAt = this.props.reduxState.servers.serverList[i].latestEvents[j].createdAt;
                 const source = this.props.reduxState.servers.serverList[i].latestEvents[j].source;
                 const payload = this.props.reduxState.servers.serverList[i].latestEvents[j].payload;
@@ -248,9 +251,16 @@ class ServersContainer extends Component {
                                     {
                                         isExplorable
                                         &&
-                                        <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
-                                            {payloadToShow}
-                                        </SyntaxHighlighter>
+                                        <Fragment>
+                                            {
+                                                server.type === 'dayz'
+                                                &&
+                                                <DayzEventSkinPresentational event={event} />
+                                            }
+                                            <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
+                                                {payloadToShow}
+                                            </SyntaxHighlighter>
+                                        </Fragment>
                                     }
 
                                     {
@@ -427,6 +437,7 @@ class ServersContainer extends Component {
                                     )
                                     &&
                                     <StructuredDataExplorerContainer
+                                        server={this.props.reduxState.servers.serverList[i]}
                                         event={this.state.eventLoadedInStructuredDataExplorer}
                                         onCloseClicked={
                                             () => this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: null })

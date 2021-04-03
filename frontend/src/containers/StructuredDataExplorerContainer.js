@@ -7,6 +7,7 @@ import JsonHelper from '../JsonHelper.mjs';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 import { X, Upload, PlusCircle, DashCircle } from 'react-bootstrap-icons';
+import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
 
 class StructuredDataExplorerContainer extends Component {
     constructor(props) {
@@ -356,6 +357,11 @@ class StructuredDataExplorerContainer extends Component {
                                 <div className='col ps-1 pe-1 pt-1'>
                                     <code className='word-wrap-anywhere'>
                                         <span className='text-white-75'>
+                                            {
+                                                this.props.server.type === 'dayz'
+                                                &&
+                                                <DayzEventSkinPresentational event={eventBy} />
+                                            }
                                             <SyntaxHighlighter language="json" style={a11yDark} wrapLongLines={true} className='rounded'>
                                                 {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
                                             </SyntaxHighlighter>
@@ -402,6 +408,12 @@ class StructuredDataExplorerContainer extends Component {
                                 <br/>
                             </code>
                         </div>
+
+                        {
+                            this.props.server.type === 'dayz'
+                            &&
+                            <DayzEventSkinPresentational event={this.props.event} />
+                        }
 
                         <code className='word-wrap-anywhere'>
                             <span className='text-white-75'>
