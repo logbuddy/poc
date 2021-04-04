@@ -16,8 +16,8 @@ import {
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
-import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
-import PaginatorPresentational from "../presentationals/PaginatorPresentational";
+import DayzEventSkinPresentational from '../presentationals/eventSkins/dayz/DayzEventSkinPresentational';
+import PaginatorPresentational from '../presentationals/PaginatorPresentational';
 
 const itemsPerPage = 25;
 
