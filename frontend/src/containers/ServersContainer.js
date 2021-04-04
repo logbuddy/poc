@@ -25,26 +25,14 @@ class ServersContainer extends Component {
     constructor(props) {
         super(props);
 
-        let filterEventsInputTexts = {};
-        for (let i = 0; i < this.props.reduxState.servers.serverList; i++) {
-            filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id] = '';
-        }
-
-        let currentLatestEventsPages = {};
-        console.log('this.props.reduxState.servers.serverList.length', this.props.reduxState.servers.serverList.length);
-        for (let server of this.props.reduxState.servers.serverList) {
-            console.log('this.props.reduxState.servers.serverList server', server);
-            currentLatestEventsPages[server.id] = 1;
-        }
-
         this.state = {
             mouseIsOnDisableShowEventPayloadElement: false,
             mouseIsOnEnableShowEventPayloadElement: false,
             createServerTitle: '',
             showCopySuccessBadgeForId: null,
-            filterEventsInputTexts,
+            filterEventsInputTexts: [],
             eventLoadedInStructuredDataExplorer: null,
-            currentLatestEventsPages: currentLatestEventsPages
+            currentLatestEventsPages: []
         };
         this.copyElements = {};
     }
@@ -119,6 +107,22 @@ class ServersContainer extends Component {
     render() {
         if (!this.props.reduxState.session.isLoggedIn) {
             return (<Redirect to='/login' />);
+        }
+
+        const getCurrentLatestEventsPage = (serverId) => {
+            if (this.state.currentLatestEventsPages.hasOwnProperty(serverId)) {
+                return this.state.currentLatestEventsPages[serverId];
+            } else {
+                return 1;
+            }
+        }
+
+        const getFilterEventsInputText = (serverId) => {
+            if (this.state.filterEventsInputTexts.hasOwnProperty(serverId)) {
+                return this.state.filterEventsInputTexts[serverId];
+            } else {
+                return '';
+            }
         }
 
         const textMatchesSearchterm = (text, searchterm) => {
@@ -226,18 +230,18 @@ class ServersContainer extends Component {
             const server = this.props.reduxState.servers.serverList[i];
             const serverId = server.id;
             const filteredLatestEvents = server.latestEvents
-                .filter((event) => {
-                    if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false) {
-                        return true;
-                    } else {
-                        return textMatchesSearchterm(`${event.createdAt} ${event.source} ${event.payload}`, this.state.filterEventsInputTexts[serverId]);
-                    }
-                })
+                .filter((event) =>
+                    textMatchesSearchterm(
+                        `${event.createdAt} ${event.source} ${event.payload}`,
+                        getFilterEventsInputText(serverId)
+                    )
+                )
             ;
+
             const filteredLatestEventsForCurrentPage = filteredLatestEvents
                 .slice(
-                    (this.state.currentLatestEventsPages[server.id] - 1) * itemsPerPage,
-                    ((this.state.currentLatestEventsPages[server.id] - 1) * itemsPerPage) + itemsPerPage
+                    (getCurrentLatestEventsPage(server.id) - 1) * itemsPerPage,
+                    (getCurrentLatestEventsPage(server.id) - 1) * itemsPerPage + itemsPerPage
                 )
             ;
             console.debug('filteredLatestEventsForCurrentPage.length', filteredLatestEventsForCurrentPage.length);
@@ -514,7 +518,7 @@ class ServersContainer extends Component {
                                                         className='form-control bg-secondary text-white-50 border-dark'
                                                         id='filter-events-input'
                                                         placeholder=''
-                                                        value={this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id]}
+                                                        value={getFilterEventsInputText(this.props.reduxState.servers.serverList[i].id)}
                                                         onChange={
                                                             (event) =>
                                                                 this.handleChangeFilterEventsInputText(event, this.props.reduxState.servers.serverList[i].id)
@@ -528,16 +532,16 @@ class ServersContainer extends Component {
                                             <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
 
                                                 <PaginatorPresentational
-                                                numberOfItems={filteredLatestEvents.length}
-                                                itemsPerPage={itemsPerPage}
-                                                currentPage={this.state.currentLatestEventsPages[server.id]}
-                                                onPageClicked={(page) =>
-                                                    this.handleCurrentLatestEventsPageClicked(
-                                                        server.id,
-                                                        page
-                                                    )
-                                                }
-                                            />
+                                                    numberOfItems={filteredLatestEvents.length}
+                                                    itemsPerPage={itemsPerPage}
+                                                    currentPage={getCurrentLatestEventsPage(server.id)}
+                                                    onPageClicked={(page) =>
+                                                        this.handleCurrentLatestEventsPageClicked(
+                                                            server.id,
+                                                            page
+                                                        )
+                                                    }
+                                                />
                                             </div>
                                         </div>
 
@@ -549,7 +553,7 @@ class ServersContainer extends Component {
                                                 <PaginatorPresentational
                                                     numberOfItems={filteredLatestEvents.length}
                                                     itemsPerPage={itemsPerPage}
-                                                    currentPage={this.state.currentLatestEventsPages[server.id]}
+                                                    currentPage={getCurrentLatestEventsPage(server.id)}
                                                     onPageClicked={(page) =>
                                                         this.handleCurrentLatestEventsPageClicked(
                                                             server.id,
@@ -580,9 +584,7 @@ class ServersContainer extends Component {
                             &&
                             this.props.reduxState.servers.serverList[i].latestEvents.length > 0
                             &&
-                            this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id)
-                            &&
-                            this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id].length > 0
+                            getFilterEventsInputText(this.props.reduxState.servers.serverList[i].id).length > 0
                             &&
                             serverEventElements.length === 0
                             &&
