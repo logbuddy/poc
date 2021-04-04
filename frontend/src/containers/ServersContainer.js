@@ -54,7 +54,7 @@ class ServersContainer extends Component {
     handleChangeFilterEventsInputText = (event, serverId) => {
         const filterEventsInputTexts = { ...this.state.filterEventsInputTexts };
         filterEventsInputTexts[serverId] = event.target.value;
-        this.setState({ ...this.state, filterEventsInputTexts });
+        this.setState({ ...this.state, filterEventsInputTexts }, () => this.handleCurrentLatestEventsPageClicked(serverId, 1));
     }
 
     handleCreateServerClicked = (event) => {
@@ -244,7 +244,6 @@ class ServersContainer extends Component {
                     (getCurrentLatestEventsPage(server.id) - 1) * itemsPerPage + itemsPerPage
                 )
             ;
-            console.debug('filteredLatestEventsForCurrentPage.length', filteredLatestEventsForCurrentPage.length);
 
             const serverEventElements = [];
             let index = 0;
@@ -715,7 +714,21 @@ class ServersContainer extends Component {
                     </form>
                 </div>
 
-                {serverListElements}
+                {
+                    serverListElements.length > 0
+                    &&
+                    serverListElements
+                }
+
+                {
+                    serverListElements.length > 0
+                    ||
+                    <div className='mt-5 w-100 text-center'>
+                        <h1 className='text-secondary'>
+                            Loading server data, please wait...
+                        </h1>
+                    </div>
+                }
             </div>
         );
     }

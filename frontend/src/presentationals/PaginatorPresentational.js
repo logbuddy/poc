@@ -1,7 +1,6 @@
 import React, {Fragment} from 'react';
 
 const PaginatorPresentational = ({numberOfItems, itemsPerPage, currentPage, onPageClicked}) => {
-    console.debug('PaginatorPresentational currentPage', currentPage);
     const numberOfPages = Math.ceil(numberOfItems / itemsPerPage);
 
     if (numberOfPages < 2) {
@@ -32,6 +31,9 @@ const PaginatorPresentational = ({numberOfItems, itemsPerPage, currentPage, onPa
 
     return (
         <div className='bg-dark rounded p-2'>
+            <span className='pe-2'>
+                Result pages:
+            </span>
             {pageElements}
         </div>
     );

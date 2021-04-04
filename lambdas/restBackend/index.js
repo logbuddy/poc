@@ -335,7 +335,7 @@ const handleRetrieveServerList = async (event) => {
     for (let i = 0; i < serversFromDb.length; i++) {
         const queryParamsServerEvents = {
             TableName: 'server_events',
-            Limit: 250,
+            Limit: 10000,
             ScanIndexForward: false,
             KeyConditionExpression: 'servers_id = :servers_id',
             ExpressionAttributeValues: {
