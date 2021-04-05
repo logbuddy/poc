@@ -23,17 +23,21 @@ _console.error = (...data) => {
 AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-const corsHeaders = {
-    'Access-Control-Allow-Headers' : 'Content-Type,X-Herodot-Webapp-Api-Key-Id',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
-};
+const corsHeaders = (event) => (
+    ['http://localhost:3000', 'https://app.logbuddy.io'].includes(event.headers.origin) ?
+        {
+            'Access-Control-Allow-Headers' : 'Content-Type,X-Herodot-Webapp-Api-Key-Id',
+            'Access-Control-Allow-Origin': event.headers.origin,
+            'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+        } :
+        {}
+);
 
-const corsOptionsResponse = {
+const corsOptionsResponse = (event) => ({
     statusCode: 200,
-    headers: corsHeaders,
+    headers: corsHeaders(event),
     body: ''
-};
+});
 
 const getRequestBody = (event) => {
     let requestBody;
@@ -90,11 +94,11 @@ const authenticateWebappRequest = async (eventHeaders) => {
     return getWebappApiKeyResult;
 };
 
-const unknownWebappApiKeyIdResponse = {
+const unknownWebappApiKeyIdResponse = (event) => ({
     statusCode: 403,
-    headers: corsHeaders,
+    headers: corsHeaders(event),
     body: JSON.stringify('Unknown webapp api key id.')
-};
+});
 
 
 const handleRegisterAccountRequest = async (event) => {
@@ -136,7 +140,7 @@ const handleRegisterAccountRequest = async (event) => {
     if (userExists) {
         return {
             statusCode: 400,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify(`User ${newUserCredentials.email} already exists.`)
         };
     } else {
@@ -192,7 +196,7 @@ const handleRegisterAccountRequest = async (event) => {
 
         return {
             statusCode: 201,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify(userId)
         };
     }
@@ -244,7 +248,7 @@ const handleCreateWebappApiKey = async (event) => {
         if (!passwordIsValid) {
             return {
                 statusCode: 403,
-                headers: corsHeaders,
+                headers: corsHeaders(event),
                 body: JSON.stringify('Invalid credentials.')
             };
         }
@@ -264,13 +268,13 @@ const handleCreateWebappApiKey = async (event) => {
                     _console.error(err);
                     resolve({
                         statusCode: 500,
-                        headers: corsHeaders,
+                        headers: corsHeaders(event),
                         body: JSON.stringify(`Error: ${err}`)
                     });
                 } else {
                     resolve({
                         statusCode: 201,
-                        headers: corsHeaders,
+                        headers: corsHeaders(event),
                         body: JSON.stringify(apiKeyId)
                     });
                 }
@@ -281,7 +285,7 @@ const handleCreateWebappApiKey = async (event) => {
     } else {
         return {
             statusCode: 404,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify(`User ${credentialsFromRequest.email} does not exist.`)
         };
     }
@@ -292,7 +296,7 @@ const handleRetrieveServerList = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
     if (webappApiKey === null) {
-        return unknownWebappApiKeyIdResponse;
+        return unknownWebappApiKeyIdResponse(event);
     }
 
     let selectedTimelineIntervalStart;
@@ -421,7 +425,7 @@ const handleRetrieveServerList = async (event) => {
 
     return {
         statusCode: 200,
-        headers: corsHeaders,
+        headers: corsHeaders(event),
         body: JSON.stringify(serversFromDb)
     }
 };
@@ -432,7 +436,7 @@ const handleCreateServer = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
     if (webappApiKey === null) {
-        return unknownWebappApiKeyIdResponse
+        return unknownWebappApiKeyIdResponse(event)
     }
 
     const requestBodyParsedAsJson = getRequestBodyParsedAsJson(event);
@@ -442,7 +446,7 @@ const handleCreateServer = async (event) => {
     ) {
         return {
             statusCode: 400,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify({
                 message: 'Problem with request body',
                 expectedRequestBody: { title: 'x' },
@@ -479,7 +483,7 @@ const handleCreateServer = async (event) => {
 
     return {
         statusCode: 201,
-        headers: corsHeaders,
+        headers: corsHeaders(event),
         body: JSON.stringify({
             id: serverId,
             userId: webappApiKey.users_id,
@@ -497,7 +501,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
     if (webappApiKey === null) {
-        return unknownWebappApiKeyIdResponse
+        return unknownWebappApiKeyIdResponse(event);
     }
 
     let serverId;
@@ -507,7 +511,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
     ) {
         return {
             statusCode: 400,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify({
                 message: 'Problem with query string parameters',
                 expectedQueryStringParameters: { serverId: 'x', latestSeenSortValue: 'y' },
@@ -548,7 +552,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
     if (!serverBelongsToUser) {
         return {
             statusCode: 403,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify({
                 message: `Server ${serverId} does not belong to user ${webappApiKey.users_id}.`,
             }, null, 2)
@@ -610,7 +614,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
 
     return {
         statusCode: 200,
-        headers: corsHeaders,
+        headers: corsHeaders(event),
         body: JSON.stringify(yetUnseenServerEvents)
     };
 };
@@ -632,7 +636,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
     if (webappApiKey === null) {
-        return unknownWebappApiKeyIdResponse;
+        return unknownWebappApiKeyIdResponse(event);
     }
 
     if (   !event.queryStringParameters.hasOwnProperty('byName[0]')
@@ -642,7 +646,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
     ) {
         return {
             statusCode: 400,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify({
                 message: 'Problem with query string parameters',
                 expectedQueryStringParameters: { serverId: 'y', 'byName[n]': 'key|value|keyValue', 'byVal[n]': 'x' },
@@ -679,7 +683,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
     if (!serverBelongsToUser) {
         return {
             statusCode: 403,
-            headers: corsHeaders,
+            headers: corsHeaders(event),
             body: JSON.stringify({
                 message: `Server ${reqServerId} does not belong to user ${webappApiKey.users_id}.`,
             }, null, 2)
@@ -760,7 +764,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
 
     return {
         statusCode: 200,
-        headers: corsHeaders,
+        headers: corsHeaders(event),
         body: JSON.stringify(serverEvents)
     };
 };
@@ -905,7 +909,7 @@ exports.handler = async (event) => {
     _console.debug('Received event:' + JSON.stringify(event, null, 2));
 
     if (event.requestContext.http.method === 'OPTIONS') {
-        return corsOptionsResponse;
+        return corsOptionsResponse(event);
     }
 
     if (event.routeKey === 'POST /users') {

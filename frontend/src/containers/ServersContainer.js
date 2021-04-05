@@ -291,7 +291,7 @@ class ServersContainer extends Component {
                                     {
                                         createdAtUtc !== null
                                         &&
-                                        format(new Date(createdAtUtc), 'PPPP pp')
+                                        format(new Date(createdAtUtc), 'PPPP · pp')
                                     }
                                     {
                                         createdAtUtc === null
@@ -618,7 +618,22 @@ class ServersContainer extends Component {
 
         return (
             <div className='m-0'>
-                <div className='w-100 m-0 sticky-top bg-deepdark border-primary border-1 ps-2 pe-2 pb-2 pt-2'>
+                <div className='w-100 m-0 sticky-top bg-deepdark border-primary border-1 p-2'>
+                    <div className='container-fluid'>
+                        <div className='row small text-secondary'>
+                            <div className='col align-self-start'>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'PPPP')}
+                                <br/>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'pp')}
+                            </div>
+                            <div className='col align-self-end text-end'>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'PPPP')}
+                                <br/>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'pp')}
+                            </div>
+                        </div>
+
+                    </div>
                     <TimeRange
                         error={false}
                         ticksNumber={7}
@@ -644,136 +659,139 @@ class ServersContainer extends Component {
                         onChangeCallback={ () => this.props.dispatch(retrieveServerListCommand()) }
                     />
                 </div>
-                <div className='navbar navbar-expand'>
-                    <ul className='navbar-nav ms-auto'>
-                        <li className='nav-item text-center'>
-                            {
-                                this.props.reduxState.servers.showEventPayload
-                                &&
-                                <Fragment>
-                                    {
-                                        this.state.mouseIsOnDisableShowEventPayloadElement
-                                        &&
-                                        <span className='tiny'>Showing JSON payloads. Click to disable.</span>
-                                    }
-                                    <FileEarmarkCodeFill
-                                        width='1.5em'
-                                        height='1.5em'
-                                        className='clickable'
-                                        onMouseOver={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: true,
-                                            mouseIsOnEnableShowEventPayloadElement: false
-                                        })}
-                                        onMouseOut={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: false,
-                                            mouseIsOnEnableShowEventPayloadElement: false
-                                        })}
-                                        onClick={() => this.props.dispatch(disableShowEventPayloadCommand())}
-                                    />
-                                </Fragment>
-                            }
-                            {
-                                this.props.reduxState.servers.showEventPayload
-                                ||
-                                <Fragment>
-                                    {
-                                        this.state.mouseIsOnEnableShowEventPayloadElement
-                                        &&
-                                        <span className='tiny'>Not showing JSON payloads. Click to enable.</span>
-                                    }
-                                    <FileEarmarkCode
-                                        width='1.5em'
-                                        height='1.5em'
-                                        className='clickable'
-                                        onMouseOver={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: false,
-                                            mouseIsOnEnableShowEventPayloadElement: true
-                                        })}
-                                        onMouseOut={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: false,
-                                            mouseIsOnEnableShowEventPayloadElement: false
-                                        })}
-                                        onClick={() => this.props.dispatch(enableShowEventPayloadCommand())}
-                                    />
-                                </Fragment>
-                            }
-                        </li>
-                        <li className='nav-item text-center'>
-                            {
-                                this.props.reduxState.servers.retrieveServerListOperation.isRunning
-                                &&
-                                <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
-                            }
-                            {
-                                this.props.reduxState.servers.retrieveServerListOperation.isRunning
-                                ||
-                                <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
-                            }
-                        </li>
-                    </ul>
-                </div>
 
-                <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
-
-                <h1 className='mb-3'>
-                    My servers
-                </h1>
-
-                <div className='card card-body bg-dark pt-0'>
-                    <form className='row row-cols-sm-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
-                        <div className='col-12'>
-                            <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
-                            <div className='input-group'>
-                                <div className='input-group-text'>Add server</div>
-                                <input
-                                    type='text'
-                                    className='form-control'
-                                    id='create-server-title'
-                                    placeholder='Name of new server'
-                                    value={this.state.createServerTitle}
-                                    onChange={this.handleChangeCreateServerTitle}
-                                />
-                            </div>
-                        </div>
-
-                        <div className='col-12'>
-                            {
-                                this.props.reduxState.servers.createServerOperation.isRunning
-                                &&
-                                <button className='float-end btn btn-warning disabled'>Adding...</button>
-                            }
-                            {
-                                this.props.reduxState.servers.createServerOperation.isRunning
-                                ||
-                                (
-                                    (this.state.createServerTitle.length > 0)
+                <div className='m-3'>
+                    <div className='navbar navbar-expand'>
+                        <ul className='navbar-nav ms-auto'>
+                            <li className='nav-item text-center'>
+                                {
+                                    this.props.reduxState.servers.showEventPayload
                                     &&
-                                    <button type='submit' className='float-end btn btn-success fade-in'>Add</button>
-                                )
-                            }
-                        </div>
-                    </form>
-                </div>
-
-                {
-                    serverListElements.length > 0
-                    &&
-                    serverListElements
-                }
-
-                {
-                    serverListElements.length > 0
-                    ||
-                    <div className='mt-5 w-100 text-center'>
-                        <h1 className='text-secondary'>
-                            Loading server data, please wait...
-                        </h1>
+                                    <Fragment>
+                                        {
+                                            this.state.mouseIsOnDisableShowEventPayloadElement
+                                            &&
+                                            <span className='tiny'>Showing JSON payloads. Click to disable.</span>
+                                        }
+                                        <FileEarmarkCodeFill
+                                            width='1.5em'
+                                            height='1.5em'
+                                            className='clickable'
+                                            onMouseOver={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: true,
+                                                mouseIsOnEnableShowEventPayloadElement: false
+                                            })}
+                                            onMouseOut={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: false,
+                                                mouseIsOnEnableShowEventPayloadElement: false
+                                            })}
+                                            onClick={() => this.props.dispatch(disableShowEventPayloadCommand())}
+                                        />
+                                    </Fragment>
+                                }
+                                {
+                                    this.props.reduxState.servers.showEventPayload
+                                    ||
+                                    <Fragment>
+                                        {
+                                            this.state.mouseIsOnEnableShowEventPayloadElement
+                                            &&
+                                            <span className='tiny'>Not showing JSON payloads. Click to enable.</span>
+                                        }
+                                        <FileEarmarkCode
+                                            width='1.5em'
+                                            height='1.5em'
+                                            className='clickable'
+                                            onMouseOver={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: false,
+                                                mouseIsOnEnableShowEventPayloadElement: true
+                                            })}
+                                            onMouseOut={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: false,
+                                                mouseIsOnEnableShowEventPayloadElement: false
+                                            })}
+                                            onClick={() => this.props.dispatch(enableShowEventPayloadCommand())}
+                                        />
+                                    </Fragment>
+                                }
+                            </li>
+                            <li className='nav-item text-center'>
+                                {
+                                    this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                    &&
+                                    <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
+                                }
+                                {
+                                    this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                    ||
+                                    <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
+                                }
+                            </li>
+                        </ul>
                     </div>
-                }
+
+                    <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
+
+                    <h1 className='mb-3'>
+                        My servers
+                    </h1>
+
+                    <div className='card card-body bg-dark pt-0'>
+                        <form className='row row-cols-sm-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
+                            <div className='col-12'>
+                                <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
+                                <div className='input-group'>
+                                    <div className='input-group-text'>Add server</div>
+                                    <input
+                                        type='text'
+                                        className='form-control'
+                                        id='create-server-title'
+                                        placeholder='Name of new server'
+                                        value={this.state.createServerTitle}
+                                        onChange={this.handleChangeCreateServerTitle}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className='col-12'>
+                                {
+                                    this.props.reduxState.servers.createServerOperation.isRunning
+                                    &&
+                                    <button className='float-end btn btn-warning disabled'>Adding...</button>
+                                }
+                                {
+                                    this.props.reduxState.servers.createServerOperation.isRunning
+                                    ||
+                                    (
+                                        (this.state.createServerTitle.length > 0)
+                                        &&
+                                        <button type='submit' className='float-end btn btn-success fade-in'>Add</button>
+                                    )
+                                }
+                            </div>
+                        </form>
+                    </div>
+
+                    {
+                        serverListElements.length > 0
+                        &&
+                        serverListElements
+                    }
+
+                    {
+                        serverListElements.length > 0
+                        ||
+                        <div className='mt-5 w-100 text-center'>
+                            <h1 className='text-secondary'>
+                                Loading server data, please wait...
+                            </h1>
+                        </div>
+                    }
+                </div>
             </div>
         );
     }
