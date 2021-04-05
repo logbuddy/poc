@@ -4,6 +4,8 @@ import { Redirect } from 'react-router-dom';
 import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, FileEarmarkCode, FileEarmarkCodeFill, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { endOfToday, set, subDays } from 'date-fns';
+import TimeRange from 'react-timeline-range-slider';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -597,8 +599,27 @@ class ServersContainer extends Component {
             );
         }
 
+        const now = new Date();
+
         return (
             <div className='m-4'>
+                <div className='w-100'>
+                    <TimeRange
+                        error={false}
+                        ticksNumber={7}
+                        formatTick={(ms) =>
+                            `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(new Date(ms)).getMonth()+1]} ${(new Date(ms)).getDate()}`
+                        }
+                        step={1800000}
+                        selectedInterval={[
+                            set(now, { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            endOfToday()
+                        ]}
+                        timelineInterval={[subDays(now, 7), endOfToday()]}
+                        onUpdateCallback={ (...v) => { console.debug('update', v) } }
+                        onChangeCallback={ (...v) => { console.debug('change', v) } }
+                    />
+                </div>
                 <div className='navbar navbar-expand'>
                     <ul className='navbar-nav ms-auto'>
                         <li className='nav-item text-center'>
