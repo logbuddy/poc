@@ -157,7 +157,7 @@ class ServersContainer extends Component {
             const elementNameToHeadline = {
                 information: 'Information',
                 sampleCurlCommand: 'Sample curl command',
-                latestEvents: 'Latest entries',
+                latestEvents: 'Log entries',
             };
             if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
@@ -592,8 +592,8 @@ class ServersContainer extends Component {
                             &&
                             this.props.reduxState.servers.serverList[i].latestEvents.length === 0
                             &&
-                            <div className='row-cols-auto mt-3'>
-                                No entries yet.
+                            <div className='row-cols-auto mt-3 text-secondary'>
+                                No log entries for the selected time range.
                             </div>
                         }
 
@@ -606,7 +606,7 @@ class ServersContainer extends Component {
                             &&
                             serverEventElements.length === 0
                             &&
-                            <div className='row-cols-auto mt-3'>
+                            <div className='row-cols-auto mt-3 text-secondary'>
                                 No entries match the current filter.
                             </div>
                         }
@@ -620,7 +620,7 @@ class ServersContainer extends Component {
             <div className='m-0'>
                 <div className='w-100 m-0 sticky-top bg-deepdark border-primary border-1 p-2'>
                     <div className='container-fluid'>
-                        <div className='row small text-secondary'>
+                        <div className='row tiny text-secondary'>
                             <div className='col align-self-start'>
                                 {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'PPPP')}
                                 <br/>
@@ -640,7 +640,7 @@ class ServersContainer extends Component {
                         formatTick={(ms) =>
                             `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'do')}`
                         }
-                        step={60*60*1000}
+                        step={60*60*1000/4}
                         selectedInterval={[
                             set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
                             endOfToday()

@@ -24,13 +24,13 @@ AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 const corsHeaders = (event) => (
-    ['http://localhost:3000', 'https://app.logbuddy.io'].includes(event.headers.origin) ?
-        {
+    ['http://localhost:3000', 'https://app.logbuddy.io'].includes(event.headers.origin)
+        ? {
             'Access-Control-Allow-Headers' : 'Content-Type,X-Herodot-Webapp-Api-Key-Id',
             'Access-Control-Allow-Origin': event.headers.origin,
             'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
-        } :
-        {}
+        }
+        : {}
 );
 
 const corsOptionsResponse = (event) => ({
@@ -292,13 +292,7 @@ const handleCreateWebappApiKey = async (event) => {
 };
 
 
-const handleRetrieveServerList = async (event) => {
-    const webappApiKey = await authenticateWebappRequest(event.headers);
-
-    if (webappApiKey === null) {
-        return unknownWebappApiKeyIdResponse(event);
-    }
-
+const getSelectedTimelineIntervalValues = (event) => {
     let selectedTimelineIntervalStart;
     let selectedTimelineIntervalEnd;
     if (   !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
@@ -325,6 +319,18 @@ const handleRetrieveServerList = async (event) => {
             ).substring(3, 22)
         ;
     }
+
+    return { selectedTimelineIntervalStart, selectedTimelineIntervalEnd };
+};
+
+const handleRetrieveServerList = async (event) => {
+    const webappApiKey = await authenticateWebappRequest(event.headers);
+
+    if (webappApiKey === null) {
+        return unknownWebappApiKeyIdResponse(event);
+    }
+
+    const { selectedTimelineIntervalStart, selectedTimelineIntervalEnd } = getSelectedTimelineIntervalValues(event);
 
     const queryParamsServers = {
         TableName: 'servers',
@@ -559,42 +565,38 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         };
     }
 
+    const { selectedTimelineIntervalStart, selectedTimelineIntervalEnd } = getSelectedTimelineIntervalValues(event);
+
     const yetUnseenServerEvents = await new Promise((resolve, reject) => {
-        let params;
-        if (latestSeenSortValue !== null) {
-            params = {
-                TableName: 'server_events',
-                Limit: 250,
-                ScanIndexForward: false,
-                KeyConditionExpression: 'servers_id = :servers_id AND sort_value > :latest_seen_sort_value',
-                ExpressionAttributeValues: {
-                    ':servers_id': serverId,
-                    ':latest_seen_sort_value': latestSeenSortValue
-                }
-            };
-        } else {
-            params = {
-                TableName: 'server_events',
-                Limit: 250,
-                ScanIndexForward: false,
-                KeyConditionExpression: 'servers_id = :servers_id',
-                ExpressionAttributeValues: {
-                    ':servers_id': serverId
-                }
-            };
-        }
+        const params = {
+            TableName: 'server_events',
+            Limit: 250,
+            ScanIndexForward: false,
+            KeyConditionExpression: '' +
+                'servers_id = :servers_id' +
+                ' AND sort_value BETWEEN :selected_timeline_interval_start AND :selected_timeline_interval_end',
+            ExpressionAttributeValues: {
+                ':servers_id': serverId,
+                ':selected_timeline_interval_start': selectedTimelineIntervalStart,
+                ':selected_timeline_interval_end': selectedTimelineIntervalEnd,
+            }
+        };
         docClient.query(params, (err, data) => {
-                if (err) {
-                    _console.error(err);
-                    reject(err);
-                } else {
-                    _console.log(data);
-                    let serverEvents = [];
-                    for (let i = 0; i < data.Count; i++) {
-                        let id = null;
-                        if (data.Items[i].hasOwnProperty('id')) {
-                            id = data.Items[i].id;
-                        }
+            if (err) {
+                _console.error(err);
+                reject(err);
+            } else {
+                _console.log(data);
+                let serverEvents = [];
+                for (let i = 0; i < data.Count; i++) {
+                    let id = null;
+                    if (data.Items[i].hasOwnProperty('id')) {
+                        id = data.Items[i].id;
+                    }
+
+                    if (   latestSeenSortValue === null
+                        || data.Items[i].sort_value > latestSeenSortValue
+                    ) {
                         serverEvents.push({
                             id: id,
                             serverId: data.Items[i].servers_id,
@@ -607,9 +609,10 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
                             payload: data.Items[i].server_event_payload,
                         });
                     }
-                    resolve(serverEvents);
                 }
-            });
+                resolve(serverEvents);
+            }
+        });
     });
 
     return {

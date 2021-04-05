@@ -140,9 +140,7 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
         }
     }
 
-    if (   getState().servers.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped.includes(serverId)
-        || getState().servers.selectedTimelineIntervalEnd < (new Date())
-    ) {
+    if (getState().servers.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped.includes(serverId)) {
         repeat();
         return;
     }
@@ -158,7 +156,12 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
     apiFetch(
         `/yet-unseen-server-events?serverId=${encodeURIComponent(serverId)}&latestSeenSortValue=${encodeURIComponent(latestSeenSortValue)}`,
         'GET',
-        getState().session.webappApiKeyId
+        getState().session.webappApiKeyId,
+        null,
+        {
+            selectedTimelineIntervalStart: JSON.stringify(getState().servers.selectedTimelineIntervalStart),
+            selectedTimelineIntervalEnd: JSON.stringify(getState().servers.selectedTimelineIntervalEnd)
+        }
     )
         .then(response => {
             console.debug(response);
