@@ -1,3 +1,5 @@
+import DatetimeHelper from '../../../shared/DatetimeHelper.mjs';
+
 const AWS = require('aws-sdk');
 const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
 
@@ -373,6 +375,7 @@ const handleRetrieveServerList = async (event) => {
                 receivedAt: serverEventsFromDbResult.Items[j].received_at,
                 sortValue: serverEventsFromDbResult.Items[j].sort_value,
                 createdAt: serverEventsFromDbResult.Items[j].server_event_created_at,
+                createdAtUtc: serverEventsFromDbResult.Items[j].server_event_created_at_utc,
                 source: serverEventsFromDbResult.Items[j].server_event_source,
                 payload: serverEventsFromDbResult.Items[j].server_event_payload,
             });
@@ -558,6 +561,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
                             receivedAt: data.Items[i].received_at,
                             sortValue: data.Items[i].sort_value,
                             createdAt: data.Items[i].server_event_created_at,
+                            createdAtUtc: data.Items[i].server_event_created_at_utc,
                             source: data.Items[i].server_event_source,
                             payload: data.Items[i].server_event_payload,
                         });
@@ -604,7 +608,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
             headers: corsHeaders,
             body: JSON.stringify({
                 message: 'Problem with query string parameters',
-                expectedQueryStringParameters: { serverId: 'y', 'byName[n]': 'key|value|keyValue', 'byName[n]': 'x' },
+                expectedQueryStringParameters: { serverId: 'y', 'byName[n]': 'key|value|keyValue', 'byVal[n]': 'x' },
                 actualQueryStringParameters: event.queryStringParameters
             }, null, 2)
         };
@@ -685,6 +689,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
                                 receivedAt: data.Items[i].received_at,
                                 sortValue: data.Items[i].sort_value,
                                 createdAt: data.Items[i].server_event_created_at,
+                                createdAtUtc: data.Items[i].server_event_created_at_utc,
                                 source: data.Items[i].server_event_source,
                                 payload: data.Items[i].server_event_payload,
                             });
@@ -800,6 +805,7 @@ const handleInsertServerEventsRequest = async (event) => {
     const items = [];
     for (let i = 0; i < serverEvents.length; i++) {
         const createdAt = serverEvents[i].createdAt.substring(0, 1024);
+        const createdAtUtc = DatetimeHelper.getUTCDatetimeString(createdAt);
         const source = serverEvents[i].source.substring(0, 1024);
         const payload = JSON.stringify(serverEvents[i].payload).substring(0, 65535);
         items.push({
@@ -807,11 +813,12 @@ const handleInsertServerEventsRequest = async (event) => {
                 Item: {
                     'id': uuidv4(),
                     'servers_id': serverId,
-                    'sort_value': `${createdAt} ${uuidv1()}`,
+                    'sort_value': `${createdAtUtc === null ? createdAt : createdAtUtc} ${uuidv1()}`,
                     'received_at': Date.now(),
                     'users_id': userId,
                     'api_keys_id': apiKeyId,
                     'server_event_created_at': createdAt,
+                    'server_event_created_at_utc': createdAtUtc,
                     'server_event_source': source,
                     'server_event_payload': payload,
                     'lambda_event_full': lambdaEventContent,
