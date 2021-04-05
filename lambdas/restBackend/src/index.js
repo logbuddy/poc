@@ -1,4 +1,5 @@
 import DatetimeHelper from '../../../shared/DatetimeHelper.mjs';
+const { endOfToday, subDays, set } = require('date-fns');
 
 const AWS = require('aws-sdk');
 const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
@@ -294,6 +295,33 @@ const handleRetrieveServerList = async (event) => {
         return unknownWebappApiKeyIdResponse;
     }
 
+    let selectedTimelineIntervalStart;
+    let selectedTimelineIntervalEnd;
+    if (   !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
+        || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalEnd')
+    ) {
+        selectedTimelineIntervalStart =
+            JSON.stringify(
+                set(subDays(new Date(), 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+            ).substring(0, 19)
+        ;
+        selectedTimelineIntervalEnd =
+            JSON.stringify(
+                endOfToday()
+            ).substring(0, 19);
+    } else {
+        selectedTimelineIntervalStart =
+            JSON.stringify(
+                event.queryStringParameters.selectedTimelineIntervalStart
+            ).substring(3, 22)
+        ;
+        selectedTimelineIntervalEnd =
+            JSON.stringify(
+                event.queryStringParameters.selectedTimelineIntervalEnd
+            ).substring(3, 22)
+        ;
+    }
+
     const queryParamsServers = {
         TableName: 'servers',
         KeyConditionExpression: 'users_id = :users_id',
@@ -318,6 +346,11 @@ const handleRetrieveServerList = async (event) => {
     _console.debug('res', serversFromDbResult);
 
     for (let i = 0; i < serversFromDbResult.Items.length; i++) {
+
+        _console.debug('serversFromDbResult.Items[i].id', serversFromDbResult.Items[i].id);
+        _console.debug('selectedTimelineIntervalStart', selectedTimelineIntervalStart);
+        _console.debug('selectedTimelineIntervalEnd', selectedTimelineIntervalEnd);
+
         let type = 'default';
         if (serversFromDbResult.Items[i].hasOwnProperty('type')) {
             type = serversFromDbResult.Items[i].type;
@@ -339,9 +372,13 @@ const handleRetrieveServerList = async (event) => {
             TableName: 'server_events',
             Limit: 10000,
             ScanIndexForward: false,
-            KeyConditionExpression: 'servers_id = :servers_id',
+            KeyConditionExpression: '' +
+                'servers_id = :servers_id' +
+                ' AND sort_value BETWEEN :selected_timeline_interval_start AND :selected_timeline_interval_end',
             ExpressionAttributeValues: {
-                ':servers_id': serversFromDb[i].id
+                ':servers_id': serversFromDb[i].id,
+                ':selected_timeline_interval_start': selectedTimelineIntervalStart,
+                ':selected_timeline_interval_end': selectedTimelineIntervalEnd,
             }
         };
 

@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, FileEarmarkCode, FileEarmarkCodeFill, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { endOfToday, set, subDays } from 'date-fns';
+import { endOfToday, subDays, format, set } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
 import {
     createServerCommand,
@@ -14,7 +14,10 @@ import {
     retrieveYetUnseenServerEventsCommand,
     disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand,
-    resetServerEventsByCommand, disableShowEventPayloadCommand, enableShowEventPayloadCommand
+    resetServerEventsByCommand,
+    disableShowEventPayloadCommand,
+    enableShowEventPayloadCommand,
+    timelineIntervalsUpdatedEvent
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
@@ -22,6 +25,7 @@ import DayzEventSkinPresentational from '../presentationals/eventSkins/dayz/Dayz
 import PaginatorPresentational from '../presentationals/PaginatorPresentational';
 
 const itemsPerPage = 25;
+const now = new Date();
 
 class ServersContainer extends Component {
     constructor(props) {
@@ -252,6 +256,10 @@ class ServersContainer extends Component {
             for (let j=0; j < filteredLatestEventsForCurrentPage.length; j++) {
                 const event = filteredLatestEventsForCurrentPage[j];
                 const createdAt = event.createdAt;
+                let createdAtUtc = null;
+                if (event.hasOwnProperty('createdAtUtc')) {
+                    createdAtUtc = event.createdAtUtc;
+                }
                 const source = event.source;
                 const payload = event.payload;
                 let parsedPayload = '';
@@ -280,7 +288,16 @@ class ServersContainer extends Component {
                         >
                             <div className='col-sm-12 ps-2 pe-2'>
                                 <code className='text-white-75 word-wrap-anywhere'>
-                                    {createdAt}
+                                    {
+                                        createdAtUtc !== null
+                                        &&
+                                        format(new Date(createdAtUtc), 'PPPP pp')
+                                    }
+                                    {
+                                        createdAtUtc === null
+                                        &&
+                                        createdAt
+                                    }
                                 </code>
                             </div>
                             <div className='col-sm-12 ps-2 pe-2 mb-2'>
@@ -599,25 +616,32 @@ class ServersContainer extends Component {
             );
         }
 
-        const now = new Date();
-
         return (
-            <div className='m-4'>
-                <div className='w-100'>
+            <div className='m-0'>
+                <div className='w-100 m-0 sticky-top bg-deepdark border-primary border-1 ps-2 pe-2 pb-2 pt-2'>
                     <TimeRange
                         error={false}
                         ticksNumber={7}
                         formatTick={(ms) =>
-                            `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(new Date(ms)).getMonth()+1]} ${(new Date(ms)).getDate()}`
+                            `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'do')}`
                         }
-                        step={1800000}
+                        step={60*60*1000}
                         selectedInterval={[
-                            set(now, { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
                             endOfToday()
                         ]}
-                        timelineInterval={[subDays(now, 7), endOfToday()]}
-                        onUpdateCallback={ (...v) => { console.debug('update', v) } }
-                        onChangeCallback={ (...v) => { console.debug('change', v) } }
+                        timelineInterval={[
+                            set(subDays(now, 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            endOfToday()
+                        ]}
+                        onUpdateCallback={ (v) => {
+                            console.debug('update', v);
+                            this.props.dispatch(timelineIntervalsUpdatedEvent(
+                                v.time[0],
+                                v.time[1])
+                            );
+                        }}
+                        onChangeCallback={ () => this.props.dispatch(retrieveServerListCommand()) }
                     />
                 </div>
                 <div className='navbar navbar-expand'>

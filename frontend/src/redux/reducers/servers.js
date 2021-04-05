@@ -1,3 +1,4 @@
+import { endOfToday, subDays, set } from 'date-fns';
 import { apiFetch } from '../util';
 
 const initialState = {
@@ -21,8 +22,11 @@ const initialState = {
         information: [],
         sampleCurlCommand: [],
         latestEvents: []
-    }
+    },
+    selectedTimelineIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+    selectedTimelineIntervalEnd: endOfToday()
 };
+
 
 export const disableShowEventPayloadCommand = () => ({
     type: 'DISABLE_SHOW_EVENT_PAYLOAD_COMMAND'
@@ -55,7 +59,16 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
     dispatch(retrieveServerListStartedEvent());
 
     let responseWasOk = true;
-    apiFetch('/servers', 'GET', getState().session.webappApiKeyId)
+    apiFetch(
+        '/servers',
+        'GET',
+        getState().session.webappApiKeyId,
+        null,
+        {
+            selectedTimelineIntervalStart: JSON.stringify(getState().servers.selectedTimelineIntervalStart),
+            selectedTimelineIntervalEnd: JSON.stringify(getState().servers.selectedTimelineIntervalEnd)
+        }
+    )
         .then(response => {
             console.debug(response);
             if (!response.ok) {
@@ -127,7 +140,9 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
         }
     }
 
-    if (getState().servers.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped.includes(serverId)) {
+    if (   getState().servers.serverIdsForWhichRetrieveYetUnseenServerEventsOperationsMustBeSkipped.includes(serverId)
+        || getState().servers.selectedTimelineIntervalEnd < (new Date())
+    ) {
         repeat();
         return;
     }
@@ -297,6 +312,18 @@ export const flipServerListElementCloseCommand = (serverId, elementName) => ({
     type: 'FLIPPED_SERVER_LIST_ELEMENT_CLOSE_EVENT',
     serverId,
     elementName
+});
+
+
+export const timelineIntervalsUpdatedEvent = (timelineIntervalStart, timelineIntervalEnd) => ({
+    type: 'TIMELINE_INTERVALS_UPDATED_EVENT',
+    timelineIntervalStart,
+    timelineIntervalEnd
+})
+
+
+export const timelineIntervalsChangedEvent = () => (dispatch, getState) => ({
+
 });
 
 
@@ -590,14 +617,21 @@ const reducer = (state = initialState, action) => {
                 ]
             };
 
+
         case 'RESET_SERVER_EVENTS_BY_COMMAND':
             return {
                 ...state,
                 serverList: withEmptiedServerEventsByServerList()
             };
 
-        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT':
-            return { ...initialState }
+
+
+        case 'TIMELINE_INTERVALS_UPDATED_EVENT':
+            return {
+                ...state,
+                selectedTimelineIntervalStart: action.timelineIntervalStart,
+                selectedTimelineIntervalEnd: action.timelineIntervalEnd
+            };
 
 
         default:

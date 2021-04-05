@@ -12,5 +12,8 @@
     "aws-sdk": "^2.875.0",
     "rollup": "^2.44.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "date-fns": "^2.19.0"
+  }
 }
