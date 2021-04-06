@@ -17,7 +17,7 @@ import {
     resetServerEventsByCommand,
     disableShowEventPayloadCommand,
     enableShowEventPayloadCommand,
-    timelineIntervalsUpdatedEvent
+    timelineIntervalsUpdatedEvent, timelineIntervalsChangedEvent, resetActiveStructuredDataExplorerAttributesCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
@@ -94,6 +94,7 @@ class ServersContainer extends Component {
     handleLoadEventIntoStructuredDataExplorerClicked = (event) => {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(event.serverId));
         this.props.dispatch(resetServerEventsByCommand());
+        this.props.dispatch(resetActiveStructuredDataExplorerAttributesCommand(event.serverId));
         this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: event });
     }
 
@@ -169,6 +170,17 @@ class ServersContainer extends Component {
                             </span>
                             &nbsp;
                             { elementNameToHeadline[elementName] }
+                            &nbsp;
+                            {
+                                (elementName === 'latestEvents' && server.latestEvents.length > 0)
+                                &&
+                                '(' + server.latestEvents.length + ')'
+                            }
+                            {
+                                (elementName === 'latestEvents' && this.props.reduxState.servers.retrieveServerListOperation.isRunning)
+                                &&
+                                <Disc className='spinning spinning-small' />
+                            }
                         </span>
                         {
                             elementName === 'latestEvents'
@@ -227,6 +239,17 @@ class ServersContainer extends Component {
                     </span>
                     &nbsp;
                     { elementNameToHeadline[elementName] }
+                    &nbsp;
+                    {
+                        (elementName === 'latestEvents' && server.latestEvents.length > 0)
+                        &&
+                        '(' + server.latestEvents.length + ')'
+                    }
+                    {
+                        (elementName === 'latestEvents' && this.props.reduxState.servers.retrieveServerListOperation.isRunning)
+                        &&
+                        <Disc className='spinning spinning-small' />
+                    }
                 </div>;
             }
         };
@@ -281,9 +304,7 @@ class ServersContainer extends Component {
                              className={`row mb-3 ${isExplorable && 'clickable'}`}
                              onClick={() =>
                                  isExplorable
-                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(
-                                     this.props.reduxState.servers.serverList[i].latestEvents[j]
-                                 )
+                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(event)
                              }
                         >
                             <div className='col-sm-12 ps-2 pe-2'>
@@ -353,7 +374,7 @@ class ServersContainer extends Component {
                    }]}'`;
 
             serverListElements.push(
-                <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'opacity-25' : 'fade-in'}`}>
+                <div key={i} className={`card bg-dark mt-4`}>
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-primary col server-headline-icon'>
@@ -369,7 +390,9 @@ class ServersContainer extends Component {
                                 }
                             </div>
                             <div className='col server-headline-title'>
-                                <h4 className='mb-0'>{this.props.reduxState.servers.serverList[i].title}</h4>
+                                <h4 className='mb-0'>
+                                    {this.props.reduxState.servers.serverList[i].title}
+                                </h4>
                             </div>
                         </div>
                     </div>
@@ -496,8 +519,6 @@ class ServersContainer extends Component {
 
                         {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
-                            &&
-                            this.props.reduxState.servers.serverList[i].latestEvents.length > 0
                             &&
                             <div className='container-fluid bg-deepdark rounded border border-dark border-3'>
                                 {
@@ -638,7 +659,7 @@ class ServersContainer extends Component {
                         error={false}
                         ticksNumber={7}
                         formatTick={(ms) =>
-                            `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'do')}`
+                            `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'd')}`
                         }
                         step={60*60*1000/4}
                         selectedInterval={[
@@ -650,13 +671,12 @@ class ServersContainer extends Component {
                             endOfToday()
                         ]}
                         onUpdateCallback={ (v) => {
-                            console.debug('update', v);
                             this.props.dispatch(timelineIntervalsUpdatedEvent(
                                 v.time[0],
                                 v.time[1])
                             );
                         }}
-                        onChangeCallback={ () => this.props.dispatch(retrieveServerListCommand()) }
+                        onChangeCallback={ () => this.props.dispatch(timelineIntervalsChangedEvent()) }
                     />
                 </div>
 

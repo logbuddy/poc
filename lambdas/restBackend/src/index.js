@@ -301,23 +301,15 @@ const getSelectedTimelineIntervalValues = (event) => {
         selectedTimelineIntervalStart =
             JSON.stringify(
                 set(subDays(new Date(), 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-            ).substring(0, 19)
+            ).substring(3, 22)
         ;
         selectedTimelineIntervalEnd =
             JSON.stringify(
                 endOfToday()
-            ).substring(0, 19);
+            ).substring(3, 22);
     } else {
-        selectedTimelineIntervalStart =
-            JSON.stringify(
-                event.queryStringParameters.selectedTimelineIntervalStart
-            ).substring(3, 22)
-        ;
-        selectedTimelineIntervalEnd =
-            JSON.stringify(
-                event.queryStringParameters.selectedTimelineIntervalEnd
-            ).substring(3, 22)
-        ;
+        selectedTimelineIntervalStart = event.queryStringParameters.selectedTimelineIntervalStart.substring(0, 19);
+        selectedTimelineIntervalEnd = event.queryStringParameters.selectedTimelineIntervalEnd.substring(0, 19);
     }
 
     return { selectedTimelineIntervalStart, selectedTimelineIntervalEnd };
@@ -570,7 +562,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
     const yetUnseenServerEvents = await new Promise((resolve, reject) => {
         const params = {
             TableName: 'server_events',
-            Limit: 250,
+            Limit: 10000,
             ScanIndexForward: false,
             KeyConditionExpression: '' +
                 'servers_id = :servers_id' +
@@ -693,6 +685,8 @@ const handleRetrieveServerEventsByRequest = async (event) => {
         };
     }
 
+    const { selectedTimelineIntervalStart, selectedTimelineIntervalEnd } = getSelectedTimelineIntervalValues(event);
+
     let i = 0;
     let exhausted = false;
     let serverEvents = [];
@@ -713,9 +707,12 @@ const handleRetrieveServerEventsByRequest = async (event) => {
                     TableName: byNameToTablename[reqByName],
                     Limit: 250,
                     ScanIndexForward: false,
-                    KeyConditionExpression: byNameToPk[reqByName] + ' = :pk',
+                    KeyConditionExpression: byNameToPk[reqByName] + ' = :pk' +
+                        ' AND sort_value BETWEEN :selected_timeline_interval_start AND :selected_timeline_interval_end',
                     ExpressionAttributeValues: {
-                        ':pk': reqServerId + '_' + reqByVal
+                        ':pk': reqServerId + '_' + reqByVal,
+                        ':selected_timeline_interval_start': selectedTimelineIntervalStart,
+                        ':selected_timeline_interval_end': selectedTimelineIntervalEnd,
                     }
                 };
                 docClient.query(params, (err, data) => {

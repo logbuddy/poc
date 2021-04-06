@@ -155,8 +155,13 @@ const getUTCDatetimeString = (val) => {
     }
 };
 
+const dateObjectToUTCDatetimeString = (o) => {
+    return JSON.stringify(o).replace('"', '').substring(0, 19) + 'Z';
+};
+
 const DatetimeHelper = {
-    getUTCDatetimeString
+    getUTCDatetimeString,
+    dateObjectToUTCDatetimeString
 };
 
 export default DatetimeHelper;

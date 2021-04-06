@@ -11,6 +11,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 import { X, Upload, PlusCircle, DashCircle } from 'react-bootstrap-icons';
 import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
+import {format} from "date-fns";
 
 class StructuredDataExplorerContainer extends Component {
     constructor(props) {
@@ -306,7 +307,16 @@ class StructuredDataExplorerContainer extends Component {
                             <div className='row mb-3'>
                                 <div className='col-sm-2 col-auto ps-1 pe-1 pt-0'>
                                     <code className='text-white-50 word-wrap-anywhere p-0'>
-                                        {eventBy.createdAt}
+                                        {
+                                            (eventBy.hasOwnProperty('createdAtUtc') && eventBy.createdAtUtc !== null)
+                                            &&
+                                            format(new Date(eventBy.createdAtUtc), 'PPPP · pp')
+                                        }
+                                        {
+                                            (eventBy.hasOwnProperty('createdAtUtc') && eventBy.createdAtUtc !== null)
+                                            ||
+                                            eventBy.createdAt
+                                        }
                                         <br/>
                                         <span className='text-secondary me-2'>
                                             {eventBy.source}
@@ -466,7 +476,7 @@ class StructuredDataExplorerContainer extends Component {
                             }
                         </h4>
                         {
-                            eventByElements.length > 0
+                            selectedAttributeElements.length > 0
                             &&
                             <Fragment>
                                 <hr/>
@@ -505,7 +515,7 @@ class StructuredDataExplorerContainer extends Component {
                                 )
                                 &&
                                 <span className='text-secondary'>
-                                    Currently no results. Please click an element to start retrieving matching log entries.
+                                    Currently no results for the selected time range and filter elements.
                                 </span>
                             }
                         </div>
