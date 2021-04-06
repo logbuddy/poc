@@ -641,7 +641,7 @@ class ServersContainer extends Component {
 
         return (
             <div className='m-0'>
-                <div className='w-100 m-0 sticky-top bg-deepdark border-primary border-1 p-2'>
+                <div className='w-100 m-0 sticky-top bg-deepdark border-secondary border-bottom border-1 p-2'>
                     <div className='container-fluid'>
                         <div className='row tiny text-secondary'>
                             <div className='col align-self-start'>
