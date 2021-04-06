@@ -658,6 +658,7 @@ class ServersContainer extends Component {
 
                     </div>
                     <TimeRange
+                        mode={1}
                         error={false}
                         ticksNumber={7}
                         formatTick={(ms) =>
