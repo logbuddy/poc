@@ -24,7 +24,8 @@ const initialState = {
         latestEvents: []
     },
     selectedTimelineIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
-    selectedTimelineIntervalEnd: endOfToday()
+    selectedTimelineIntervalEnd: endOfToday(),
+    activeStructuredDataExplorerAttributesByServerId: {}
 };
 
 
@@ -208,12 +209,20 @@ export const resetServerEventsByCommand = () => ({
     type: 'RESET_SERVER_EVENTS_BY_COMMAND'
 });
 
-export const retrieveServerEventsByCommand = (serverId, attributes) => (dispatch, getState) => {
+export const retrieveServerEventsByCommand = (serverId) => (dispatch, getState) => {
+
+    if (!getState().servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(serverId)) {
+        console.error(`Was asked to retrieve "by" events for server id ${serverId} which has no "by" attributes set.`);
+        return;
+    }
 
     dispatch(retrieveServerEventsByStartedEvent(serverId));
 
     let path = `/server-events-by?serverId=${encodeURIComponent(serverId)}`;
     let i = 0;
+
+    const attributes = getState().servers.activeStructuredDataExplorerAttributesByServerId[serverId];
+
     console.debug(attributes);
     for (let attribute of attributes) {
         path = path + `&byName[${i}]=${encodeURIComponent(attribute.byName)}&byVal[${i}]=${encodeURIComponent(attribute.byVal)}`;
@@ -325,8 +334,36 @@ export const timelineIntervalsUpdatedEvent = (timelineIntervalStart, timelineInt
 })
 
 
-export const timelineIntervalsChangedEvent = () => (dispatch, getState) => ({
+export const selectActiveStructuredDataExplorerAttributeCommand = (serverId, byName, byVal) => ({
+    type: 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+    serverId,
+    byName,
+    byVal
+});
 
+export const addActiveStructuredDataExplorerAttributeCommand = (serverId, byName, byVal) => ({
+    type: 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+    serverId,
+    byName,
+    byVal
+});
+
+export const removeActiveStructuredDataExplorerAttributeCommand = (serverId, byName, byVal) => (dispatch, getState) => {
+    dispatch(removedActiveStructuredDataExplorerAttributeEvent(serverId, byName, byVal));
+    if (   getState().servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(serverId)
+        && getState().servers.activeStructuredDataExplorerAttributesByServerId[serverId].length === 0
+    ) {
+        dispatch(resetServerEventsByCommand());
+    } else {
+        dispatch(retrieveServerEventsByCommand(serverId));
+    }
+};
+
+const removedActiveStructuredDataExplorerAttributeEvent = (serverId, byName, byVal) => ({
+    type: 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT',
+    serverId,
+    byName,
+    byVal
 });
 
 
@@ -628,13 +665,58 @@ const reducer = (state = initialState, action) => {
             };
 
 
-
         case 'TIMELINE_INTERVALS_UPDATED_EVENT':
             return {
                 ...state,
                 selectedTimelineIntervalStart: action.timelineIntervalStart,
                 selectedTimelineIntervalEnd: action.timelineIntervalEnd
             };
+
+
+        case 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+            const newState = { ...state };
+            newState.activeStructuredDataExplorerAttributesByServerId[action.serverId] = [{
+                byName: action.byName,
+                byVal: action.byVal,
+            }];
+            return newState;
+        }
+
+
+        case 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+            const newState = { ...state };
+            if (newState.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(action.serverId)) {
+                for (let attribute of newState.activeStructuredDataExplorerAttributesByServerId[action.serverId]) {
+                    if (attribute.byName === action.byName && attribute.byVal === action.byVal) {
+                        return { ...state };
+                    }
+                }
+            } else {
+                newState.activeStructuredDataExplorerAttributesByServerId[action.serverId] = [];
+            }
+            newState.activeStructuredDataExplorerAttributesByServerId[action.serverId].push({
+                byName: action.byName,
+                byVal: action.byVal,
+            });
+            return newState;
+        }
+
+
+        case 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT': {
+            const newState = { ...state };
+            const remainingAttributes = [];
+            if (newState.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(action.serverId)) {
+                for (let attribute of newState.activeStructuredDataExplorerAttributesByServerId[action.serverId]) {
+                    if (!(attribute.byName === action.byName && attribute.byVal === action.byVal)) {
+                        remainingAttributes.push(attribute);
+                    }
+                }
+                newState.activeStructuredDataExplorerAttributesByServerId[action.serverId] = remainingAttributes;
+            } else {
+                return { ...state };
+            }
+            return { ...newState };
+        }
 
 
         default:

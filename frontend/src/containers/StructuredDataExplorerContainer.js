@@ -1,8 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import {connect} from 'react-redux';
 import {
-    resetServerEventsByCommand,
+    addActiveStructuredDataExplorerAttributeCommand,
+    removeActiveStructuredDataExplorerAttributeCommand,
     retrieveServerEventsByCommand,
+    selectActiveStructuredDataExplorerAttributeCommand,
 } from '../redux/reducers/servers';
 import JsonHelper from '../JsonHelper.mjs';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -18,8 +20,7 @@ class StructuredDataExplorerContainer extends Component {
         this.state = {
             values: [],
             keys: [],
-            keysValues: [],
-            selectedAttributes: []
+            keysValues: []
         };
     }
 
@@ -37,16 +38,14 @@ class StructuredDataExplorerContainer extends Component {
             this.setState({
                 values: [],
                 keys: [],
-                keysValues: [],
-                selectedAttributes: []
+                keysValues: []
             });
         } else if (typeof(parsedJson) !== 'object') {
             console.error('JSON is not an object and therefore not explorable.');
             this.setState({
                 values: [],
                 keys: [],
-                keysValues: [],
-                selectedAttributes: []
+                keysValues: []
             });
         } else {
             const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
@@ -61,44 +60,17 @@ class StructuredDataExplorerContainer extends Component {
     };
 
     handleSelectAttributeClicked = (serverId, byName, byVal) => {
-        this.setState(
-            {
-                    ...this.state,
-                    selectedAttributes: [{ byName, byVal }]
-            },
-            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
-        );
+        this.props.dispatch(selectActiveStructuredDataExplorerAttributeCommand(serverId, byName, byVal));
+        this.props.dispatch(retrieveServerEventsByCommand(serverId));
     }
 
     handleAddAttributeClicked = (serverId, byName, byVal) => {
-        this.setState(
-            {
-                ...this.state,
-                selectedAttributes: [...this.state.selectedAttributes, { byName, byVal }]
-            },
-            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
-        );
+        this.props.dispatch(addActiveStructuredDataExplorerAttributeCommand(serverId, byName, byVal));
+        this.props.dispatch(retrieveServerEventsByCommand(serverId));
     }
 
     handleRemoveAttributeClicked = (serverId, byName, byVal) => {
-        this.setState(
-            {
-                ...this.state,
-                selectedAttributes: [
-                    ...this.state.selectedAttributes.filter(attributeData =>
-                           attributeData.byName !== byName
-                        || attributeData.byVal !== byVal
-                    )
-                ]
-            },
-            () => {
-                if (this.state.selectedAttributes.length > 0) {
-                    this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes));
-                } else {
-                    this.props.dispatch(resetServerEventsByCommand());
-                }
-            }
-        );
+        this.props.dispatch(removeActiveStructuredDataExplorerAttributeCommand(serverId, byName, byVal));
     }
 
     componentDidMount() {
@@ -388,10 +360,12 @@ class StructuredDataExplorerContainer extends Component {
         }
 
         const selectedAttributeElements = [];
-        for (let selectedAttribute of this.state.selectedAttributes) {
-            selectedAttributeElements.push(
-                createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
-            );
+        if (this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(this.props.event.serverId)) {
+            for (let selectedAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                selectedAttributeElements.push(
+                    createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
+                );
+            }
         }
 
         return (
