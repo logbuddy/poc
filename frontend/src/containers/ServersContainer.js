@@ -6,6 +6,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { endOfToday, subDays, format, set } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
+import DatetimeHelper from '../DatetimeHelper.mjs';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -639,6 +640,33 @@ class ServersContainer extends Component {
             );
         }
 
+        const numberOfEventsPerHourElements = []
+        for (let server of this.props.reduxState.servers.serverList) {
+            const numberOfEventsPerHourInnerElements = [];
+            let largestNumber = 0;
+            for (let numberOfEventsPerHour of server.numberOfEventsPerHour) {
+                if (numberOfEventsPerHour > largestNumber) {
+                    largestNumber = numberOfEventsPerHour;
+                }
+            }
+            let i = 0;
+            for (let numberOfEventsPerHour of server.numberOfEventsPerHour) {
+                numberOfEventsPerHourInnerElements.push(
+                    <div
+                        key={i}
+                        className='bg-secondary d-inline-block align-bottom'
+                        style={{width: '0.520833333333333%', height: `${22 / largestNumber * numberOfEventsPerHour}px`}}
+                    />
+                );
+                i++;
+            }
+            numberOfEventsPerHourElements.push(
+                <div style={{position: 'relative', width: '100%'}}>
+                    {numberOfEventsPerHourInnerElements}
+                </div>
+            );
+        }
+
         return (
             <div className='m-0'>
                 <div className='w-100 m-0 sticky-top bg-deepdark border-secondary border-bottom border-1 p-2'>
@@ -657,20 +685,35 @@ class ServersContainer extends Component {
                         </div>
 
                     </div>
+                    <div className='react_time_range__time_range_container number-of-elements-per-hour-container'>
+                        {numberOfEventsPerHourElements[0]}
+                    </div>
                     <TimeRange
                         mode={1}
                         error={false}
-                        ticksNumber={7}
+                        ticksNumber={DatetimeHelper.timeRangeSelectorConfig.ticksNumber}
                         formatTick={(ms) =>
                             `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'd')}`
                         }
                         step={60*60*1000/4}
                         selectedInterval={[
-                            set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            set(
+                                subDays(
+                                    now,
+                                    DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays
+                                ),
+                                { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
+                            ),
                             endOfToday()
                         ]}
                         timelineInterval={[
-                            set(subDays(now, 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            set(
+                                subDays(
+                                    now,
+                                    DatetimeHelper.timeRangeSelectorConfig.timelineIntervalStartSubDays
+                                ),
+                                { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
+                            ),
                             endOfToday()
                         ]}
                         onUpdateCallback={ (v) => {

@@ -121,6 +121,7 @@ code {
 
 .react_time_range__rail__inner {
   height: 1px !important;
+  opacity: 0 !important;
 }
 
 .react_time_range__track {
@@ -129,13 +130,16 @@ code {
 
 .react_time_range__tick_marker__large {
   margin-top: 9px !important;
-  height: 4px !important;
+  height: 7px !important;
 }
 
 .react_time_range__tick_label {
   margin-top: 17px !important;
 }
 
+.number-of-elements-per-hour-container {
+  margin-bottom: -39px;
+}
 
 .spinning {
   width: 28px;

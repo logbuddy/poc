@@ -161,7 +161,12 @@ const dateObjectToUTCDatetimeString = (o) => {
 
 const DatetimeHelper = {
     getUTCDatetimeString,
-    dateObjectToUTCDatetimeString
+    dateObjectToUTCDatetimeString,
+    timeRangeSelectorConfig: {
+        ticksNumber: 7,
+        selectedIntervalStartSubDays: 1,
+        timelineIntervalStartSubDays: 7
+    }
 };
 
 export default DatetimeHelper;

@@ -465,6 +465,10 @@ const reducer = (state = initialState, action) => {
                             }
                         }
                     }
+                    newServerlistEntry.numberOfEventsPerHour = [];
+                    for (let i = 0; i < 8*24; i++) {
+                        newServerlistEntry.numberOfEventsPerHour.push(Math.round(Math.random() * 1000));
+                    }
                     updatedServerlist.push(newServerlistEntry);
                 }
                 return updatedServerlist;
