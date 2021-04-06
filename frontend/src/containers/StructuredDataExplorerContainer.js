@@ -133,7 +133,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'value',
                                         value
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -152,7 +151,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'value',
                                         value
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -193,7 +191,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'key',
                                         key
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -212,7 +209,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'key',
                                         key
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -258,7 +254,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'keyValue',
                                         keyValue
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -277,7 +272,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'keyValue',
                                         keyValue
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
