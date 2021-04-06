@@ -4,7 +4,6 @@ import DatetimeHelper from '../../DatetimeHelper.mjs';
 
 const initialState = {
     showEventPayload: true,
-    flipAllLatestEventsElementsOpen: false,
     retrieveServerListOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
@@ -24,6 +23,7 @@ const initialState = {
         sampleCurlCommand: [],
         latestEvents: []
     },
+    serverListLatestEventsOpenForServerId: null,
     selectedTimelineIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
     selectedTimelineIntervalEnd: endOfToday(),
     activeStructuredDataExplorerAttributesByServerId: {}
@@ -36,10 +36,6 @@ export const disableShowEventPayloadCommand = () => ({
 
 export const enableShowEventPayloadCommand = () => ({
     type: 'ENABLE_SHOW_EVENT_PAYLOAD_COMMAND'
-});
-
-export const disableFlipAllLatestEventsElementsOpenCommand = () => ({
-    type: 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND'
 });
 
 const retrieveServerListStartedEvent = () => ({
@@ -92,14 +88,7 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
                             latestEventSortValue = getState().servers.serverList[j].latestEventSortValue;
                         }
                     }
-                    if (getState().servers.flipAllLatestEventsElementsOpen === true) {
-                        dispatch(retrieveYetUnseenServerEventsCommand(
-                            getState().servers.serverListOpenElements.latestEvents[i],
-                            latestEventSortValue
-                        ));
-                    }
                 }
-                dispatch(disableFlipAllLatestEventsElementsOpenCommand());
             }
         })
 
@@ -437,12 +426,6 @@ const reducer = (state = initialState, action) => {
                 showEventPayload: true,
             };
 
-        case 'DISABLE_FLIP_ALL_LATEST_EVENTS_ELEMENTS_OPEN_COMMAND':
-            return {
-                ...state,
-                flipAllLatestEventsElementsOpen: false,
-            };
-
         case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
             return {
                 ...state,
@@ -473,14 +456,7 @@ const reducer = (state = initialState, action) => {
                 }
                 return updatedServerlist;
             };
-            let serverListOpenElementsLatestEvents = [];
-            if (state.flipAllLatestEventsElementsOpen === true) {
-                for (let i = 0; i < action.serverList.length; i++) {
-                    serverListOpenElementsLatestEvents.push(action.serverList[i].id);
-                }
-            } else {
-                serverListOpenElementsLatestEvents = [ ...state.serverListOpenElements.latestEvents ];
-            }
+            const serverListOpenElementsLatestEvents = [ ...state.serverListOpenElements.latestEvents ];
             return {
                 ...state,
                 retrieveServerListOperation: {

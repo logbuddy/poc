@@ -30,14 +30,6 @@ if (   cookies.getAll().hasOwnProperty('loggedInEmail')
     };
 }
 
-if (   cookies.getAll().hasOwnProperty('flipAllLatestEventsElementsOpen')
-    && cookies.get('flipAllLatestEventsElementsOpen') === '1'
-) {
-    preloadedState.servers.flipAllLatestEventsElementsOpen = true;
-    document.cookie = `flipAllLatestEventsElementsOpen=0;path=/;SameSite=Lax`;
-}
-
-
 export default function configureStore() {
     return createStore(
         root,
