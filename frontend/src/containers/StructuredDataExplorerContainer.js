@@ -9,9 +9,38 @@ import {
 import JsonHelper from '../JsonHelper.mjs';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
-import { X, Upload, PlusCircle, DashCircle } from 'react-bootstrap-icons';
+import {X, Upload, PlusCircle, DashCircle, Disc} from 'react-bootstrap-icons';
 import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
-import {format} from "date-fns";
+import { format } from "date-fns";
+
+const getAttributesForEvent = (event) => {
+    let parsedJson = null;
+    let values = [];
+    let keys = [];
+    let keysValues = [];
+    try {
+        parsedJson = JSON.parse(event.payload);
+    } catch (e) {
+        console.error('Cannot parse event payload into valid JSON', e);
+        return { values, keys, keysValues };
+    }
+
+    if (parsedJson === null) {
+        console.error('Could not parse payload into valid JSON');
+        return { values, keys, keysValues };
+    } else if (typeof(parsedJson) !== 'object') {
+        console.error('JSON is not an object and therefore not explorable.');
+        return { values, keys, keysValues };
+    } else {
+        const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
+
+        return {
+            values: JsonHelper.getBrokenDownValues(parsedJson),
+            keys: JsonHelper.getBrokenDownKeys(keyValuePairs),
+            keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs)
+        };
+    }
+};
 
 class StructuredDataExplorerContainer extends Component {
     constructor(props) {
@@ -26,38 +55,13 @@ class StructuredDataExplorerContainer extends Component {
     }
 
     calculateAttributes = () => {
-        let parsedJson = null;
-        try {
-            parsedJson = JSON.parse(this.props.event.payload);
-        } catch (e) {
-            console.error('Cannot parse event payload into valid JSON', e);
-            return;
-        }
-
-        if (parsedJson === null) {
-            console.error('Could not parse payload into valid JSON');
-            this.setState({
-                values: [],
-                keys: [],
-                keysValues: []
-            });
-        } else if (typeof(parsedJson) !== 'object') {
-            console.error('JSON is not an object and therefore not explorable.');
-            this.setState({
-                values: [],
-                keys: [],
-                keysValues: []
-            });
-        } else {
-            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
-
-            this.setState({
-                ...this.state,
-                values: JsonHelper.getBrokenDownValues(parsedJson),
-                keys: JsonHelper.getBrokenDownKeys(keyValuePairs),
-                keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs)
-            });
-        }
+        const { values, keys, keysValues } = getAttributesForEvent(this.props.event);
+        this.setState({
+            ...this.state,
+            values: values,
+            keys: keys,
+            keysValues: keysValues
+        });
     };
 
     handleSelectAttributeClicked = (serverId, byName, byVal) => {
@@ -298,10 +302,53 @@ class StructuredDataExplorerContainer extends Component {
             keyValueElements.push(createKeyValueAttributeElement(keyValue));
         }
 
+        const selectedAttributeElements = [];
+        if (this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(this.props.event.serverId)) {
+            for (let selectedAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                selectedAttributeElements.push(
+                    createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
+                );
+            }
+        }
+
         const eventByElements = [];
         for (let server of this.props.reduxState.servers.serverList) {
             if (server.id === this.props.event.serverId) {
                 for (let eventBy of server.latestEventsBy) {
+                    const { values, keys, keysValues } = getAttributesForEvent(eventBy);
+
+                    const eventByValueElements = [];
+                    for (let value of values) {
+                        let add = true;
+                        for (let activeAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                            if (activeAttribute.byName === 'value' && activeAttribute.byVal === value) {
+                                add = false;
+                            }
+                        }
+                        if (add) eventByValueElements.push(createValueAttributeElement(value));
+                    }
+                    const eventByKeyElements = [];
+                    for (let key of keys) {
+                        let add = true;
+                        for (let activeAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                            if (activeAttribute.byName === 'key' && activeAttribute.byVal === key) {
+                                add = false;
+                            }
+                        }
+                        if (add) eventByKeyElements.push(createKeyAttributeElement(key));
+                    }
+
+                    const eventByKeyValueElements = [];
+                    for (let keyValue of keysValues) {
+                        let add = true;
+                        for (let activeAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                            if (activeAttribute.byName === 'keyValue' && activeAttribute.byVal === keyValue) {
+                                add = false;
+                            }
+                        }
+                        if (add) eventByKeyValueElements.push(createKeyValueAttributeElement(keyValue));
+                    }
+
                     eventByElements.push(
                         <Fragment key={eventBy.id}>
                             <div className='row mb-3'>
@@ -352,6 +399,30 @@ class StructuredDataExplorerContainer extends Component {
                                                     {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
                                                 </SyntaxHighlighter>
                                             }
+                                            {
+                                                eventByValueElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {eventByValueElements}
+                                                </Fragment>
+                                            }
+                                            {
+                                                eventByKeyElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {eventByKeyElements}
+                                                </Fragment>
+                                            }
+                                            {
+                                                eventByKeyValueElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {eventByKeyValueElements}
+                                                </Fragment>
+                                            }
                                         </span>
                                     </code>
                                 </div>
@@ -360,15 +431,6 @@ class StructuredDataExplorerContainer extends Component {
                         </Fragment>
                     );
                 }
-            }
-        }
-
-        const selectedAttributeElements = [];
-        if (this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(this.props.event.serverId)) {
-            for (let selectedAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
-                selectedAttributeElements.push(
-                    createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
-                );
             }
         }
 
@@ -474,6 +536,13 @@ class StructuredDataExplorerContainer extends Component {
                                 &&
                                 <Fragment>Results</Fragment>
                             }
+                            {
+                                this.props.reduxState.servers
+                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                    .includes(this.props.event.serverId)
+                                &&
+                                <Disc className='spinning' />
+                            }
                         </h4>
                         {
                             selectedAttributeElements.length > 0
@@ -486,21 +555,7 @@ class StructuredDataExplorerContainer extends Component {
                         <hr/>
                         <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
                             {
-                                this.props.reduxState.servers
-                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(this.props.event.serverId)
-                                &&
-                                <Fragment>
-                                    Retrieving...
-                                </Fragment>
-                            }
-
-                            {
                                 eventByElements.length > 0
-                                &&
-                                !this.props.reduxState.servers
-                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(this.props.event.serverId)
                                 &&
                                 eventByElements
                             }
