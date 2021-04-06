@@ -112,11 +112,30 @@ code {
 
 .react_time_range__time_range_container {
   padding-left: 10% !important;
-  padding-top: 2em !important;
-  padding-bottom: 3em !important;
+  padding-top: 1.5em !important;
+  padding-bottom: 1.5em !important;
   padding-right: 0 !important;
   width: 90% !important;
+  height: 52px !important;
 }
+
+.react_time_range__rail__inner {
+  height: 18px !important;
+}
+
+.react_time_range__track {
+  height: 32px !important;
+}
+
+.react_time_range__tick_marker__large {
+  margin-top: 9px !important;
+  height: 4px !important;
+}
+
+.react_time_range__tick_label {
+  margin-top: 17px !important;
+}
+
 
 .spinning {
   width: 28px;

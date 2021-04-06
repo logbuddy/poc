@@ -647,12 +647,12 @@ class ServersContainer extends Component {
                             <div className='col align-self-start'>
                                 {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'PPPP')}
                                 <br/>
-                                {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'pp')}
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'p')}
                             </div>
                             <div className='col align-self-end text-end'>
                                 {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'PPPP')}
                                 <br/>
-                                {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'pp')}
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'p')}
                             </div>
                         </div>
 
