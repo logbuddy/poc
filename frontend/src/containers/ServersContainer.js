@@ -91,10 +91,12 @@ class ServersContainer extends Component {
         this.setState({ ...this.state, showCopySuccessBadgeForId: id });
     }
 
-    handleLoadEventIntoStructuredDataExplorerClicked = (event) => {
+    handleLoadEventIntoStructuredDataExplorerClicked = (event, reset = false) => {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(event.serverId));
-        this.props.dispatch(resetServerEventsByCommand());
-        this.props.dispatch(resetActiveStructuredDataExplorerAttributesCommand(event.serverId));
+        if (reset) {
+            this.props.dispatch(resetActiveStructuredDataExplorerAttributesCommand(event.serverId));
+            this.props.dispatch(resetServerEventsByCommand());
+        }
         this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: event });
     }
 
@@ -304,7 +306,7 @@ class ServersContainer extends Component {
                              className={`row mb-3 ${isExplorable && 'clickable'}`}
                              onClick={() =>
                                  isExplorable
-                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(event)
+                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(event, true)
                              }
                         >
                             <div className='col-sm-12 ps-2 pe-2'>

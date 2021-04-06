@@ -368,20 +368,6 @@ class StructuredDataExplorerContainer extends Component {
                                         <span className='text-secondary me-2'>
                                             {eventBy.source}
                                         </span>
-                                        <br/>
-                                        <div
-                                            className='clickable mt-3'
-                                            onClick={() => {
-                                                this.props.onUseEventClicked(eventBy);
-                                                // For some reason this only works ALL the time if we fire it asynchronously:
-                                                setTimeout(
-                                                    () => this.titleRef.current.scrollIntoView(),
-                                                    1
-                                                );
-                                            }}
-                                        >
-                                            <Upload width='1.5em' height='1.5em' className='text-primary' />
-                                        </div>
                                     </code>
                                 </div>
                                 <div className='col ps-1 pe-1 pt-1'>
@@ -497,9 +483,8 @@ class StructuredDataExplorerContainer extends Component {
                                 resulting list of log entries.
                             </p>
                             <p>
-                                On each result, you can in turn click on the
-                                <Upload width='2em' height='2em' className='ps-2 pe-2 text-primary' />
-                                icon in order to load that log entry into the explorer.
+                                On each result, you can in turn refine your search further by click on the
+                                key, value, or key-value attributes of the result.
                             </p>
                         </div>
 
