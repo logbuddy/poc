@@ -684,7 +684,7 @@ class ServersContainer extends Component {
                 </div>
 
                 <div className='m-3'>
-                    <div className='navbar navbar-expand'>
+                    <div className='navbar navbar-expand me-3'>
                         <ul className='navbar-nav ms-auto'>
                             <li className='nav-item text-center'>
                                 {
@@ -759,7 +759,7 @@ class ServersContainer extends Component {
 
                     <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
 
-                    <h1 className='mb-3'>
+                    <h1 className='mb-3 ms-3'>
                         My servers
                     </h1>
 
