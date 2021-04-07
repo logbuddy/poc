@@ -2,14 +2,11 @@
   "name": "herodot-shared",
   "version": "1.0.0",
   "main": "src/index.js",
-  "scripts": {
-    "build": "rollup ./src/index.js --file ./build/bundle.js --format es"
-  },
+  "scripts": {},
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "date-fns": "^2.19.0",
-    "rollup": "^2.44.0"
+    "date-fns": "^2.19.0"
   },
   "directories": {
     "test": "tests"

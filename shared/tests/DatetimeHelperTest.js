@@ -1,4 +1,5 @@
 const DatetimeHelper = require('../src/DatetimeHelper.js');
+const set = require('date-fns').set;
 const assert = require('assert').strict;
 
 assert.deepEqual(
@@ -33,5 +34,31 @@ assert.deepEqual(
 
         '2021-04-03T16:18:05Z',
         '2021-04-03T16:18:05Z',
+    ]
+);
+
+assert.deepEqual(
+    DatetimeHelper.getListOfHoursBetween(
+        new Date(Date.UTC(2021, 0, 1, 0, 0, 0, 0)),
+        new Date(Date.UTC(2021, 0, 1, 3, 0, 0, 0)),
+    ),
+    [
+        '2021-01-01T00',
+        '2021-01-01T01',
+        '2021-01-01T02',
+        '2021-01-01T03',
+    ]
+);
+
+assert.deepEqual(
+    DatetimeHelper.getListOfHoursBetween(
+        new Date(Date.UTC(2021, 0, 1, 0, 0, 0, 1)),
+        new Date(Date.UTC(2021, 0, 1, 3, 0, 0, 0)),
+    ),
+    [
+        '2021-01-01T00',
+        '2021-01-01T01',
+        '2021-01-01T02',
+        '2021-01-01T03',
     ]
 );

@@ -1,5 +1,4 @@
-import { DatetimeHelper } from 'herodot-shared';
-const { endOfToday, subDays, set } = require('date-fns');
+const DatetimeHelper = require('herodot-shared').DatetimeHelper;
 
 const AWS = require('aws-sdk');
 const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
@@ -592,8 +591,8 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
 
     const hourToIntervals = {};
 
-    const startDate = set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 });
-    const endDate = endOfToday();
+    const startDate = DatetimeHelper.timelineConfig.timelineIntervalStart;
+    const endDate = DatetimeHelper.timelineConfig.timelineIntervalEnd;
 
     const serverEvents = await new Promise((resolve, reject) => {
         docClient.query(

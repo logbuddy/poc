@@ -2,6 +2,7 @@ const dateFormat = require('./dateFormat');
 
 const set = require('date-fns').set;
 const subDays = require('date-fns').subDays;
+const addHours = require('date-fns').addHours;
 const endOfToday = require('date-fns').endOfToday;
 
 const getUTCDatetimeString = (val) => {
@@ -38,9 +39,22 @@ const dateObjectToUTCDatetimeString = (o) => {
     return JSON.stringify(o).replace('"', '').substring(0, 19) + 'Z';
 };
 
+const getListOfHoursBetween = (start, end) => {
+    const hours = [];
+    let currentHour = start;
+    while (currentHour <= end) {
+        hours.push(
+            JSON.stringify(currentHour).replace('"', '').substring(0, 13)
+        );
+        currentHour = addHours(currentHour, 1);
+    }
+    return hours;
+};
+
 const DatetimeHelper = {
     getUTCDatetimeString,
     dateObjectToUTCDatetimeString,
+    getListOfHoursBetween,
     timelineConfig: {
         ticksNumber: 7,
         timelineIntervalStart: set(subDays(new Date(), 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
