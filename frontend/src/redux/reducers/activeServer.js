@@ -1,26 +1,28 @@
 import { apiFetch } from '../util';
 import {endOfToday, set, subDays} from 'date-fns';
+import DatetimeHelper from '../../DatetimeHelper.mjs';
 
 const initialState = {
     server: {
         id: null,
         title: null,
         events: [],
-        structuredDataExplorerEvents: []
+        structuredDataExplorerEvents: [],
+        latestEventSortValue: null
     },
     showEventPayload: true,
-    retrieveServerEventsOperation: {
+    retrieveEventsOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    retrieveYetUnseenServerEventsOperation: {
+    retrieveYetUnseenEventsOperation: {
         mustBeSkipped: false,
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    retrieveStructuredDataExplorerServerEventsOperation: {
+    retrieveStructuredDataExplorerEventsOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
@@ -30,8 +32,9 @@ const initialState = {
     selectedTimelineIntervalEnd: endOfToday(),
 };
 
-export const makeServerActiveCommand = (server) => (dispatch, getState) => {
+export const makeServerActiveCommand = (server) => (dispatch) => {
     dispatch(madeServerActiveEvent(server));
+    dispatch(retrieveEventsCommand());
 };
 
 export const madeServerActiveEvent = (server) => ({
@@ -44,6 +47,59 @@ export const closeActiveServerCommand = () => ({
     type: 'CLOSE_ACTIVE_SERVER_COMMAND'
 });
 
+
+export const retrieveEventsStartedEvent = () => ({
+    type: 'RETRIEVE_EVENTS_STARTED_EVENT'
+});
+
+export const retrieveEventsFailedEvent = (errorMessage) => ({
+    type: 'RETRIEVE_EVENTS_FAILED_EVENT',
+    errorMessage
+});
+
+const retrieveEventsSucceededEvent = (events) => ({
+    type: 'RETRIEVE_EVENTS_SUCCEEDED_EVENT',
+    events
+});
+
+
+export const retrieveEventsCommand = () => (dispatch, getState) => {
+
+    dispatch(retrieveEventsStartedEvent());
+
+    let responseWasOk = true;
+    apiFetch(
+        `/servers/${getState().activeServer.server.id}/events`,
+        'GET',
+        getState().session.webappApiKeyId,
+        null,
+        {
+            selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalStart),
+            selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalEnd)
+        }
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsObject => {
+            if (!responseWasOk) {
+                dispatch(retrieveEventsFailedEvent(responseContentAsObject));
+            } else {
+                dispatch(retrieveEventsSucceededEvent(responseContentAsObject));
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(retrieveEventsFailedEvent(error.toString()));
+        });
+
+};
 
 const reducer = (state = initialState, action) => {
 
@@ -62,6 +118,43 @@ const reducer = (state = initialState, action) => {
 
         case 'CLOSE_ACTIVE_SERVER_COMMAND': {
             return initialState;
+        }
+
+
+        case 'RETRIEVE_EVENTS_STARTED_EVENT': {
+            return {
+                ...state,
+                retrieveEventsOperation: {
+                    ...state.retrieveEventsOperation,
+                    isRunning: true
+                }
+            };
+        }
+
+        case 'RETRIEVE_EVENTS_FAILED_EVENT': {
+            return {
+                ...state,
+                retrieveEventsOperation: {
+                    ...state.retrieveEventsOperation,
+                    isRunning: false,
+                    errorMessage: action.errorMessage
+                }
+            };
+        }
+
+        case 'RETRIEVE_EVENTS_SUCCEEDED_EVENT': {
+            return {
+                ...state,
+                retrieveEventsOperation: {
+                    ...state.retrieveEventsOperation,
+                    isRunning: false,
+                    errorMessage: null
+                },
+                server: {
+                    ...state.server,
+                    events: action.events
+                }
+            };
         }
 
 
