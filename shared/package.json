@@ -1,7 +1,7 @@
 {
   "name": "herodot-shared",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "rollup ./src/index.js --file ./build/bundle.js --format es"
   },
@@ -11,7 +11,6 @@
     "date-fns": "^2.19.0",
     "rollup": "^2.44.0"
   },
-  "type": "module",
   "directories": {
     "test": "tests"
   },

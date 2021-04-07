@@ -1,5 +1,5 @@
-import JsonHelper from '../src/JsonHelper.js';
-import { strict as assert } from 'assert';
+const JsonHelper = require('../src/JsonHelper.js');
+const assert = require('assert').strict;
 
 assert.deepEqual(
     JsonHelper.flattenToKeyValuePairs('Hello'),

@@ -6,7 +6,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { endOfToday, subDays, format, set } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
-import { DatetimeHelper } from 'shared';
+import { DatetimeHelper } from 'herodot-shared';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -699,30 +699,18 @@ class ServersContainer extends Component {
                     <TimeRange
                         mode={1}
                         error={false}
-                        ticksNumber={DatetimeHelper.timeRangeSelectorConfig.ticksNumber}
+                        ticksNumber={DatetimeHelper.timelineConfig.ticksNumber}
                         formatTick={(ms) =>
                             `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'd')}`
                         }
                         step={60*60*1000/4}
                         selectedInterval={[
-                            set(
-                                subDays(
-                                    now,
-                                    DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays
-                                ),
-                                { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
-                            ),
-                            endOfToday()
+                            DatetimeHelper.timelineConfig.selectedIntervalStart,
+                            DatetimeHelper.timelineConfig.selectedIntervalEnd,
                         ]}
                         timelineInterval={[
-                            set(
-                                subDays(
-                                    now,
-                                    DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays
-                                ),
-                                { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
-                            ),
-                            endOfToday()
+                            DatetimeHelper.timelineConfig.timelineIntervalStart,
+                            DatetimeHelper.timelineConfig.timelineIntervalEnd,
                         ]}
                         onUpdateCallback={ (v) => {
                             this.props.dispatch(timelineIntervalsUpdatedEvent(

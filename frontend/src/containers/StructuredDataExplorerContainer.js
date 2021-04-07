@@ -10,8 +10,8 @@ import { JsonHelper } from 'herodot-shared';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 import {X, Upload, PlusCircle, DashCircle, Disc} from 'react-bootstrap-icons';
-import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
-import { format } from "date-fns";
+import DayzEventSkinPresentational from '../presentationals/eventSkins/dayz/DayzEventSkinPresentational';
+import { format } from 'date-fns';
 
 const getAttributesForEvent = (event) => {
     let parsedJson = null;

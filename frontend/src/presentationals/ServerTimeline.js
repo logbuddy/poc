@@ -1,7 +1,7 @@
-import React, { Fragment } from 'react';
-import { endOfToday, format, set, subDays } from 'date-fns';
+import React from 'react';
+import { format } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
-import { DatetimeHelper } from 'herodot-shared';
+import {DatetimeHelper} from "herodot-shared";
 
 const ServerTimelinePresentational = (
     {
@@ -62,20 +62,14 @@ const ServerTimelinePresentational = (
             <TimeRange
                 mode={1}
                 error={false}
-                ticksNumber={DatetimeHelper.timeRangeSelectorConfig.ticksNumber}
+                ticksNumber={DatetimeHelper.timelineConfig.ticksNumber}
                 formatTick={(ms) =>
                     `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'd')}`
                 }
                 step={60 * 60 * 1000 / 4}
                 selectedInterval={[
-                    set(
-                        subDays(
-                            now,
-                            DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays
-                        ),
-                        { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
-                    ),
-                    endOfToday()
+                    selectedTimelineIntervalStart,
+                    selectedTimelineIntervalEnd,
                 ]}
                 timelineInterval={[
                     timelineIntervalStart,

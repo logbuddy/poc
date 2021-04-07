@@ -121,4 +121,4 @@ const JsonHelper = {
     separator
 }
 
-export default JsonHelper;
+module.exports = JsonHelper;

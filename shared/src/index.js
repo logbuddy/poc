@@ -1,4 +1,4 @@
-import DatetimeHelper from './DatetimeHelper';
-import JsonHelper from './JsonHelper';
-
-export default { DatetimeHelper, JsonHelper };
+module.exports = {
+    DatetimeHelper: require('./DatetimeHelper'),
+    JsonHelper: require('./JsonHelper'),
+};

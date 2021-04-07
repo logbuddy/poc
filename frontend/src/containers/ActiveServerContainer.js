@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { closeActiveServerCommand } from '../redux/reducers/activeServer';
 import ServerEventPresentational from '../presentationals/ServerEvent';
 import ServerTimelinePresentational from '../presentationals/ServerTimeline';
+import { DatetimeHelper } from 'herodot-shared';
 
 class ActiveServerContainer extends Component {
     render() {
@@ -23,6 +24,8 @@ class ActiveServerContainer extends Component {
                 <ServerTimelinePresentational
                     selectedTimelineIntervalStart={activeServer.selectedTimelineIntervalStart}
                     selectedTimelineIntervalEnd={activeServer.selectedTimelineIntervalEnd}
+                    timelineIntervalStart={activeServer.timelineIntervalStart}
+                    timelineIntervalEnd={activeServer.timelineIntervalEnd}
                     numbersOfEventsPerHour={activeServer.server.numbersOfEventsPerHour}
                     onUpdateCallback={ () => ({}) }
                     onChangeCallback={ () => ({}) }

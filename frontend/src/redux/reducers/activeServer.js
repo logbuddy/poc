@@ -1,5 +1,4 @@
 import { apiFetch } from '../util';
-import {endOfToday, set, subDays} from 'date-fns';
 import { DatetimeHelper } from 'herodot-shared';
 
 const initialState = {
@@ -30,10 +29,10 @@ const initialState = {
         errorMessage: null
     },
     activeStructuredDataExplorerAttributes: [],
-    selectedTimelineIntervalStart: set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
-    selectedTimelineIntervalEnd: endOfToday(),
-    timelineIntervalStart: set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
-    timelineIntervalEnd: endOfToday(),
+    selectedTimelineIntervalStart: DatetimeHelper.timelineConfig.selectedIntervalStart,
+    selectedTimelineIntervalEnd: DatetimeHelper.timelineConfig.selectedIntervalEnd,
+    timelineIntervalStart: DatetimeHelper.timelineConfig.timelineIntervalStart,
+    timelineIntervalEnd: DatetimeHelper.timelineConfig.timelineIntervalEnd,
 };
 
 export const makeServerActiveCommand = (server) => (dispatch) => {

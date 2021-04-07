@@ -1,5 +1,5 @@
-import DatetimeHelper from '../src/DatetimeHelper.js';
-import { strict as assert } from 'assert';
+const DatetimeHelper = require('../src/DatetimeHelper.js');
+const assert = require('assert').strict;
 
 assert.deepEqual(
     [
