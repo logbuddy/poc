@@ -30,7 +30,10 @@ exports.handler = async (event) => {
         if (   record.eventName === 'INSERT'
             && record.dynamodb.hasOwnProperty('NewImage')
             && record.dynamodb.NewImage.hasOwnProperty('servers_id')
+            && record.dynamodb.NewImage.hasOwnProperty('sort_value')
             && record.dynamodb.NewImage.hasOwnProperty('server_event_created_at')
+            && record.dynamodb.NewImage.hasOwnProperty('server_event_created_at_utc')
+            && record.dynamodb.NewImage.hasOwnProperty('server_event_source')
             && record.dynamodb.NewImage.hasOwnProperty('server_event_payload')
             && record.dynamodb.NewImage['server_event_payload'].hasOwnProperty('S')
         ) {
@@ -71,6 +74,7 @@ exports.handler = async (event) => {
                                     'received_at': record.dynamodb.NewImage['received_at'].S,
                                     'server_events_id': record.dynamodb.NewImage['id'].S,
                                     'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
+                                    'server_event_created_at_utc': record.dynamodb.NewImage['server_event_created_at_utc'].S,
                                     'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
                                     'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
                                 }
@@ -131,6 +135,7 @@ exports.handler = async (event) => {
                                     'received_at': record.dynamodb.NewImage['received_at'].S,
                                     'server_events_id': record.dynamodb.NewImage['id'].S,
                                     'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
+                                    'server_event_created_at_utc': record.dynamodb.NewImage['server_event_created_at_utc'].S,
                                     'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
                                     'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
                                 }
@@ -194,6 +199,7 @@ exports.handler = async (event) => {
                                 'received_at': record.dynamodb.NewImage['received_at'].S,
                                 'server_events_id': record.dynamodb.NewImage['id'].S,
                                 'server_event_created_at': record.dynamodb.NewImage['server_event_created_at'].S,
+                                'server_event_created_at_utc': record.dynamodb.NewImage['server_event_created_at_utc'].S,
                                 'server_event_source': record.dynamodb.NewImage['server_event_source'].S,
                                 'server_event_payload': record.dynamodb.NewImage['server_event_payload'].S
                             }

@@ -1,4 +1,6 @@
+import { endOfToday, subDays, set } from 'date-fns';
 import { apiFetch } from '../util';
+import DatetimeHelper from '../../DatetimeHelper.mjs';
 
 const initialState = {
     showEventPayload: true,
@@ -21,8 +23,12 @@ const initialState = {
         information: [],
         sampleCurlCommand: [],
         latestEvents: []
-    }
+    },
+    selectedTimelineIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+    selectedTimelineIntervalEnd: endOfToday(),
+    activeStructuredDataExplorerAttributesByServerId: {}
 };
+
 
 export const disableShowEventPayloadCommand = () => ({
     type: 'DISABLE_SHOW_EVENT_PAYLOAD_COMMAND'
@@ -55,7 +61,16 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
     dispatch(retrieveServerListStartedEvent());
 
     let responseWasOk = true;
-    apiFetch('/servers', 'GET', getState().session.webappApiKeyId)
+    apiFetch(
+        '/servers',
+        'GET',
+        getState().session.webappApiKeyId,
+        null,
+        {
+            selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalStart),
+            selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalEnd)
+        }
+    )
         .then(response => {
             console.debug(response);
             if (!response.ok) {
@@ -143,7 +158,12 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
     apiFetch(
         `/yet-unseen-server-events?serverId=${encodeURIComponent(serverId)}&latestSeenSortValue=${encodeURIComponent(latestSeenSortValue)}`,
         'GET',
-        getState().session.webappApiKeyId
+        getState().session.webappApiKeyId,
+        null,
+        {
+            selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalStart),
+            selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalEnd)
+        }
     )
         .then(response => {
             console.debug(response);
@@ -190,23 +210,37 @@ export const resetServerEventsByCommand = () => ({
     type: 'RESET_SERVER_EVENTS_BY_COMMAND'
 });
 
-export const retrieveServerEventsByCommand = (serverId, attributes) => (dispatch, getState) => {
+export const retrieveServerEventsByCommand = (serverId) => (dispatch, getState) => {
+
+    if (!getState().servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(serverId)) {
+        console.error(`Was asked to retrieve "by" events for server id ${serverId} which has no "by" attributes set.`);
+        return;
+    }
 
     dispatch(retrieveServerEventsByStartedEvent(serverId));
 
-    let path = `/server-events-by?serverId=${encodeURIComponent(serverId)}`;
+    const queryParams = {
+        serverId,
+        selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalStart),
+        selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalEnd)
+    };
+
     let i = 0;
+    const attributes = getState().servers.activeStructuredDataExplorerAttributesByServerId[serverId];
     console.debug(attributes);
     for (let attribute of attributes) {
-        path = path + `&byName[${i}]=${encodeURIComponent(attribute.byName)}&byVal[${i}]=${encodeURIComponent(attribute.byVal)}`;
+        queryParams[`byName[${i}]`] = attribute.byName;
+        queryParams[`byVal[${i}]`] = attribute.byVal;
         i++;
     }
 
     let responseWasOk = true;
     apiFetch(
-        path,
+        '/server-events-by',
         'GET',
-        getState().session.webappApiKeyId
+        getState().session.webappApiKeyId,
+        null,
+        queryParams
     )
         .then(response => {
             console.debug(response);
@@ -300,6 +334,60 @@ export const flipServerListElementCloseCommand = (serverId, elementName) => ({
 });
 
 
+export const timelineIntervalsUpdatedEvent = (timelineIntervalStart, timelineIntervalEnd) => ({
+    type: 'TIMELINE_INTERVALS_UPDATED_EVENT',
+    timelineIntervalStart,
+    timelineIntervalEnd
+})
+
+export const timelineIntervalsChangedEvent = () => (dispatch, getState) => {
+    dispatch(retrieveServerListCommand());
+    for (let serverId in getState().servers.activeStructuredDataExplorerAttributesByServerId) {
+        if (getState().servers.activeStructuredDataExplorerAttributesByServerId[serverId].length > 0) {
+            dispatch(retrieveServerEventsByCommand(serverId));
+        }
+    }
+};
+
+
+export const selectActiveStructuredDataExplorerAttributeCommand = (serverId, byName, byVal) => ({
+    type: 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+    serverId,
+    byName,
+    byVal
+});
+
+export const addActiveStructuredDataExplorerAttributeCommand = (serverId, byName, byVal) => ({
+    type: 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+    serverId,
+    byName,
+    byVal
+});
+
+export const removeActiveStructuredDataExplorerAttributeCommand = (serverId, byName, byVal) => (dispatch, getState) => {
+    dispatch(removedActiveStructuredDataExplorerAttributeEvent(serverId, byName, byVal));
+    if (   getState().servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(serverId)
+        && getState().servers.activeStructuredDataExplorerAttributesByServerId[serverId].length === 0
+    ) {
+        dispatch(resetServerEventsByCommand());
+    } else {
+        dispatch(retrieveServerEventsByCommand(serverId));
+    }
+};
+
+const removedActiveStructuredDataExplorerAttributeEvent = (serverId, byName, byVal) => ({
+    type: 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT',
+    serverId,
+    byName,
+    byVal
+});
+
+export const resetActiveStructuredDataExplorerAttributesCommand = (serverId) => ({
+    type: 'RESET_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND',
+    serverId
+});
+
+
 const reducer = (state = initialState, action) => {
 
     const withYetUnseenServerEventsUpdatedServerList = (serverId, yetUnseenServerEvents) => {
@@ -364,10 +452,26 @@ const reducer = (state = initialState, action) => {
                 }
             };
 
-        case 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT':
+        case 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT': {
+            const updateServerlist = (existingServerlist, newServerlist) => {
+                const updatedServerlist = [];
+                for (let newServerlistEntry of newServerlist) {
+                    if (newServerlistEntry.latestEventsBy.length === 0) {
+                        for (let existingServerlistEntry of existingServerlist) {
+                            if (   existingServerlistEntry.latestEventsBy.length > 0
+                                && existingServerlistEntry.id === newServerlistEntry.id
+                            ) {
+                                newServerlistEntry.latestEventsBy = existingServerlistEntry.latestEventsBy;
+                            }
+                        }
+                    }
+                    updatedServerlist.push(newServerlistEntry);
+                }
+                return updatedServerlist;
+            };
             let serverListOpenElementsLatestEvents = [];
             if (state.flipAllLatestEventsElementsOpen === true) {
-                for (let i=0; i < action.serverList.length; i++) {
+                for (let i = 0; i < action.serverList.length; i++) {
                     serverListOpenElementsLatestEvents.push(action.serverList[i].id);
                 }
             } else {
@@ -379,12 +483,13 @@ const reducer = (state = initialState, action) => {
                     ...initialState.retrieveServerListOperation,
                     justFinishedSuccessfully: true
                 },
-                serverList: action.serverList,
+                serverList: updateServerlist(state.serverList, action.serverList),
                 serverListOpenElements: {
                     ...state.serverListOpenElements,
                     latestEvents: serverListOpenElementsLatestEvents
                 }
             };
+        }
 
         case 'RETRIEVE_SERVER_LIST_FAILED_EVENT':
             return {
@@ -590,14 +695,77 @@ const reducer = (state = initialState, action) => {
                 ]
             };
 
+
         case 'RESET_SERVER_EVENTS_BY_COMMAND':
             return {
                 ...state,
                 serverList: withEmptiedServerEventsByServerList()
             };
 
-        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT':
-            return { ...initialState }
+
+        case 'TIMELINE_INTERVALS_UPDATED_EVENT':
+            return {
+                ...state,
+                selectedTimelineIntervalStart: action.timelineIntervalStart,
+                selectedTimelineIntervalEnd: action.timelineIntervalEnd
+            };
+
+
+        case 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+            const newState = { ...state };
+            newState.activeStructuredDataExplorerAttributesByServerId[action.serverId] = [{
+                byName: action.byName,
+                byVal: action.byVal,
+            }];
+            return newState;
+        }
+
+
+        case 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+            const newState = { ...state };
+            if (newState.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(action.serverId)) {
+                for (let attribute of newState.activeStructuredDataExplorerAttributesByServerId[action.serverId]) {
+                    if (attribute.byName === action.byName && attribute.byVal === action.byVal) {
+                        return { ...state };
+                    }
+                }
+            } else {
+                newState.activeStructuredDataExplorerAttributesByServerId[action.serverId] = [];
+            }
+            newState.activeStructuredDataExplorerAttributesByServerId[action.serverId].push({
+                byName: action.byName,
+                byVal: action.byVal,
+            });
+            return newState;
+        }
+
+
+        case 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT': {
+            const newState = { ...state };
+            const remainingAttributes = [];
+            if (newState.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(action.serverId)) {
+                for (let attribute of newState.activeStructuredDataExplorerAttributesByServerId[action.serverId]) {
+                    if (!(attribute.byName === action.byName && attribute.byVal === action.byVal)) {
+                        remainingAttributes.push(attribute);
+                    }
+                }
+                newState.activeStructuredDataExplorerAttributesByServerId[action.serverId] = remainingAttributes;
+            } else {
+                return { ...state };
+            }
+            return { ...newState };
+        }
+
+
+        case 'RESET_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND': {
+            const newState = { ...state };
+            for (let serverId in newState.activeStructuredDataExplorerAttributesByServerId) {
+                if (serverId === action.serverId) {
+                    newState.activeStructuredDataExplorerAttributesByServerId[serverId] = [];
+                }
+            }
+            return newState;
+        }
 
 
         default:

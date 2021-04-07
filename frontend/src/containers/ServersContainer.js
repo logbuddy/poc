@@ -4,6 +4,8 @@ import { Redirect } from 'react-router-dom';
 import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, FileEarmarkCode, FileEarmarkCodeFill, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { endOfToday, subDays, format, set } from 'date-fns';
+import TimeRange from 'react-timeline-range-slider';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -12,26 +14,31 @@ import {
     retrieveYetUnseenServerEventsCommand,
     disableSkipRetrieveYetUnseenServerEventsOperationsCommand,
     enableSkipRetrieveYetUnseenServerEventsOperationsCommand,
-    resetServerEventsByCommand, disableShowEventPayloadCommand, enableShowEventPayloadCommand
+    resetServerEventsByCommand,
+    disableShowEventPayloadCommand,
+    enableShowEventPayloadCommand,
+    timelineIntervalsUpdatedEvent, timelineIntervalsChangedEvent, resetActiveStructuredDataExplorerAttributesCommand
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
-import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
+import DayzEventSkinPresentational from '../presentationals/eventSkins/dayz/DayzEventSkinPresentational';
+import PaginatorPresentational from '../presentationals/PaginatorPresentational';
+
+const itemsPerPage = 25;
+const now = new Date();
 
 class ServersContainer extends Component {
     constructor(props) {
         super(props);
-        let filterEventsInputTexts = {};
-        for (let i = 0; i < this.props.reduxState.servers.serverList; i++) {
-            filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id] = '';
-        }
+
         this.state = {
             mouseIsOnDisableShowEventPayloadElement: false,
             mouseIsOnEnableShowEventPayloadElement: false,
             createServerTitle: '',
             showCopySuccessBadgeForId: null,
-            filterEventsInputTexts,
-            eventLoadedInStructuredDataExplorer: null
+            filterEventsInputTexts: [],
+            eventLoadedInStructuredDataExplorer: null,
+            currentLatestEventsPages: []
         };
         this.copyElements = {};
     }
@@ -53,7 +60,7 @@ class ServersContainer extends Component {
     handleChangeFilterEventsInputText = (event, serverId) => {
         const filterEventsInputTexts = { ...this.state.filterEventsInputTexts };
         filterEventsInputTexts[serverId] = event.target.value;
-        this.setState({ ...this.state, filterEventsInputTexts });
+        this.setState({ ...this.state, filterEventsInputTexts }, () => this.handleCurrentLatestEventsPageClicked(serverId, 1));
     }
 
     handleCreateServerClicked = (event) => {
@@ -84,10 +91,22 @@ class ServersContainer extends Component {
         this.setState({ ...this.state, showCopySuccessBadgeForId: id });
     }
 
-    handleLoadEventIntoStructuredDataExplorerClicked = (event) => {
+    handleLoadEventIntoStructuredDataExplorerClicked = (event, reset = false) => {
         this.props.dispatch(enableSkipRetrieveYetUnseenServerEventsOperationsCommand(event.serverId));
-        this.props.dispatch(resetServerEventsByCommand());
+        if (reset) {
+            this.props.dispatch(resetActiveStructuredDataExplorerAttributesCommand(event.serverId));
+            this.props.dispatch(resetServerEventsByCommand());
+        }
         this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: event });
+    }
+
+    handleCurrentLatestEventsPageClicked = (serverId, page) => {
+        const newState = { ...this.state.currentLatestEventsPages };
+        newState[serverId] = page;
+        this.setState({
+            ...this.state,
+            currentLatestEventsPages: { ...newState }
+        });
     }
 
     componentDidMount() {
@@ -97,6 +116,22 @@ class ServersContainer extends Component {
     render() {
         if (!this.props.reduxState.session.isLoggedIn) {
             return (<Redirect to='/login' />);
+        }
+
+        const getCurrentLatestEventsPage = (serverId) => {
+            if (this.state.currentLatestEventsPages.hasOwnProperty(serverId)) {
+                return this.state.currentLatestEventsPages[serverId];
+            } else {
+                return 1;
+            }
+        }
+
+        const getFilterEventsInputText = (serverId) => {
+            if (this.state.filterEventsInputTexts.hasOwnProperty(serverId)) {
+                return this.state.filterEventsInputTexts[serverId];
+            } else {
+                return '';
+            }
         }
 
         const textMatchesSearchterm = (text, searchterm) => {
@@ -125,7 +160,7 @@ class ServersContainer extends Component {
             const elementNameToHeadline = {
                 information: 'Information',
                 sampleCurlCommand: 'Sample curl command',
-                latestEvents: 'Latest entries',
+                latestEvents: 'Log entries',
             };
             if (this.isFlippedOpen(server.id, elementName)) {
                 const handleFlipElementCloseClicked = this.handleFlipElementCloseClicked;
@@ -137,6 +172,17 @@ class ServersContainer extends Component {
                             </span>
                             &nbsp;
                             { elementNameToHeadline[elementName] }
+                            &nbsp;
+                            {
+                                (elementName === 'latestEvents' && server.latestEvents.length > 0)
+                                &&
+                                '(' + server.latestEvents.length + ')'
+                            }
+                            {
+                                (elementName === 'latestEvents' && this.props.reduxState.servers.retrieveServerListOperation.isRunning)
+                                &&
+                                <Disc className='spinning spinning-small' />
+                            }
                         </span>
                         {
                             elementName === 'latestEvents'
@@ -195,6 +241,17 @@ class ServersContainer extends Component {
                     </span>
                     &nbsp;
                     { elementNameToHeadline[elementName] }
+                    &nbsp;
+                    {
+                        (elementName === 'latestEvents' && server.latestEvents.length > 0)
+                        &&
+                        '(' + server.latestEvents.length + ')'
+                    }
+                    {
+                        (elementName === 'latestEvents' && this.props.reduxState.servers.retrieveServerListOperation.isRunning)
+                        &&
+                        <Disc className='spinning spinning-small' />
+                    }
                 </div>;
             }
         };
@@ -203,18 +260,31 @@ class ServersContainer extends Component {
         for (let i=0; i < this.props.reduxState.servers.serverList.length; i++) {
             const server = this.props.reduxState.servers.serverList[i];
             const serverId = server.id;
-            const latestEvents = server.latestEvents.filter((event) => {
-                if (this.state.filterEventsInputTexts.hasOwnProperty(serverId) === false) {
-                    return true;
-                } else {
-                    return textMatchesSearchterm(`${event.createdAt} ${event.source} ${event.payload}`, this.state.filterEventsInputTexts[serverId]);
-                }
-            });
+            const filteredLatestEvents = server.latestEvents
+                .filter((event) =>
+                    textMatchesSearchterm(
+                        `${event.createdAt} ${event.source} ${event.payload}`,
+                        getFilterEventsInputText(serverId)
+                    )
+                )
+            ;
+
+            const filteredLatestEventsForCurrentPage = filteredLatestEvents
+                .slice(
+                    (getCurrentLatestEventsPage(server.id) - 1) * itemsPerPage,
+                    (getCurrentLatestEventsPage(server.id) - 1) * itemsPerPage + itemsPerPage
+                )
+            ;
+
             const serverEventElements = [];
             let index = 0;
-            for (let j=0; j < latestEvents.length; j++) {
-                const event = latestEvents[j];
+            for (let j=0; j < filteredLatestEventsForCurrentPage.length; j++) {
+                const event = filteredLatestEventsForCurrentPage[j];
                 const createdAt = event.createdAt;
+                let createdAtUtc = null;
+                if (event.hasOwnProperty('createdAtUtc')) {
+                    createdAtUtc = event.createdAtUtc;
+                }
                 const source = event.source;
                 const payload = event.payload;
                 let parsedPayload = '';
@@ -236,14 +306,21 @@ class ServersContainer extends Component {
                              className={`row mb-3 ${isExplorable && 'clickable'}`}
                              onClick={() =>
                                  isExplorable
-                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(
-                                     this.props.reduxState.servers.serverList[i].latestEvents[j]
-                                 )
+                                 && this.handleLoadEventIntoStructuredDataExplorerClicked(event, true)
                              }
                         >
                             <div className='col-sm-12 ps-2 pe-2'>
                                 <code className='text-white-75 word-wrap-anywhere'>
-                                    {createdAt}
+                                    {
+                                        createdAtUtc !== null
+                                        &&
+                                        format(new Date(createdAtUtc), 'PPPP · pp')
+                                    }
+                                    {
+                                        createdAtUtc === null
+                                        &&
+                                        createdAt
+                                    }
                                 </code>
                             </div>
                             <div className='col-sm-12 ps-2 pe-2 mb-2'>
@@ -299,7 +376,7 @@ class ServersContainer extends Component {
                    }]}'`;
 
             serverListElements.push(
-                <div key={i} className={`card bg-dark mt-4 ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'opacity-25' : 'fade-in'}`}>
+                <div key={i} className={`card bg-dark mt-4`}>
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
                             <div className='text-primary col server-headline-icon'>
@@ -315,7 +392,9 @@ class ServersContainer extends Component {
                                 }
                             </div>
                             <div className='col server-headline-title'>
-                                <h4 className='mb-0'>{this.props.reduxState.servers.serverList[i].title}</h4>
+                                <h4 className='mb-0'>
+                                    {this.props.reduxState.servers.serverList[i].title}
+                                </h4>
                             </div>
                         </div>
                     </div>
@@ -443,8 +522,6 @@ class ServersContainer extends Component {
                         {
                             this.isFlippedOpen(this.props.reduxState.servers.serverList[i].id, 'latestEvents')
                             &&
-                            this.props.reduxState.servers.serverList[i].latestEvents.length > 0
-                            &&
                             <div className='container-fluid bg-deepdark rounded border border-dark border-3'>
                                 {
                                     (
@@ -482,7 +559,7 @@ class ServersContainer extends Component {
                                                         className='form-control bg-secondary text-white-50 border-dark'
                                                         id='filter-events-input'
                                                         placeholder=''
-                                                        value={this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id]}
+                                                        value={getFilterEventsInputText(this.props.reduxState.servers.serverList[i].id)}
                                                         onChange={
                                                             (event) =>
                                                                 this.handleChangeFilterEventsInputText(event, this.props.reduxState.servers.serverList[i].id)
@@ -491,7 +568,43 @@ class ServersContainer extends Component {
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <div className='row'>
+                                            <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
+
+                                                <PaginatorPresentational
+                                                    numberOfItems={filteredLatestEvents.length}
+                                                    itemsPerPage={itemsPerPage}
+                                                    currentPage={getCurrentLatestEventsPage(server.id)}
+                                                    onPageClicked={(page) =>
+                                                        this.handleCurrentLatestEventsPageClicked(
+                                                            server.id,
+                                                            page
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+
                                         {serverEventElements}
+
+                                        <div className='row'>
+                                            <div className='col ps-0 pe-0 ms-1 me-1 mb-2 mt-1'>
+
+                                                <PaginatorPresentational
+                                                    numberOfItems={filteredLatestEvents.length}
+                                                    itemsPerPage={itemsPerPage}
+                                                    currentPage={getCurrentLatestEventsPage(server.id)}
+                                                    onPageClicked={(page) =>
+                                                        this.handleCurrentLatestEventsPageClicked(
+                                                            server.id,
+                                                            page
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+
                                     </Fragment>
                                 }
                             </div>
@@ -502,8 +615,8 @@ class ServersContainer extends Component {
                             &&
                             this.props.reduxState.servers.serverList[i].latestEvents.length === 0
                             &&
-                            <div className='row-cols-auto mt-3'>
-                                No entries yet.
+                            <div className='row-cols-auto mt-3 text-secondary'>
+                                No log entries for the selected time range.
                             </div>
                         }
 
@@ -512,13 +625,11 @@ class ServersContainer extends Component {
                             &&
                             this.props.reduxState.servers.serverList[i].latestEvents.length > 0
                             &&
-                            this.state.filterEventsInputTexts.hasOwnProperty(this.props.reduxState.servers.serverList[i].id)
-                            &&
-                            this.state.filterEventsInputTexts[this.props.reduxState.servers.serverList[i].id].length > 0
+                            getFilterEventsInputText(this.props.reduxState.servers.serverList[i].id).length > 0
                             &&
                             serverEventElements.length === 0
                             &&
-                            <div className='row-cols-auto mt-3'>
+                            <div className='row-cols-auto mt-3 text-secondary'>
                                 No entries match the current filter.
                             </div>
                         }
@@ -529,123 +640,181 @@ class ServersContainer extends Component {
         }
 
         return (
-            <div className='m-4'>
-                <div className='navbar navbar-expand'>
-                    <ul className='navbar-nav ms-auto'>
-                        <li className='nav-item text-center'>
-                            {
-                                this.props.reduxState.servers.showEventPayload
-                                &&
-                                <Fragment>
-                                    {
-                                        this.state.mouseIsOnDisableShowEventPayloadElement
-                                        &&
-                                        <span className='tiny'>Showing JSON payloads. Click to disable.</span>
-                                    }
-                                    <FileEarmarkCodeFill
-                                        width='1.5em'
-                                        height='1.5em'
-                                        className='clickable'
-                                        onMouseOver={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: true,
-                                            mouseIsOnEnableShowEventPayloadElement: false
-                                        })}
-                                        onMouseOut={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: false,
-                                            mouseIsOnEnableShowEventPayloadElement: false
-                                        })}
-                                        onClick={() => this.props.dispatch(disableShowEventPayloadCommand())}
-                                    />
-                                </Fragment>
-                            }
-                            {
-                                this.props.reduxState.servers.showEventPayload
-                                ||
-                                <Fragment>
-                                    {
-                                        this.state.mouseIsOnEnableShowEventPayloadElement
-                                        &&
-                                        <span className='tiny'>Not showing JSON payloads. Click to enable.</span>
-                                    }
-                                    <FileEarmarkCode
-                                        width='1.5em'
-                                        height='1.5em'
-                                        className='clickable'
-                                        onMouseOver={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: false,
-                                            mouseIsOnEnableShowEventPayloadElement: true
-                                        })}
-                                        onMouseOut={() => this.setState({
-                                            ...this.state,
-                                            mouseIsOnDisableShowEventPayloadElement: false,
-                                            mouseIsOnEnableShowEventPayloadElement: false
-                                        })}
-                                        onClick={() => this.props.dispatch(enableShowEventPayloadCommand())}
-                                    />
-                                </Fragment>
-                            }
-                        </li>
-                        <li className='nav-item text-center'>
-                            {
-                                this.props.reduxState.servers.retrieveServerListOperation.isRunning
-                                &&
-                                <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
-                            }
-                            {
-                                this.props.reduxState.servers.retrieveServerListOperation.isRunning
-                                ||
-                                <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
-                            }
-                        </li>
-                    </ul>
-                </div>
-
-                <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
-
-                <h1 className='mb-3'>
-                    My servers
-                </h1>
-
-                <div className='card card-body bg-dark pt-0'>
-                    <form className='row row-cols-sm-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
-                        <div className='col-12'>
-                            <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
-                            <div className='input-group'>
-                                <div className='input-group-text'>Add server</div>
-                                <input
-                                    type='text'
-                                    className='form-control'
-                                    id='create-server-title'
-                                    placeholder='Name of new server'
-                                    value={this.state.createServerTitle}
-                                    onChange={this.handleChangeCreateServerTitle}
-                                />
+            <div className='m-0'>
+                <div className='w-100 m-0 sticky-top bg-deepdark border-secondary border-bottom border-1 p-2'>
+                    <div className='container-fluid'>
+                        <div className='row tiny text-secondary'>
+                            <div className='col align-self-start'>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'PPPP')}
+                                <br/>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalStart, 'p')}
+                            </div>
+                            <div className='col align-self-end text-end'>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'PPPP')}
+                                <br/>
+                                {format(this.props.reduxState.servers.selectedTimelineIntervalEnd, 'p')}
                             </div>
                         </div>
 
-                        <div className='col-12'>
-                            {
-                                this.props.reduxState.servers.createServerOperation.isRunning
-                                &&
-                                <button className='float-end btn btn-warning disabled'>Adding...</button>
-                            }
-                            {
-                                this.props.reduxState.servers.createServerOperation.isRunning
-                                ||
-                                (
-                                    (this.state.createServerTitle.length > 0)
-                                    &&
-                                    <button type='submit' className='float-end btn btn-success fade-in'>Add</button>
-                                )
-                            }
-                        </div>
-                    </form>
+                    </div>
+                    <TimeRange
+                        mode={1}
+                        error={false}
+                        ticksNumber={7}
+                        formatTick={(ms) =>
+                            `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'd')}`
+                        }
+                        step={60*60*1000/4}
+                        selectedInterval={[
+                            set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            endOfToday()
+                        ]}
+                        timelineInterval={[
+                            set(subDays(now, 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+                            endOfToday()
+                        ]}
+                        onUpdateCallback={ (v) => {
+                            this.props.dispatch(timelineIntervalsUpdatedEvent(
+                                v.time[0],
+                                v.time[1])
+                            );
+                        }}
+                        onChangeCallback={ () => this.props.dispatch(timelineIntervalsChangedEvent()) }
+                    />
                 </div>
 
-                {serverListElements}
+                <div className='m-3'>
+                    <div className='navbar navbar-expand me-3'>
+                        <ul className='navbar-nav ms-auto'>
+                            <li className='nav-item text-center'>
+                                {
+                                    this.props.reduxState.servers.showEventPayload
+                                    &&
+                                    <Fragment>
+                                        {
+                                            this.state.mouseIsOnDisableShowEventPayloadElement
+                                            &&
+                                            <span className='tiny'>Showing JSON payloads. Click to disable.</span>
+                                        }
+                                        <FileEarmarkCodeFill
+                                            width='1.5em'
+                                            height='1.5em'
+                                            className='clickable'
+                                            onMouseOver={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: true,
+                                                mouseIsOnEnableShowEventPayloadElement: false
+                                            })}
+                                            onMouseOut={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: false,
+                                                mouseIsOnEnableShowEventPayloadElement: false
+                                            })}
+                                            onClick={() => this.props.dispatch(disableShowEventPayloadCommand())}
+                                        />
+                                    </Fragment>
+                                }
+                                {
+                                    this.props.reduxState.servers.showEventPayload
+                                    ||
+                                    <Fragment>
+                                        {
+                                            this.state.mouseIsOnEnableShowEventPayloadElement
+                                            &&
+                                            <span className='tiny'>Not showing JSON payloads. Click to enable.</span>
+                                        }
+                                        <FileEarmarkCode
+                                            width='1.5em'
+                                            height='1.5em'
+                                            className='clickable'
+                                            onMouseOver={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: false,
+                                                mouseIsOnEnableShowEventPayloadElement: true
+                                            })}
+                                            onMouseOut={() => this.setState({
+                                                ...this.state,
+                                                mouseIsOnDisableShowEventPayloadElement: false,
+                                                mouseIsOnEnableShowEventPayloadElement: false
+                                            })}
+                                            onClick={() => this.props.dispatch(enableShowEventPayloadCommand())}
+                                        />
+                                    </Fragment>
+                                }
+                            </li>
+                            <li className='nav-item text-center'>
+                                {
+                                    this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                    &&
+                                    <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
+                                }
+                                {
+                                    this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                    ||
+                                    <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+
+                    <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
+
+                    <h1 className='mb-3 ms-3'>
+                        My servers
+                    </h1>
+
+                    <div className='card card-body bg-dark pt-0'>
+                        <form className='row row-cols-sm-auto g-3 mt-2 mb-2' onSubmit={this.handleCreateServerClicked}>
+                            <div className='col-12'>
+                                <label className='visually-hidden' htmlFor='create-server-title'>Name of new server</label>
+                                <div className='input-group'>
+                                    <div className='input-group-text'>Add server</div>
+                                    <input
+                                        type='text'
+                                        className='form-control'
+                                        id='create-server-title'
+                                        placeholder='Name of new server'
+                                        value={this.state.createServerTitle}
+                                        onChange={this.handleChangeCreateServerTitle}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className='col-12'>
+                                {
+                                    this.props.reduxState.servers.createServerOperation.isRunning
+                                    &&
+                                    <button className='float-end btn btn-warning disabled'>Adding...</button>
+                                }
+                                {
+                                    this.props.reduxState.servers.createServerOperation.isRunning
+                                    ||
+                                    (
+                                        (this.state.createServerTitle.length > 0)
+                                        &&
+                                        <button type='submit' className='float-end btn btn-success fade-in'>Add</button>
+                                    )
+                                }
+                            </div>
+                        </form>
+                    </div>
+
+                    {
+                        serverListElements.length > 0
+                        &&
+                        serverListElements
+                    }
+
+                    {
+                        serverListElements.length > 0
+                        ||
+                        <div className='mt-5 w-100 text-center'>
+                            <h1 className='text-secondary'>
+                                Loading server data, please wait...
+                            </h1>
+                        </div>
+                    }
+                </div>
             </div>
         );
     }

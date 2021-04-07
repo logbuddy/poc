@@ -1,14 +1,46 @@
 import React, { Component, Fragment } from 'react';
 import {connect} from 'react-redux';
 import {
-    resetServerEventsByCommand,
+    addActiveStructuredDataExplorerAttributeCommand,
+    removeActiveStructuredDataExplorerAttributeCommand,
     retrieveServerEventsByCommand,
+    selectActiveStructuredDataExplorerAttributeCommand,
 } from '../redux/reducers/servers';
 import JsonHelper from '../JsonHelper.mjs';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
-import { X, Upload, PlusCircle, DashCircle } from 'react-bootstrap-icons';
+import {X, Upload, PlusCircle, DashCircle, Disc} from 'react-bootstrap-icons';
 import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
+import { format } from "date-fns";
+
+const getAttributesForEvent = (event) => {
+    let parsedJson = null;
+    let values = [];
+    let keys = [];
+    let keysValues = [];
+    try {
+        parsedJson = JSON.parse(event.payload);
+    } catch (e) {
+        console.error('Cannot parse event payload into valid JSON', e);
+        return { values, keys, keysValues };
+    }
+
+    if (parsedJson === null) {
+        console.error('Could not parse payload into valid JSON');
+        return { values, keys, keysValues };
+    } else if (typeof(parsedJson) !== 'object') {
+        console.error('JSON is not an object and therefore not explorable.');
+        return { values, keys, keysValues };
+    } else {
+        const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
+
+        return {
+            values: JsonHelper.getBrokenDownValues(parsedJson),
+            keys: JsonHelper.getBrokenDownKeys(keyValuePairs),
+            keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs)
+        };
+    }
+};
 
 class StructuredDataExplorerContainer extends Component {
     constructor(props) {
@@ -18,87 +50,32 @@ class StructuredDataExplorerContainer extends Component {
         this.state = {
             values: [],
             keys: [],
-            keysValues: [],
-            selectedAttributes: []
+            keysValues: []
         };
     }
 
     calculateAttributes = () => {
-        let parsedJson = null;
-        try {
-            parsedJson = JSON.parse(this.props.event.payload);
-        } catch (e) {
-            console.error('Cannot parse event payload into valid JSON', e);
-            return;
-        }
-
-        if (parsedJson === null) {
-            console.error('Could not parse payload into valid JSON');
-            this.setState({
-                values: [],
-                keys: [],
-                keysValues: [],
-                selectedAttributes: []
-            });
-        } else if (typeof(parsedJson) !== 'object') {
-            console.error('JSON is not an object and therefore not explorable.');
-            this.setState({
-                values: [],
-                keys: [],
-                keysValues: [],
-                selectedAttributes: []
-            });
-        } else {
-            const keyValuePairs = JsonHelper.flattenToKeyValuePairs(parsedJson);
-
-            this.setState({
-                ...this.state,
-                values: JsonHelper.getBrokenDownValues(parsedJson),
-                keys: JsonHelper.getBrokenDownKeys(keyValuePairs),
-                keysValues: JsonHelper.getBrokenDownKeysAndValues(keyValuePairs)
-            });
-        }
+        const { values, keys, keysValues } = getAttributesForEvent(this.props.event);
+        this.setState({
+            ...this.state,
+            values: values,
+            keys: keys,
+            keysValues: keysValues
+        });
     };
 
     handleSelectAttributeClicked = (serverId, byName, byVal) => {
-        this.setState(
-            {
-                    ...this.state,
-                    selectedAttributes: [{ byName, byVal }]
-            },
-            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
-        );
+        this.props.dispatch(selectActiveStructuredDataExplorerAttributeCommand(serverId, byName, byVal));
+        this.props.dispatch(retrieveServerEventsByCommand(serverId));
     }
 
     handleAddAttributeClicked = (serverId, byName, byVal) => {
-        this.setState(
-            {
-                ...this.state,
-                selectedAttributes: [...this.state.selectedAttributes, { byName, byVal }]
-            },
-            () => this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes))
-        );
+        this.props.dispatch(addActiveStructuredDataExplorerAttributeCommand(serverId, byName, byVal));
+        this.props.dispatch(retrieveServerEventsByCommand(serverId));
     }
 
     handleRemoveAttributeClicked = (serverId, byName, byVal) => {
-        this.setState(
-            {
-                ...this.state,
-                selectedAttributes: [
-                    ...this.state.selectedAttributes.filter(attributeData =>
-                           attributeData.byName !== byName
-                        || attributeData.byVal !== byVal
-                    )
-                ]
-            },
-            () => {
-                if (this.state.selectedAttributes.length > 0) {
-                    this.props.dispatch(retrieveServerEventsByCommand(serverId, this.state.selectedAttributes));
-                } else {
-                    this.props.dispatch(resetServerEventsByCommand());
-                }
-            }
-        );
+        this.props.dispatch(removeActiveStructuredDataExplorerAttributeCommand(serverId, byName, byVal));
     }
 
     componentDidMount() {
@@ -161,7 +138,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'value',
                                         value
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -180,7 +156,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'value',
                                         value
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -221,7 +196,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'key',
                                         key
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -240,7 +214,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'key',
                                         key
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -286,7 +259,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'keyValue',
                                         keyValue
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -305,7 +277,6 @@ class StructuredDataExplorerContainer extends Component {
                                         'keyValue',
                                         keyValue
                                     );
-                                    this.resultsRef.current.scrollIntoView();
                                 }
                             }}
                         >
@@ -331,34 +302,72 @@ class StructuredDataExplorerContainer extends Component {
             keyValueElements.push(createKeyValueAttributeElement(keyValue));
         }
 
+        const selectedAttributeElements = [];
+        if (this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId.hasOwnProperty(this.props.event.serverId)) {
+            for (let selectedAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                selectedAttributeElements.push(
+                    createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
+                );
+            }
+        }
+
         const eventByElements = [];
         for (let server of this.props.reduxState.servers.serverList) {
             if (server.id === this.props.event.serverId) {
                 for (let eventBy of server.latestEventsBy) {
+                    const { values, keys, keysValues } = getAttributesForEvent(eventBy);
+
+                    const eventByValueElements = [];
+                    for (let value of values) {
+                        let add = true;
+                        for (let activeAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                            if (activeAttribute.byName === 'value' && activeAttribute.byVal === value) {
+                                add = false;
+                            }
+                        }
+                        if (add) eventByValueElements.push(createValueAttributeElement(value));
+                    }
+                    const eventByKeyElements = [];
+                    for (let key of keys) {
+                        let add = true;
+                        for (let activeAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                            if (activeAttribute.byName === 'key' && activeAttribute.byVal === key) {
+                                add = false;
+                            }
+                        }
+                        if (add) eventByKeyElements.push(createKeyAttributeElement(key));
+                    }
+
+                    const eventByKeyValueElements = [];
+                    for (let keyValue of keysValues) {
+                        let add = true;
+                        for (let activeAttribute of this.props.reduxState.servers.activeStructuredDataExplorerAttributesByServerId[this.props.event.serverId]) {
+                            if (activeAttribute.byName === 'keyValue' && activeAttribute.byVal === keyValue) {
+                                add = false;
+                            }
+                        }
+                        if (add) eventByKeyValueElements.push(createKeyValueAttributeElement(keyValue));
+                    }
+
                     eventByElements.push(
                         <Fragment key={eventBy.id}>
                             <div className='row mb-3'>
                                 <div className='col-sm-2 col-auto ps-1 pe-1 pt-0'>
                                     <code className='text-white-50 word-wrap-anywhere p-0'>
-                                        {eventBy.createdAt}
+                                        {
+                                            (eventBy.hasOwnProperty('createdAtUtc') && eventBy.createdAtUtc !== null)
+                                            &&
+                                            format(new Date(eventBy.createdAtUtc), 'PPPP · pp')
+                                        }
+                                        {
+                                            (eventBy.hasOwnProperty('createdAtUtc') && eventBy.createdAtUtc !== null)
+                                            ||
+                                            eventBy.createdAt
+                                        }
                                         <br/>
                                         <span className='text-secondary me-2'>
                                             {eventBy.source}
                                         </span>
-                                        <br/>
-                                        <div
-                                            className='clickable mt-3'
-                                            onClick={() => {
-                                                this.props.onUseEventClicked(eventBy);
-                                                // For some reason this only works ALL the time if we fire it asynchronously:
-                                                setTimeout(
-                                                    () => this.titleRef.current.scrollIntoView(),
-                                                    1
-                                                );
-                                            }}
-                                        >
-                                            <Upload width='1.5em' height='1.5em' className='text-primary' />
-                                        </div>
                                     </code>
                                 </div>
                                 <div className='col ps-1 pe-1 pt-1'>
@@ -376,6 +385,30 @@ class StructuredDataExplorerContainer extends Component {
                                                     {JSON.stringify(JSON.parse(eventBy.payload), null, 2)}
                                                 </SyntaxHighlighter>
                                             }
+                                            {
+                                                eventByValueElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {eventByValueElements}
+                                                </Fragment>
+                                            }
+                                            {
+                                                eventByKeyElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {eventByKeyElements}
+                                                </Fragment>
+                                            }
+                                            {
+                                                eventByKeyValueElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {eventByKeyValueElements}
+                                                </Fragment>
+                                            }
                                         </span>
                                     </code>
                                 </div>
@@ -385,13 +418,6 @@ class StructuredDataExplorerContainer extends Component {
                     );
                 }
             }
-        }
-
-        const selectedAttributeElements = [];
-        for (let selectedAttribute of this.state.selectedAttributes) {
-            selectedAttributeElements.push(
-                createAttributeElement(selectedAttribute.byName, selectedAttribute.byVal, true, false, true)
-            );
         }
 
         return (
@@ -457,9 +483,8 @@ class StructuredDataExplorerContainer extends Component {
                                 resulting list of log entries.
                             </p>
                             <p>
-                                On each result, you can in turn click on the
-                                <Upload width='2em' height='2em' className='ps-2 pe-2 text-primary' />
-                                icon in order to load that log entry into the explorer.
+                                On each result, you can in turn refine your search further by click on the
+                                key, value, or key-value attributes of the result.
                             </p>
                         </div>
 
@@ -496,9 +521,16 @@ class StructuredDataExplorerContainer extends Component {
                                 &&
                                 <Fragment>Results</Fragment>
                             }
+                            {
+                                this.props.reduxState.servers
+                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
+                                    .includes(this.props.event.serverId)
+                                &&
+                                <Disc className='spinning' />
+                            }
                         </h4>
                         {
-                            eventByElements.length > 0
+                            selectedAttributeElements.length > 0
                             &&
                             <Fragment>
                                 <hr/>
@@ -508,21 +540,7 @@ class StructuredDataExplorerContainer extends Component {
                         <hr/>
                         <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
                             {
-                                this.props.reduxState.servers
-                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(this.props.event.serverId)
-                                &&
-                                <Fragment>
-                                    Retrieving...
-                                </Fragment>
-                            }
-
-                            {
                                 eventByElements.length > 0
-                                &&
-                                !this.props.reduxState.servers
-                                    .serverIdsForWhichRetrieveServerEventsByOperationIsRunning
-                                    .includes(this.props.event.serverId)
                                 &&
                                 eventByElements
                             }
@@ -537,7 +555,7 @@ class StructuredDataExplorerContainer extends Component {
                                 )
                                 &&
                                 <span className='text-secondary'>
-                                    Currently no results. Please click an element to start retrieving matching log entries.
+                                    Currently no results for the selected time range and filter elements.
                                 </span>
                             }
                         </div>
