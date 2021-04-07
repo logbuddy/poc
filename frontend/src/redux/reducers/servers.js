@@ -385,7 +385,7 @@ const reducer = (state = initialState, action) => {
         const serverList = [ ...state.serverList ];
         for (let i = 0; i < serverList.length; i++) {
             if (serverId === serverList[i].id) {
-                serverList[i].latestEvents = yetUnseenServerEvents.concat(serverList[i].latestEvents).slice(0, 999);
+                serverList[i].latestEvents = yetUnseenServerEvents.concat(serverList[i].latestEvents).slice(0, 10000);
                 serverList[i].latestEventSortValue = yetUnseenServerEvents[0].sortValue;
             }
         }
