@@ -145,11 +145,13 @@ export const retrieveYetUnseenServerEventsCommand = (serverId, latestSeenSortVal
 
     let responseWasOk = true;
     apiFetch(
-        `/yet-unseen-server-events?serverId=${encodeURIComponent(serverId)}&latestSeenSortValue=${encodeURIComponent(latestSeenSortValue)}`,
+        '/yet-unseen-server-events',
         'GET',
         getState().session.webappApiKeyId,
         null,
         {
+            serverId,
+            latestSeenSortValue,
             selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalStart),
             selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().servers.selectedTimelineIntervalEnd)
         }
