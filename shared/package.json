@@ -1,16 +1,20 @@
 {
   "name": "herodot-shared",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "build": "rollup ./src/index.js --file ./build/bundle.js --format es"
   },
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "date-fns": "^2.19.0",
     "rollup": "^2.44.0"
-  }
+  },
+  "type": "module",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {},
+  "description": ""
 }
