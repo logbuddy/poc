@@ -5,9 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "bcrypt": "^5.0.1",
-    "date-fns": "^2.19.0"
-  },
-  "devDependencies": {
+    "date-fns": "^2.19.0",
     "uuid": "^8.3.2"
   },
   "scripts": {
