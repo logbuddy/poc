@@ -651,7 +651,9 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         ':selected_timeline_interval_end': selectedTimelineIntervalEnd
     }
 
-    if (latestSeenSortValue === null) {
+    if (   latestSeenSortValue === null
+        || selectedTimelineIntervalStart > latestSeenSortValue
+    ) {
         expressionAttributeValues[':start'] = selectedTimelineIntervalStart
     } else {
         expressionAttributeValues[':start'] = latestSeenSortValue
