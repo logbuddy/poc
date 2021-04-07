@@ -1,4 +1,4 @@
-import DatetimeHelper from '../../shared/DatetimeHelper.mjs';
+import DatetimeHelper from '../src/DatetimeHelper.js';
 import { strict as assert } from 'assert';
 
 assert.deepEqual(

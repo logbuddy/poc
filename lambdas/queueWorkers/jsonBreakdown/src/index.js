@@ -1,4 +1,4 @@
-import JsonHelper from '../../../../shared/JsonHelper.mjs';
+import { JsonHelper } from 'herodot-shared';
 
 const AWS = require('aws-sdk');
 

@@ -1,4 +1,4 @@
-import JsonHelper from '../../shared/JsonHelper.mjs';
+import JsonHelper from '../src/JsonHelper.js';
 import { strict as assert } from 'assert';
 
 assert.deepEqual(
@@ -126,7 +126,7 @@ assert.deepEqual(
 
 assert.deepEqual(
     JsonHelper.getBrokenDownValues(
-        "Hello, World"
+        'Hello, World'
     ),
-    [ "Hello, World" ]
+    [ 'Hello, World' ]
 );

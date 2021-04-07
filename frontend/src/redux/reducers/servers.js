@@ -1,6 +1,6 @@
 import { endOfToday, subDays, set } from 'date-fns';
 import { apiFetch } from '../util';
-import DatetimeHelper from '../../DatetimeHelper.mjs';
+import { DatetimeHelper } from 'herodot-shared';
 
 const initialState = {
     showEventPayload: true,

@@ -1,5 +1,5 @@
 {
-  "name": "jsonbreakdown",
+  "name": "herodot-lambdas-queueworkers-jsonbreakdown",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,8 +8,9 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "aws-sdk": "^2.875.0",
+    "herodot-shared": "file:../../../shared",
     "rollup": "^2.44.0"
   },
   "type": "module"

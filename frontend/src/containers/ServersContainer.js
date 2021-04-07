@@ -6,7 +6,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { endOfToday, subDays, format, set } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
-import DatetimeHelper from '../DatetimeHelper.mjs';
+import { DatetimeHelper } from 'shared';
 import {
     createServerCommand,
     retrieveServerListCommand,
@@ -718,7 +718,7 @@ class ServersContainer extends Component {
                             set(
                                 subDays(
                                     now,
-                                    DatetimeHelper.timeRangeSelectorConfig.timelineIntervalStartSubDays
+                                    DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays
                                 ),
                                 { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }
                             ),

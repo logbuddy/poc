@@ -1,14 +1,16 @@
 import { apiFetch } from '../util';
 import {endOfToday, set, subDays} from 'date-fns';
-import DatetimeHelper from '../../DatetimeHelper.mjs';
+import { DatetimeHelper } from 'herodot-shared';
 
 const initialState = {
     server: {
         id: null,
+        type: null,
         title: null,
         events: [],
         structuredDataExplorerEvents: [],
-        latestEventSortValue: null
+        latestEventSortValue: null,
+        numbersOfEventsPerHour: [70, 899, 380]
     },
     showEventPayload: true,
     retrieveEventsOperation: {
@@ -28,8 +30,10 @@ const initialState = {
         errorMessage: null
     },
     activeStructuredDataExplorerAttributes: [],
-    selectedTimelineIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+    selectedTimelineIntervalStart: set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
     selectedTimelineIntervalEnd: endOfToday(),
+    timelineIntervalStart: set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+    timelineIntervalEnd: endOfToday(),
 };
 
 export const makeServerActiveCommand = (server) => (dispatch) => {
@@ -111,7 +115,8 @@ const reducer = (state = initialState, action) => {
                 server: {
                     ...state.server,
                     id: action.server.id,
-                    title: action.server.title
+                    title: action.server.title,
+                    type: action.server.type
                 }
             };
         }

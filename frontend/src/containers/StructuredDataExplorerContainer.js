@@ -6,7 +6,7 @@ import {
     retrieveServerEventsByCommand,
     selectActiveStructuredDataExplorerAttributeCommand,
 } from '../redux/reducers/servers';
-import JsonHelper from '../JsonHelper.mjs';
+import { JsonHelper } from 'herodot-shared';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 import {X, Upload, PlusCircle, DashCircle, Disc} from 'react-bootstrap-icons';

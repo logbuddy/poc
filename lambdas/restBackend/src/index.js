@@ -1,4 +1,4 @@
-import DatetimeHelper from '../../../shared/DatetimeHelper.mjs';
+import { DatetimeHelper } from 'herodot-shared';
 const { endOfToday, subDays, set } = require('date-fns');
 
 const AWS = require('aws-sdk');
@@ -325,9 +325,8 @@ const getSelectedTimelineIntervalValues = (event) => {
     ) {
         selectedTimelineIntervalStart =
             JSON.stringify(
-                set(subDays(new Date(), 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-            ).substring(3, 22)
-        ;
+                set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+            ).substring(3, 22);
         selectedTimelineIntervalEnd =
             JSON.stringify(
                 endOfToday()
@@ -339,6 +338,29 @@ const getSelectedTimelineIntervalValues = (event) => {
 
     return { selectedTimelineIntervalStart, selectedTimelineIntervalEnd };
 };
+
+const getTimelineIntervalValues = (event) => {
+    let timelineIntervalStart;
+    let timelineIntervalEnd;
+    if (   !event.queryStringParameters.hasOwnProperty('timelineIntervalStart')
+        || !event.queryStringParameters.hasOwnProperty('timelineIntervalEnd')
+    ) {
+        timelineIntervalStart =
+            JSON.stringify(
+                set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
+            ).substring(3, 22);
+        timelineIntervalEnd =
+            JSON.stringify(
+                endOfToday()
+            ).substring(3, 22);
+    } else {
+        timelineIntervalStart = event.queryStringParameters.timelineIntervalStart.substring(0, 19);
+        timelineIntervalEnd = event.queryStringParameters.timelineIntervalEnd.substring(0, 19);
+    }
+
+    return { selectedTimelineIntervalStart: timelineIntervalStart, selectedTimelineIntervalEnd: timelineIntervalEnd };
+};
+
 
 const handleRetrieveServerListRequest = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
@@ -527,6 +549,92 @@ const handleRetrieveServerEventsRequest = async (event) => {
                     }
                 }
                 resolve(serverEvents);
+            }
+        });
+    });
+
+    return {
+        statusCode: 200,
+        headers: corsHeaders(event),
+        body: JSON.stringify(serverEvents)
+    };
+};
+
+
+const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
+    const webappApiKey = await authenticateWebappRequest(event.headers);
+
+    if (!(event.hasOwnProperty('pathParameters') && event.pathParameters.hasOwnProperty('serverId'))) {
+        return {
+            statusCode: 400,
+            headers: corsHeaders(event),
+            body: JSON.stringify({
+                message: 'Problem with query path',
+                expectedRequestPath: '/servers/{serverId}/number-of-events-per-hour',
+                actualRequestPath: event.rawPath
+            }, null, 2)
+        };
+    }
+
+    const serverId = event.pathParameters.serverId;
+
+    if (await serverBelongsToUser(serverId, webappApiKey.users_id) === false) {
+        return {
+            statusCode: 403,
+            headers: corsHeaders(event),
+            body: JSON.stringify({
+                message: `Server ${serverId} does not belong to user ${webappApiKey.users_id}.`,
+            }, null, 2)
+        };
+    }
+
+    const { timelineIntervalStart, timelineIntervalEnd } = getTimelineIntervalValues(event);
+
+    const hourToIntervals = {};
+
+    const startDate = set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 });
+    const endDate = endOfToday();
+
+    const serverEvents = await new Promise((resolve, reject) => {
+        docClient.query(
+            {
+                TableName: 'server_events',
+                Limit: 10000,
+                ScanIndexForward: false,
+                KeyConditionExpression: '' +
+                    'servers_id = :servers_id' +
+                    ' AND sort_value BETWEEN :start AND :end',
+                ExpressionAttributeValues: {
+                    ':servers_id': serverId,
+                    ':start': timelineIntervalStart,
+                    ':end': timelineIntervalEnd,
+                }
+            }, (err, data) => {
+            if (err) {
+                _console.error(err);
+                reject(err);
+            } else {
+                _console.log(data);
+                const numbersOfEventsPerHour = [];
+                for (let i = 0; i < data.Count; i++) {
+                    let id = null;
+                    if (data.Items[i].hasOwnProperty('id')) {
+                        id = data.Items[i].id;
+                    }
+
+                    numbersOfEventsPerHour.push({
+                        id: id,
+                        serverId: data.Items[i].servers_id,
+                        userId: data.Items[i].users_id,
+                        receivedAt: data.Items[i].received_at,
+                        sortValue: data.Items[i].sort_value,
+                        createdAt: data.Items[i].server_event_created_at,
+                        createdAtUtc: data.Items[i].server_event_created_at_utc,
+                        source: data.Items[i].server_event_source,
+                        payload: data.Items[i].server_event_payload,
+                    });
+                }
+                resolve(numbersOfEventsPerHour);
             }
         });
     });
@@ -1001,6 +1109,10 @@ exports.handler = async (event) => {
 
     if (event.routeKey === 'GET /servers/{serverId}/events') {
         return handleRetrieveServerEventsRequest(event);
+    }
+
+    if (event.routeKey === 'GET /servers/{serverId}/number-of-events-per-hour') {
+        return handleRetrieveNumberOfServerEventsPerHourRequest(event);
     }
 
     if (event.routeKey === 'GET /yet-unseen-server-events') {

@@ -165,7 +165,7 @@ const DatetimeHelper = {
     timeRangeSelectorConfig: {
         ticksNumber: 7,
         selectedIntervalStartSubDays: 1,
-        timelineIntervalStartSubDays: 7
+        intervalStartSubDays: 7
     }
 };
 
