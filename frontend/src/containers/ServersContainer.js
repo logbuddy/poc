@@ -24,6 +24,7 @@ import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentat
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
 import DayzEventSkinPresentational from '../presentationals/eventSkins/dayz/DayzEventSkinPresentational';
 import PaginatorPresentational from '../presentationals/PaginatorPresentational';
+import { makeServerActiveCommand } from '../redux/reducers/activeServer';
 
 const itemsPerPage = 25;
 const now = new Date();
@@ -117,6 +118,10 @@ class ServersContainer extends Component {
     render() {
         if (!this.props.reduxState.session.isLoggedIn) {
             return (<Redirect to='/login' />);
+        }
+
+        if (this.props.reduxState.activeServer.server.id !== null) {
+            return (<Redirect to={`/server/${this.props.reduxState.activeServer.server.id}`}  />);
         }
 
         const getCurrentLatestEventsPage = (serverId) => {
@@ -393,7 +398,10 @@ class ServersContainer extends Component {
                                 }
                             </div>
                             <div className='col server-headline-title'>
-                                <h4 className='mb-0'>
+                                <h4
+                                    className='mb-0 clickable'
+                                    onClick={() => this.props.dispatch(makeServerActiveCommand(this.props.reduxState.servers.serverList[i]))}
+                                >
                                     {this.props.reduxState.servers.serverList[i].title}
                                 </h4>
                             </div>
