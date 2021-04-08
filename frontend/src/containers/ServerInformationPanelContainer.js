@@ -25,7 +25,7 @@ class ServerInformationPanelContainer extends Component {
         const server = activeServer.server;
 
         return (
-            <div className='card-body bg-dark'>
+            <div className='card-body bg-dark pb-0'>
                 <div
                     className='clickable'
                     onClick={ () => this.props.dispatch(switchInformationPanelCommand()) }

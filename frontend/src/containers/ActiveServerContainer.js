@@ -3,12 +3,13 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import {
     closeActiveServerCommand, retrieveEventsCommand,
-    selectedTimelineIntervalsUpdatedEvent, switchInformationPanelCommand
+    selectedTimelineIntervalsUpdatedEvent, switchExamplePanelCommand, switchInformationPanelCommand
 } from '../redux/reducers/activeServer';
 import ServerEventPresentational from '../presentationals/ServerEventPresentational';
 import ServerTimelinePresentational from '../presentationals/ServerTimelinePresentational';
 import { DatetimeHelper } from 'herodot-shared';
 import ServerInformationPanelContainer from './ServerInformationPanelContainer';
+import ServerExamplePanelPresentational from "../presentationals/ServerExamplePanelPresentational";
 
 class ActiveServerContainer extends Component {
     render() {
@@ -71,6 +72,12 @@ class ActiveServerContainer extends Component {
                     </div>
 
                     <ServerInformationPanelContainer />
+
+                    <ServerExamplePanelPresentational
+                        server={activeServer.server}
+                        isOpen={activeServer.examplePanelIsOpen}
+                        onSwitch={() => this.props.dispatch(switchExamplePanelCommand())}
+                    />
 
                     {activeServer.server.id}
                     <div>
