@@ -38,22 +38,9 @@ export default () => {
     );
 
     assert.deepEqual(
-        DatetimeHelper.getListOfHoursBetween(
-            new Date(Date.UTC(2021, 0, 1, 0, 0, 0, 0)),
-            new Date(Date.UTC(2021, 0, 1, 3, 0, 0, 0)),
-        ),
-        [
-            '2021-01-01T00',
-            '2021-01-01T01',
-            '2021-01-01T02',
-            '2021-01-01T03',
-        ]
-    );
-
-    assert.deepEqual(
-        DatetimeHelper.getListOfHoursBetween(
-            new Date(Date.UTC(2021, 0, 1, 0, 0, 0, 1)),
-            new Date(Date.UTC(2021, 0, 1, 3, 0, 0, 0)),
+        DatetimeHelper.getListOfHoursBetweenUtcDateStrings(
+            '2021-01-01T00:00:00Z',
+            '2021-01-01T03:00:00Z',
         ),
         [
             '2021-01-01T00',
