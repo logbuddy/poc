@@ -16,6 +16,7 @@ const initialState = {
     showEventPayload: true,
     informationPanelIsOpen: false,
     examplePanelIsOpen: false,
+    currentEventsResultPage: 1,
     retrieveEventsOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
@@ -68,6 +69,12 @@ export const switchInformationPanelCommand = () => ({
 
 export const switchExamplePanelCommand = () => ({
     type: 'SWITCH_EXAMPLE_PANEL_COMMAND'
+});
+
+
+export const changeCurrentEventsResultPageCommand = (page) => ({
+    type: 'CHANGE_CURRENT_EVENTS_RESULT_PAGE_COMMAND',
+    page
 });
 
 
@@ -222,13 +229,22 @@ const reducer = (state = initialState, action) => {
         }
 
 
+        case 'CHANGE_CURRENT_EVENTS_RESULT_PAGE_COMMAND': {
+            return {
+                ...state,
+                currentEventsResultPage: action.page
+            };
+        }
+
+
         case 'RETRIEVE_EVENTS_STARTED_EVENT': {
             return {
                 ...state,
                 retrieveEventsOperation: {
                     ...state.retrieveEventsOperation,
                     isRunning: true
-                }
+                },
+                currentEventsResultPage: 1
             };
         }
 

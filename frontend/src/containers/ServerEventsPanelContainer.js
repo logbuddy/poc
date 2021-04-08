@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import ServerEventPresentational from "../presentationals/ServerEventPresentational";
 import PaginatorPresentational from "../presentationals/PaginatorPresentational";
+import {changeCurrentEventsResultPageCommand} from "../redux/reducers/activeServer";
 
 
 const itemsPerPage = 25;
@@ -36,24 +37,20 @@ class ServerEventsPanelContainer extends Component {
             mouseIsOnDisableShowEventPayloadElement: false,
             mouseIsOnEnableShowEventPayloadElement: false,
             filterText: '',
-            currentPage: 1,
             eventLoadedInStructuredDataExplorer: null,
         };
     }
 
     handlePageClicked = (page) => {
-        this.setState({
-            ...this.state,
-            currentPage: page
-        });
+        this.props.dispatch(changeCurrentEventsResultPageCommand(page));
     }
 
     handleChangeFilterText = (event) => {
         this.setState({
             ...this.state,
-            filterText: event.target.value,
-            currentPage: 1
+            filterText: event.target.value
         });
+        this.props.dispatch(changeCurrentEventsResultPageCommand(1));
     }
 
 
@@ -73,8 +70,8 @@ class ServerEventsPanelContainer extends Component {
 
         const filteredEventsForCurrentPage = (events) => filteredEvents(events)
             .slice(
-                (this.state.currentPage - 1) * itemsPerPage,
-                (this.state.currentPage - 1) * itemsPerPage + itemsPerPage
+                (this.props.reduxState.activeServer.currentEventsResultPage - 1) * itemsPerPage,
+                (this.props.reduxState.activeServer.currentEventsResultPage - 1) * itemsPerPage + itemsPerPage
             )
         ;
 
@@ -133,15 +130,19 @@ class ServerEventsPanelContainer extends Component {
                         <PaginatorPresentational
                             numberOfItems={filteredEvents(server.events).length}
                             itemsPerPage={itemsPerPage}
-                            currentPage={this.state.currentPage}
+                            currentPage={this.props.reduxState.activeServer.currentEventsResultPage}
                             onPageClicked={ (page) => this.handlePageClicked(page) }
                         />
                     }
                 </div>
 
-                <div className='card-body bg-dark pb-0 ms-2 me-2'>
-                    {serverEventPresentationalElements}
-                </div>
+                {
+                    (activeServer.retrieveEventsOperation.isRunning || filteredEvents(server.events).length === 0)
+                    ||
+                    <div className='card-body bg-dark pb-0 ms-2 me-2'>
+                        {serverEventPresentationalElements}
+                    </div>
+                }
 
                 {
                     (filteredEvents(server.events).length > 5 && !activeServer.retrieveEventsOperation.isRunning)
@@ -150,7 +151,7 @@ class ServerEventsPanelContainer extends Component {
                         <PaginatorPresentational
                             numberOfItems={filteredEvents(server.events).length}
                             itemsPerPage={itemsPerPage}
-                            currentPage={this.state.currentPage}
+                            currentPage={this.props.reduxState.activeServer.currentEventsResultPage}
                             onPageClicked={ (page) => this.handlePageClicked(page) }
                         />
                     </div>
