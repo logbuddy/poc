@@ -30,12 +30,12 @@ const PaginatorPresentational = ({numberOfItems, itemsPerPage, currentPage, onPa
     }
 
     return (
-        <div className='bg-dark rounded p-2'>
+        <Fragment>
             <span className='pe-2'>
                 Result pages:
             </span>
             {pageElements}
-        </div>
+        </Fragment>
     );
 };
 
