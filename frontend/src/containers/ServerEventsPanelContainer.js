@@ -1,9 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { format } from 'date-fns';
-import DayzEventSkinPresentational from "../presentationals/eventSkins/dayz/DayzEventSkinPresentational";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 import ServerEventPresentational from "../presentationals/ServerEventPresentational";
 import PaginatorPresentational from "../presentationals/PaginatorPresentational";
 
@@ -39,9 +35,9 @@ class ServerEventsPanelContainer extends Component {
         this.state = {
             mouseIsOnDisableShowEventPayloadElement: false,
             mouseIsOnEnableShowEventPayloadElement: false,
-            filterEventsInputText: '',
+            filterText: '',
+            currentPage: 1,
             eventLoadedInStructuredDataExplorer: null,
-            currentPage: 1
         };
     }
 
@@ -52,10 +48,10 @@ class ServerEventsPanelContainer extends Component {
         });
     }
 
-    handleChangeFilterEventsInputText = (event) => {
+    handleChangeFilterText = (event) => {
         this.setState({
             ...this.state,
-            filterEventsInputText: event.target.value,
+            filterText: event.target.value,
             currentPage: 1
         });
     }
@@ -66,16 +62,16 @@ class ServerEventsPanelContainer extends Component {
         const server = activeServer.server;
 
 
-        const filteredLatestEvents = (events) => events
+        const filteredEvents = (events) => events
             .filter((event) =>
                 textMatchesSearchterm(
                     `${event.createdAt} ${event.source} ${event.payload}`,
-                    this.state.filterEventsInputText
+                    this.state.filterText
                 )
             )
         ;
 
-        const filteredLatestEventsForCurrentPage = (events) => filteredLatestEvents(events)
+        const filteredEventsForCurrentPage = (events) => filteredEvents(events)
             .slice(
                 (this.state.currentPage - 1) * itemsPerPage,
                 (this.state.currentPage - 1) * itemsPerPage + itemsPerPage
@@ -83,7 +79,7 @@ class ServerEventsPanelContainer extends Component {
         ;
 
         const serverEventPresentationalElements = [];
-        for (let event of filteredLatestEventsForCurrentPage(server.events)) {
+        for (let event of filteredEventsForCurrentPage(server.events)) {
             serverEventPresentationalElements.push(
                 <Fragment key={event.id}>
                     <ServerEventPresentational
@@ -111,10 +107,10 @@ class ServerEventsPanelContainer extends Component {
                             className='form-control bg-secondary text-white-50 border-dark'
                             id='filter-events-input'
                             placeholder=''
-                            value={this.state.filterEventsInputText}
+                            value={this.state.filterText}
                             onChange={
                                 (event) =>
-                                    this.handleChangeFilterEventsInputText(event)
+                                    this.handleChangeFilterText(event)
                             }
                         />
                     </div>
@@ -122,7 +118,7 @@ class ServerEventsPanelContainer extends Component {
 
                 <div className='card-body bg-deepdark rounded p-2 ms-3 me-3 mb-3'>
                     {
-                        (filteredLatestEvents(server.events).length === 0 && !activeServer.retrieveEventsOperation.isRunning)
+                        (filteredEvents(server.events).length === 0 && !activeServer.retrieveEventsOperation.isRunning)
                         &&
                         <span>Not matching events. Try changing the filter and timerange.</span>
                     }
@@ -132,10 +128,10 @@ class ServerEventsPanelContainer extends Component {
                         <span>Retrieving log events...</span>
                     }
                     {
-                        activeServer.retrieveEventsOperation.isRunning
+                        (activeServer.retrieveEventsOperation.isRunning || filteredEvents(server.events).length === 0)
                         ||
                         <PaginatorPresentational
-                            numberOfItems={filteredLatestEvents(server.events).length}
+                            numberOfItems={filteredEvents(server.events).length}
                             itemsPerPage={itemsPerPage}
                             currentPage={this.state.currentPage}
                             onPageClicked={ (page) => this.handlePageClicked(page) }
@@ -148,11 +144,11 @@ class ServerEventsPanelContainer extends Component {
                 </div>
 
                 {
-                    (filteredLatestEvents(server.events).length > 5 && !activeServer.retrieveEventsOperation.isRunning)
+                    (filteredEvents(server.events).length > 5 && !activeServer.retrieveEventsOperation.isRunning)
                     &&
                     <div className='card-body bg-deepdark rounded p-2 ms-3 me-3 mb-3'>
                         <PaginatorPresentational
-                            numberOfItems={filteredLatestEvents(server.events).length}
+                            numberOfItems={filteredEvents(server.events).length}
                             itemsPerPage={itemsPerPage}
                             currentPage={this.state.currentPage}
                             onPageClicked={ (page) => this.handlePageClicked(page) }
