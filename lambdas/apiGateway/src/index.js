@@ -319,20 +319,15 @@ const handleCreateWebappApiKeyRequest = async (event) => {
 const getSelectedTimelineIntervalValues = (event) => {
     let selectedTimelineIntervalStart;
     let selectedTimelineIntervalEnd;
-    if (   !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
+    if (   !event.hasOwnProperty('queryStringParameters')
+        || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
         || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalEnd')
     ) {
-        selectedTimelineIntervalStart =
-            JSON.stringify(
-                set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.selectedIntervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-            ).substring(3, 22);
-        selectedTimelineIntervalEnd =
-            JSON.stringify(
-                endOfToday()
-            ).substring(3, 22);
+        selectedTimelineIntervalStart = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedIntervalStart);
+        selectedTimelineIntervalEnd = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedIntervalEnd);
     } else {
-        selectedTimelineIntervalStart = event.queryStringParameters.selectedTimelineIntervalStart.substring(0, 19);
-        selectedTimelineIntervalEnd = event.queryStringParameters.selectedTimelineIntervalEnd.substring(0, 19);
+        selectedTimelineIntervalStart = event.queryStringParameters.selectedTimelineIntervalStart.substr(0, 19);
+        selectedTimelineIntervalEnd = event.queryStringParameters.selectedTimelineIntervalEnd.substr(0, 19);
     }
 
     return { selectedTimelineIntervalStart, selectedTimelineIntervalEnd };
@@ -341,23 +336,18 @@ const getSelectedTimelineIntervalValues = (event) => {
 const getTimelineIntervalValues = (event) => {
     let timelineIntervalStart;
     let timelineIntervalEnd;
-    if (   !event.queryStringParameters.hasOwnProperty('timelineIntervalStart')
+    if (   !event.hasOwnProperty('queryStringParameters')
+        || !event.queryStringParameters.hasOwnProperty('timelineIntervalStart')
         || !event.queryStringParameters.hasOwnProperty('timelineIntervalEnd')
     ) {
-        timelineIntervalStart =
-            JSON.stringify(
-                set(subDays(new Date(), DatetimeHelper.timeRangeSelectorConfig.intervalStartSubDays), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-            ).substring(3, 22);
-        timelineIntervalEnd =
-            JSON.stringify(
-                endOfToday()
-            ).substring(3, 22);
+        timelineIntervalStart = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.timelineIntervalStart);
+        timelineIntervalEnd = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.timelineIntervalEnd);
     } else {
-        timelineIntervalStart = event.queryStringParameters.timelineIntervalStart.substring(0, 19);
-        timelineIntervalEnd = event.queryStringParameters.timelineIntervalEnd.substring(0, 19);
+        timelineIntervalStart = event.queryStringParameters.timelineIntervalStart.substr(0, 19);
+        timelineIntervalEnd = event.queryStringParameters.timelineIntervalEnd.substr(0, 19);
     }
 
-    return { selectedTimelineIntervalStart: timelineIntervalStart, selectedTimelineIntervalEnd: timelineIntervalEnd };
+    return { timelineIntervalStart, timelineIntervalEnd };
 };
 
 
@@ -589,10 +579,13 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
 
     const { timelineIntervalStart, timelineIntervalEnd } = getTimelineIntervalValues(event);
 
-    const hourToIntervals = {};
+    const expressionAttributeValues = {
+        ':servers_id': serverId,
+        ':start': timelineIntervalStart,
+        ':end': timelineIntervalEnd,
+    };
 
-    const startDate = DatetimeHelper.timelineConfig.timelineIntervalStart;
-    const endDate = DatetimeHelper.timelineConfig.timelineIntervalEnd;
+    _console.debug('expressionAttributeValues', expressionAttributeValues);
 
     const serverEvents = await new Promise((resolve, reject) => {
         docClient.query(
@@ -603,11 +596,7 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
                 KeyConditionExpression: '' +
                     'servers_id = :servers_id' +
                     ' AND sort_value BETWEEN :start AND :end',
-                ExpressionAttributeValues: {
-                    ':servers_id': serverId,
-                    ':start': timelineIntervalStart,
-                    ':end': timelineIntervalEnd,
-                }
+                ExpressionAttributeValues: expressionAttributeValues
             }, (err, data) => {
             if (err) {
                 _console.error(err);
@@ -638,10 +627,25 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
         });
     });
 
+    const hours = DatetimeHelper.getListOfHoursBetweenUtcDateStrings(timelineIntervalStart, timelineIntervalEnd);
+    const serverEventsPerHour = [];
+
+    for (let index in hours) {
+        serverEventsPerHour[index] = 0;
+    }
+
+    for (let serverEvent of serverEvents) {
+        for (let index in hours) {
+            if (serverEvent.sortValue.startsWith(hours[index])) {
+                serverEventsPerHour[index] = serverEventsPerHour[index] + 1;
+            }
+        }
+    }
+
     return {
         statusCode: 200,
         headers: corsHeaders(event),
-        body: JSON.stringify(serverEvents)
+        body: JSON.stringify(serverEventsPerHour)
     };
 };
 
