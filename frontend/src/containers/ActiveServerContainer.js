@@ -1,9 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { closeActiveServerCommand } from '../redux/reducers/activeServer';
-import ServerEventPresentational from '../presentationals/ServerEvent';
-import ServerTimelinePresentational from '../presentationals/ServerTimeline';
+import {
+    closeActiveServerCommand, retrieveEventsCommand,
+    selectedTimelineIntervalsUpdatedEvent
+} from '../redux/reducers/activeServer';
+import ServerEventPresentational from '../presentationals/ServerEventPresentational';
+import ServerTimelinePresentational from '../presentationals/ServerTimelinePresentational';
 import { DatetimeHelper } from 'herodot-shared';
 
 class ActiveServerContainer extends Component {
@@ -16,19 +19,21 @@ class ActiveServerContainer extends Component {
 
         const eventElements = [];
         for (let event of this.props.reduxState.activeServer.server.events) {
-            eventElements.push(<ServerEventPresentational serverEvent={event} />);
+            eventElements.push(<ServerEventPresentational key={event.id} serverEvent={event} />);
         }
 
         return (
             <Fragment>
                 <ServerTimelinePresentational
-                    selectedTimelineIntervalStart={activeServer.selectedTimelineIntervalStart}
-                    selectedTimelineIntervalEnd={activeServer.selectedTimelineIntervalEnd}
+                    initialSelectedTimelineIntervalStart={DatetimeHelper.timelineConfig.selectedTimelineIntervalStart}
+                    initialSelectedTimelineIntervalEnd={DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd}
+                    currentSelectedTimelineIntervalStart={this.props.reduxState.activeServer.selectedTimelineIntervalStart}
+                    currentSelectedTimelineIntervalEnd={this.props.reduxState.activeServer.selectedTimelineIntervalEnd}
                     timelineIntervalStart={activeServer.timelineIntervalStart}
                     timelineIntervalEnd={activeServer.timelineIntervalEnd}
-                    numbersOfEventsPerHour={activeServer.server.numbersOfEventsPerHour}
-                    onUpdateCallback={ () => ({}) }
-                    onChangeCallback={ () => ({}) }
+                    numberOfEventsPerHour={activeServer.server.numberOfEventsPerHour}
+                    onUpdateCallback={ (start, end) => this.props.dispatch(selectedTimelineIntervalsUpdatedEvent(start, end)) }
+                    onChangeCallback={ () => this.props.dispatch(retrieveEventsCommand()) }
                 />
                 <div className='m-2'>
                     <div>

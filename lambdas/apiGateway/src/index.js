@@ -323,8 +323,8 @@ const getSelectedTimelineIntervalValues = (event) => {
         || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
         || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalEnd')
     ) {
-        selectedTimelineIntervalStart = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedIntervalStart);
-        selectedTimelineIntervalEnd = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedIntervalEnd);
+        selectedTimelineIntervalStart = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedTimelineIntervalStart);
+        selectedTimelineIntervalEnd = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd);
     } else {
         selectedTimelineIntervalStart = event.queryStringParameters.selectedTimelineIntervalStart.substr(0, 19);
         selectedTimelineIntervalEnd = event.queryStringParameters.selectedTimelineIntervalEnd.substr(0, 19);
@@ -521,21 +521,17 @@ const handleRetrieveServerEventsRequest = async (event) => {
                         id = data.Items[i].id;
                     }
 
-                    if (   latestSeenSortValue === null
-                        || data.Items[i].sort_value > latestSeenSortValue
-                    ) {
-                        serverEvents.push({
-                            id: id,
-                            serverId: data.Items[i].servers_id,
-                            userId: data.Items[i].users_id,
-                            receivedAt: data.Items[i].received_at,
-                            sortValue: data.Items[i].sort_value,
-                            createdAt: data.Items[i].server_event_created_at,
-                            createdAtUtc: data.Items[i].server_event_created_at_utc,
-                            source: data.Items[i].server_event_source,
-                            payload: data.Items[i].server_event_payload,
-                        });
-                    }
+                    serverEvents.push({
+                        id: id,
+                        serverId: data.Items[i].servers_id,
+                        userId: data.Items[i].users_id,
+                        receivedAt: data.Items[i].received_at,
+                        sortValue: data.Items[i].sort_value,
+                        createdAt: data.Items[i].server_event_created_at,
+                        createdAtUtc: data.Items[i].server_event_created_at_utc,
+                        source: data.Items[i].server_event_source,
+                        payload: data.Items[i].server_event_payload,
+                    });
                 }
                 resolve(serverEvents);
             }
@@ -603,14 +599,14 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
                 reject(err);
             } else {
                 _console.log(data);
-                const numbersOfEventsPerHour = [];
+                const events = [];
                 for (let i = 0; i < data.Count; i++) {
                     let id = null;
                     if (data.Items[i].hasOwnProperty('id')) {
                         id = data.Items[i].id;
                     }
 
-                    numbersOfEventsPerHour.push({
+                    events.push({
                         id: id,
                         serverId: data.Items[i].servers_id,
                         userId: data.Items[i].users_id,
@@ -622,22 +618,22 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
                         payload: data.Items[i].server_event_payload,
                     });
                 }
-                resolve(numbersOfEventsPerHour);
+                resolve(events);
             }
         });
     });
 
     const hours = DatetimeHelper.getListOfHoursBetweenUtcDateStrings(timelineIntervalStart, timelineIntervalEnd);
-    const serverEventsPerHour = [];
+    const numberOfEventsPerHour = [];
 
     for (let index in hours) {
-        serverEventsPerHour[index] = 0;
+        numberOfEventsPerHour[index] = 0;
     }
 
     for (let serverEvent of serverEvents) {
         for (let index in hours) {
             if (serverEvent.sortValue.startsWith(hours[index])) {
-                serverEventsPerHour[index] = serverEventsPerHour[index] + 1;
+                numberOfEventsPerHour[index] = numberOfEventsPerHour[index] + 1;
             }
         }
     }
@@ -645,7 +641,7 @@ const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
     return {
         statusCode: 200,
         headers: corsHeaders(event),
-        body: JSON.stringify(serverEventsPerHour)
+        body: JSON.stringify(numberOfEventsPerHour)
     };
 };
 

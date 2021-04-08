@@ -705,8 +705,8 @@ class ServersContainer extends Component {
                         }
                         step={60*60*1000/4}
                         selectedInterval={[
-                            DatetimeHelper.timelineConfig.selectedIntervalStart,
-                            DatetimeHelper.timelineConfig.selectedIntervalEnd,
+                            DatetimeHelper.timelineConfig.selectedTimelineIntervalStart,
+                            DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd,
                         ]}
                         timelineInterval={[
                             DatetimeHelper.timelineConfig.timelineIntervalStart,

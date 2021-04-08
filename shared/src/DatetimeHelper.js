@@ -36,9 +36,9 @@ const getUTCDatetimeString = (val) => {
     }
 };
 
-const dateObjectToUTCDatetimeString = (o) => {
-    return JSON.stringify(o).replace('"', '').substring(0, 19) + 'Z';
-};
+const dateObjectToUTCDatetimeString = (o) =>
+    JSON.stringify(o).replace('"', '').substr(0, 19) + 'Z'
+;
 
 const getListOfHoursBetweenUtcDateStrings = (startString, endString) => {
     const hours = [];
@@ -78,8 +78,8 @@ const DatetimeHelper = {
         ticksNumber: 7,
         timelineIntervalStart: set(subDays(new Date(), 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
         timelineIntervalEnd: endOfToday(),
-        selectedIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
-        selectedIntervalEnd: endOfToday(),
+        selectedTimelineIntervalStart: set(subDays(new Date(), 1), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }),
+        selectedTimelineIntervalEnd: endOfToday(),
     }
 };
 

@@ -1,37 +1,37 @@
 import React from 'react';
 import { format } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
-import {DatetimeHelper} from "herodot-shared";
+import { DatetimeHelper } from 'herodot-shared';
 
 const ServerTimelinePresentational = (
     {
-        selectedTimelineIntervalStart,
-        selectedTimelineIntervalEnd,
+        initialSelectedTimelineIntervalStart,
+        initialSelectedTimelineIntervalEnd,
+        currentSelectedTimelineIntervalStart,
+        currentSelectedTimelineIntervalEnd,
         timelineIntervalStart,
         timelineIntervalEnd,
-        numbersOfEventsPerHour,
+        numberOfEventsPerHour,
         onUpdateCallback,
         onChangeCallback
     }) => {
 
-    const now = new Date();
-
     const numberOfEventsPerHourElements = []
 
     let largestNumber = 0;
-    for (let numberOfEventsPerHour of numbersOfEventsPerHour) {
-        if (numberOfEventsPerHour > largestNumber) {
-            largestNumber = numberOfEventsPerHour;
+    for (let numberOfEvents of numberOfEventsPerHour) {
+        if (numberOfEvents > largestNumber) {
+            largestNumber = numberOfEvents;
         }
     }
 
     let i = 0;
-    for (let numberOfEventsPerHour of numbersOfEventsPerHour) {
+    for (let numberOfEvents of numberOfEventsPerHour) {
         numberOfEventsPerHourElements.push(
             <div
                 key={i}
-                className='bg-secondary d-inline-block align-bottom'
-                style={{width: '0.520833333333333%', height: `${22 / largestNumber * numberOfEventsPerHour}px`}}
+                className='bg-success d-inline-block align-bottom'
+                style={{width: '0.520833333333333%', height: `${22 / largestNumber * numberOfEvents}px`}}
             />
         );
         i++;
@@ -42,14 +42,14 @@ const ServerTimelinePresentational = (
             <div className='container-fluid'>
                 <div className='row tiny text-secondary'>
                     <div className='col align-self-start'>
-                        {format(selectedTimelineIntervalStart, 'PPPP')}
+                        {format(currentSelectedTimelineIntervalStart, 'PPPP')}
                         <br/>
-                        {format(selectedTimelineIntervalStart, 'p')}
+                        {format(currentSelectedTimelineIntervalStart, 'p')}
                     </div>
                     <div className='col align-self-end text-end'>
-                        {format(selectedTimelineIntervalEnd, 'PPPP')}
+                        {format(currentSelectedTimelineIntervalEnd, 'PPPP')}
                         <br/>
-                        {format(selectedTimelineIntervalEnd, 'p')}
+                        {format(currentSelectedTimelineIntervalEnd, 'p')}
                     </div>
                 </div>
 
@@ -68,8 +68,8 @@ const ServerTimelinePresentational = (
                 }
                 step={60 * 60 * 1000 / 4}
                 selectedInterval={[
-                    selectedTimelineIntervalStart,
-                    selectedTimelineIntervalEnd,
+                    initialSelectedTimelineIntervalStart,
+                    initialSelectedTimelineIntervalEnd,
                 ]}
                 timelineInterval={[
                     timelineIntervalStart,

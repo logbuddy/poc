@@ -9,7 +9,7 @@ const initialState = {
         events: [],
         structuredDataExplorerEvents: [],
         latestEventSortValue: null,
-        numbersOfEventsPerHour: [70, 899, 380]
+        numberOfEventsPerHour: []
     },
     showEventPayload: true,
     retrieveEventsOperation: {
@@ -23,14 +23,20 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
+    retrieveNumberOfEventsPerHourOperation: {
+        mustBeSkipped: false,
+        isRunning: false,
+        justFinishedSuccessfully: false,
+        errorMessage: null
+    },
     retrieveStructuredDataExplorerEventsOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
     activeStructuredDataExplorerAttributes: [],
-    selectedTimelineIntervalStart: DatetimeHelper.timelineConfig.selectedIntervalStart,
-    selectedTimelineIntervalEnd: DatetimeHelper.timelineConfig.selectedIntervalEnd,
+    selectedTimelineIntervalStart: DatetimeHelper.timelineConfig.selectedTimelineIntervalStart,
+    selectedTimelineIntervalEnd: DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd,
     timelineIntervalStart: DatetimeHelper.timelineConfig.timelineIntervalStart,
     timelineIntervalEnd: DatetimeHelper.timelineConfig.timelineIntervalEnd,
 };
@@ -38,6 +44,7 @@ const initialState = {
 export const makeServerActiveCommand = (server) => (dispatch) => {
     dispatch(madeServerActiveEvent(server));
     dispatch(retrieveEventsCommand());
+    dispatch(retrieveNumberOfEventsPerHourCommand());
 };
 
 export const madeServerActiveEvent = (server) => ({
@@ -64,7 +71,6 @@ const retrieveEventsSucceededEvent = (events) => ({
     type: 'RETRIEVE_EVENTS_SUCCEEDED_EVENT',
     events
 });
-
 
 export const retrieveEventsCommand = () => (dispatch, getState) => {
 
@@ -103,6 +109,67 @@ export const retrieveEventsCommand = () => (dispatch, getState) => {
         });
 
 };
+
+
+export const retrieveNumberOfEventsPerHourStartedEvent = () => ({
+    type: 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_STARTED_EVENT'
+});
+
+export const retrieveNumberOfEventsPerHourFailedEvent = (errorMessage) => ({
+    type: 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_FAILED_EVENT',
+    errorMessage
+});
+
+const retrieveNumberOfEventsPerHourSucceededEvent = (numberOfEventsPerHour) => ({
+    type: 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_SUCCEEDED_EVENT',
+    numberOfEventsPerHour
+});
+
+export const retrieveNumberOfEventsPerHourCommand = () => (dispatch, getState) => {
+
+    dispatch(retrieveNumberOfEventsPerHourStartedEvent());
+
+    let responseWasOk = true;
+    apiFetch(
+        `/servers/${getState().activeServer.server.id}/number-of-events-per-hour`,
+        'GET',
+        getState().session.webappApiKeyId,
+        null,
+        {
+            timelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.timelineIntervalStart),
+            timelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.timelineIntervalEnd)
+        }
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsObject => {
+            if (!responseWasOk) {
+                dispatch(retrieveNumberOfEventsPerHourFailedEvent(responseContentAsObject));
+            } else {
+                dispatch(retrieveNumberOfEventsPerHourSucceededEvent(responseContentAsObject));
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(retrieveNumberOfEventsPerHourFailedEvent(error.toString()));
+        });
+
+};
+
+
+export const selectedTimelineIntervalsUpdatedEvent = (selectedTimelineIntervalStart, selectedTimelineIntervalEnd) => ({
+    type: 'SELECTED_TIMELINE_INTERVALS_UPDATED_EVENT',
+    selectedTimelineIntervalStart,
+    selectedTimelineIntervalEnd
+})
+
 
 const reducer = (state = initialState, action) => {
 
@@ -158,6 +225,52 @@ const reducer = (state = initialState, action) => {
                     ...state.server,
                     events: action.events
                 }
+            };
+        }
+
+
+        case 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_STARTED_EVENT': {
+            return {
+                ...state,
+                retrieveNumberOfEventsPerHourOperation: {
+                    ...state.retrieveNumberOfEventsPerHourOperation,
+                    isRunning: true
+                }
+            };
+        }
+
+        case 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_FAILED_EVENT': {
+            return {
+                ...state,
+                retrieveNumberOfEventsPerHourOperation: {
+                    ...state.retrieveNumberOfEventsPerHourOperation,
+                    isRunning: false,
+                    errorMessage: action.errorMessage
+                }
+            };
+        }
+
+        case 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_SUCCEEDED_EVENT': {
+            return {
+                ...state,
+                retrieveNumberOfEventsPerHourOperation: {
+                    ...state.retrieveNumberOfEventsPerHourOperation,
+                    isRunning: false,
+                    errorMessage: null
+                },
+                server: {
+                    ...state.server,
+                    numberOfEventsPerHour: action.numberOfEventsPerHour
+                }
+            };
+        }
+
+
+        case 'SELECTED_TIMELINE_INTERVALS_UPDATED_EVENT': {
+            return {
+                ...state,
+                selectedTimelineIntervalStart: action.selectedTimelineIntervalStart,
+                selectedTimelineIntervalEnd: action.selectedTimelineIntervalEnd
             };
         }
 
