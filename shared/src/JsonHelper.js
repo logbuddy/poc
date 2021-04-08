@@ -113,7 +113,7 @@ const getBrokenDownValues = (elem, res = []) => {
     return res;
 };
 
-const JsonHelper = {
+export const JsonHelper = {
     flattenToKeyValuePairs,
     getBrokenDownKeys,
     getBrokenDownKeysAndValues,
@@ -121,4 +121,4 @@ const JsonHelper = {
     separator
 }
 
-module.exports = JsonHelper;
+export default JsonHelper;

@@ -10,9 +10,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "aws-sdk": "^2.875.0",
-    "date-fns": "^2.19.0",
-    "herodot-shared": "file:../../shared",
+    "aws-sdk": "^2.882.0",
+    "date-fns": "^2.20.0",
     "rollup": "^2.44.0"
   }
 }

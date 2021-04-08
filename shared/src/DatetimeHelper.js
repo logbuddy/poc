@@ -1,4 +1,4 @@
-const dateFormat = require('./dateFormat');
+import dateFormat from './dateFormat.js';
 
 const set = require('date-fns').set;
 const subDays = require('date-fns').subDays;
@@ -64,4 +64,4 @@ const DatetimeHelper = {
     }
 };
 
-module.exports = DatetimeHelper;
+export default DatetimeHelper;

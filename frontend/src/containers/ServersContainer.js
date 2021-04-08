@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { ArrowClockwise, Clipboard, ChevronRight, ChevronDown, Disc, FileEarmarkCode, FileEarmarkCodeFill, PlayCircle, PauseCircle } from 'react-bootstrap-icons';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { endOfToday, subDays, format, set } from 'date-fns';
+import { format } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
 import { DatetimeHelper } from 'herodot-shared';
 import {
