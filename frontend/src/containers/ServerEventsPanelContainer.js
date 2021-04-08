@@ -99,10 +99,33 @@ class ServerEventsPanelContainer extends Component {
         return (
             <Fragment>
                 <h2
-                    className='m-3'>
+                    className='m-3 mb-3'>
                     Log events
                 </h2>
+
+                <div className='card-body bg-deepdark rounded p-1 ms-3 me-3 mb-3'>
+                    <div className='input-group'>
+                        <div className='input-group-text bg-dark border-dark'>Filter events</div>
+                        <input
+                            type='text'
+                            className='form-control bg-secondary text-white-50 border-dark'
+                            id='filter-events-input'
+                            placeholder=''
+                            value={this.state.filterEventsInputText}
+                            onChange={
+                                (event) =>
+                                    this.handleChangeFilterEventsInputText(event)
+                            }
+                        />
+                    </div>
+                </div>
+
                 <div className='card-body bg-deepdark rounded p-2 ms-3 me-3 mb-3'>
+                    {
+                        (filteredLatestEvents(server.events).length === 0 && !activeServer.retrieveEventsOperation.isRunning)
+                        &&
+                        <span>Not matching events. Try changing the filter and timerange.</span>
+                    }
                     {
                         activeServer.retrieveEventsOperation.isRunning
                         &&

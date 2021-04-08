@@ -3,10 +3,6 @@ import React, { Fragment } from 'react';
 const PaginatorPresentational = ({numberOfItems, itemsPerPage, currentPage, onPageClicked}) => {
     const numberOfPages = Math.ceil(numberOfItems / itemsPerPage);
 
-    if (numberOfPages < 2) {
-        return <Fragment/>;
-    }
-
     const pageElements = [];
     for (let i = 0; i < numberOfPages; i++) {
         pageElements.push(
