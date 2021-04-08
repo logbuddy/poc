@@ -2,7 +2,10 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import ServerEventPresentational from "../presentationals/ServerEventPresentational";
 import PaginatorPresentational from "../presentationals/PaginatorPresentational";
-import {changeCurrentEventsResultPageCommand} from "../redux/reducers/activeServer";
+import {
+    changeCurrentEventsResultPageCommand,
+    loadEventIntoStructuredDataExplorerCommand
+} from "../redux/reducers/activeServer";
 
 
 const itemsPerPage = 25;
@@ -83,6 +86,7 @@ class ServerEventsPanelContainer extends Component {
                         event={event}
                         serverType={server.type}
                         showPayload={this.props.reduxState.activeServer.showEventPayload}
+                        onClick={ () => this.props.dispatch(loadEventIntoStructuredDataExplorerCommand(event)) }
                     />
                     <hr className='mb-4'/>
                 </Fragment>

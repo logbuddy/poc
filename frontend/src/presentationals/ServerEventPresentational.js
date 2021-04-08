@@ -4,7 +4,7 @@ import DayzEventSkinPresentational from './eventSkins/dayz/DayzEventSkinPresenta
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 
-const ServerEventPresentational = ({ event, serverType, showPayload }) => {
+const ServerEventPresentational = ({ event, serverType, showPayload, onClick }) => {
 
     let createdAtUtc = null;
     if (event.hasOwnProperty('createdAtUtc')) {
@@ -31,7 +31,7 @@ const ServerEventPresentational = ({ event, serverType, showPayload }) => {
                 className={`row ${isExplorable && 'clickable'}`}
                 onClick={() =>
                     isExplorable
-                    && this.handleLoadEventIntoStructuredDataExplorerClicked(event, true)
+                    && onClick()
                 }
             >
                 <div className='col-sm-12 ps-2 pe-2'>

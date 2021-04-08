@@ -39,6 +39,7 @@ const initialState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
+    eventLoadedInStructuredDataExplorer: null,
     activeStructuredDataExplorerAttributes: [],
     selectedTimelineIntervalStart: DatetimeHelper.timelineConfig.selectedTimelineIntervalStart,
     selectedTimelineIntervalEnd: DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd,
@@ -76,6 +77,116 @@ export const changeCurrentEventsResultPageCommand = (page) => ({
     type: 'CHANGE_CURRENT_EVENTS_RESULT_PAGE_COMMAND',
     page
 });
+
+
+export const loadEventIntoStructuredDataExplorerCommand = (event) => ({
+    type: 'LOAD_EVENT_INTO_STRUCTURED_DATA_EXPLORER_COMMAND',
+    event
+});
+
+export const closeStructuredDataExplorerCommand = () => ({
+    type: 'CLOSE_STRUCTURED_DATA_EXPLORER_COMMAND'
+});
+
+export const selectActiveStructuredDataExplorerAttributeCommand = (byName, byVal) => ({
+    type: 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+    byName,
+    byVal
+});
+
+export const addActiveStructuredDataExplorerAttributeCommand = (byName, byVal) => ({
+    type: 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+    byName,
+    byVal
+});
+
+export const removeActiveStructuredDataExplorerAttributeCommand = (byName, byVal) => (dispatch, getState) => {
+    dispatch(removedActiveStructuredDataExplorerAttributeEvent(byName, byVal));
+    if (getState().activeServer.activeStructuredDataExplorerAttributes.length === 0) {
+        dispatch(resetStructuredDataExplorerEventsCommand());
+    } else {
+        dispatch(retrieveStructuredDataExplorerEventsCommand());
+    }
+};
+
+const removedActiveStructuredDataExplorerAttributeEvent = (byName, byVal) => ({
+    type: 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT',
+    byName,
+    byVal
+});
+
+
+const retrieveStructuredDataExplorerEventsStartedEvent = () => ({
+    type: 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_STARTED_EVENT'
+});
+
+const retrieveStructuredDataExplorerEventsFailedEvent = (errorMessage) => ({
+    type: 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_FAILED_EVENT',
+    errorMessage
+});
+
+const retrieveStructuredDataExplorerEventsSucceededEvent = (events) => ({
+    type: 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_SUCCEEDED_EVENT',
+    events
+});
+
+export const resetStructuredDataExplorerEventsCommand = () => ({
+    type: 'RESET_STRUCTURED_DATA_EXPLORER_EVENTS_COMMAND'
+});
+
+
+export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch, getState) => {
+
+    if (getState().activeServer.activeStructuredDataExplorerAttributes.length === 0) {
+        console.error('Was asked to retrieve Structured Data Explorer events, but no attributes are set.');
+        return;
+    }
+
+    dispatch(retrieveStructuredDataExplorerEventsStartedEvent());
+
+    const queryParams = {
+        serverId: getState().activeServer.server.id,
+        selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalStart),
+        selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalEnd)
+    };
+
+    let i = 0;
+    const attributes = getState().activeServer.activeStructuredDataExplorerAttributes;
+    for (let attribute of attributes) {
+        queryParams[`byName[${i}]`] = attribute.byName;
+        queryParams[`byVal[${i}]`] = attribute.byVal;
+        i++;
+    }
+
+    let responseWasOk = true;
+    apiFetch(
+        '/server-events-by',
+        'GET',
+        getState().session.webappApiKeyId,
+        null,
+        queryParams
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsArray => {
+            if (!responseWasOk) {
+                dispatch(retrieveStructuredDataExplorerEventsFailedEvent(responseContentAsArray));
+            } else {
+                dispatch(retrieveStructuredDataExplorerEventsSucceededEvent(responseContentAsArray));
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(retrieveStructuredDataExplorerEventsFailedEvent(error.toString()));
+        });
+};
 
 
 export const retrieveEventsStartedEvent = () => ({
@@ -233,6 +344,111 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 currentEventsResultPage: action.page
+            };
+        }
+
+
+        case 'LOAD_EVENT_INTO_STRUCTURED_DATA_EXPLORER_COMMAND': {
+            return {
+                ...state,
+                eventLoadedInStructuredDataExplorer: action.event,
+                activeStructuredDataExplorerAttributes: [],
+                server: {
+                    ...state.server,
+                    structuredDataExplorerEvents: []
+                }
+            };
+        }
+
+
+        case 'CLOSE_STRUCTURED_DATA_EXPLORER_COMMAND': {
+            return {
+                ...state,
+                eventLoadedInStructuredDataExplorer: null,
+                activeStructuredDataExplorerAttributes: [],
+                server: {
+                    ...state.server,
+                    structuredDataExplorerEvents: []
+                }
+            };
+        }
+
+
+        case 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+            return {
+                ...state,
+                activeStructuredDataExplorerAttributes: [{ byName: action.byName, byVal: action.byVal }]
+            };
+        }
+
+        case 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+            return {
+                ...state,
+                activeStructuredDataExplorerAttributes: [
+                    ...state.activeStructuredDataExplorerAttributes,
+                    { byName: action.byName, byVal: action.byVal }
+                ]
+            };
+        }
+
+
+        case 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT': {
+            const remainingAttributes = [];
+            for (let attribute of state.activeStructuredDataExplorerAttributes) {
+                if (!(attribute.byName === action.byName && attribute.byVal === action.byVal)) {
+                    remainingAttributes.push(attribute);
+                }
+            }
+
+            let structuredDataExplorerEvents = [ ...state.server.structuredDataExplorerEvents ];
+            if (remainingAttributes.length === 0) {
+                structuredDataExplorerEvents = [];
+            }
+
+            return {
+                ...state,
+                activeStructuredDataExplorerAttributes: remainingAttributes,
+                server: {
+                    ...state.server,
+                    structuredDataExplorerEvents
+                }
+            };
+        }
+
+
+        case 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_STARTED_EVENT': {
+            return {
+                ...state,
+                retrieveStructuredDataExplorerEventsOperation: {
+                    ...state.retrieveStructuredDataExplorerEventsOperation,
+                    isRunning: true
+                }
+            };
+        }
+
+        case 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_FAILED_EVENT': {
+            return {
+                ...state,
+                retrieveStructuredDataExplorerEventsOperation: {
+                    ...state.retrieveStructuredDataExplorerEventsOperation,
+                    isRunning: false,
+                    errorMessage: action.errorMessage
+                }
+            };
+        }
+
+        case 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_SUCCEEDED_EVENT': {
+            return {
+                ...state,
+                retrieveStructuredDataExplorerEventsOperation: {
+                    ...state.retrieveStructuredDataExplorerEventsOperation,
+                    isRunning: false,
+                    errorMessage: null
+                },
+                server: {
+                    ...state.server,
+                    structuredDataExplorerEvents: action.events
+                }
             };
         }
 
