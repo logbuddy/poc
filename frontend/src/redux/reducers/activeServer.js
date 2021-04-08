@@ -6,12 +6,16 @@ const initialState = {
         id: null,
         type: null,
         title: null,
+        userId: null,
+        apiKeyId: null,
         events: [],
         structuredDataExplorerEvents: [],
         latestEventSortValue: null,
         numberOfEventsPerHour: []
     },
     showEventPayload: true,
+    informationPanelIsOpen: false,
+    examplePanelIsOpen: false,
     retrieveEventsOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
@@ -55,6 +59,15 @@ export const madeServerActiveEvent = (server) => ({
 
 export const closeActiveServerCommand = () => ({
     type: 'CLOSE_ACTIVE_SERVER_COMMAND'
+});
+
+
+export const switchInformationPanelCommand = () => ({
+    type: 'SWITCH_INFORMATION_PANEL_COMMAND'
+});
+
+export const switchExamplePanelCommand = () => ({
+    type: 'SWITCH_EXAMPLE_PANEL_COMMAND'
 });
 
 
@@ -179,16 +192,33 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 server: {
-                    ...state.server,
-                    id: action.server.id,
-                    title: action.server.title,
-                    type: action.server.type
+                    ...action.server,
+                    events: [],
+                    structuredDataExplorerEvents: [],
+                    latestEventSortValue: null,
+                    numberOfEventsPerHour: []
                 }
             };
         }
 
         case 'CLOSE_ACTIVE_SERVER_COMMAND': {
             return initialState;
+        }
+
+
+        case 'SWITCH_INFORMATION_PANEL_COMMAND': {
+            return {
+                ...state,
+                informationPanelIsOpen: !state.informationPanelIsOpen
+            };
+        }
+
+
+        case 'SWITCH_EXAMPLE_PANEL_COMMAND': {
+            return {
+                ...state,
+                examplePanelIsOpen: !state.examplePanelIsOpen
+            };
         }
 
 

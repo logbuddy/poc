@@ -3,11 +3,12 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import {
     closeActiveServerCommand, retrieveEventsCommand,
-    selectedTimelineIntervalsUpdatedEvent
+    selectedTimelineIntervalsUpdatedEvent, switchInformationPanelCommand
 } from '../redux/reducers/activeServer';
 import ServerEventPresentational from '../presentationals/ServerEventPresentational';
 import ServerTimelinePresentational from '../presentationals/ServerTimelinePresentational';
 import { DatetimeHelper } from 'herodot-shared';
+import ServerInformationPanelContainer from './ServerInformationPanelContainer';
 
 class ActiveServerContainer extends Component {
     render() {
@@ -27,8 +28,8 @@ class ActiveServerContainer extends Component {
                 <ServerTimelinePresentational
                     initialSelectedTimelineIntervalStart={DatetimeHelper.timelineConfig.selectedTimelineIntervalStart}
                     initialSelectedTimelineIntervalEnd={DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd}
-                    currentSelectedTimelineIntervalStart={this.props.reduxState.activeServer.selectedTimelineIntervalStart}
-                    currentSelectedTimelineIntervalEnd={this.props.reduxState.activeServer.selectedTimelineIntervalEnd}
+                    currentSelectedTimelineIntervalStart={activeServer.selectedTimelineIntervalStart}
+                    currentSelectedTimelineIntervalEnd={activeServer.selectedTimelineIntervalEnd}
                     timelineIntervalStart={activeServer.timelineIntervalStart}
                     timelineIntervalEnd={activeServer.timelineIntervalEnd}
                     numberOfEventsPerHour={activeServer.server.numberOfEventsPerHour}
@@ -68,6 +69,8 @@ class ActiveServerContainer extends Component {
                             </div>
                         </div>
                     </div>
+
+                    <ServerInformationPanelContainer />
 
                     {activeServer.server.id}
                     <div>
