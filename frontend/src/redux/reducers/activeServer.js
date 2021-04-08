@@ -14,6 +14,7 @@ const initialState = {
         numberOfEventsPerHour: []
     },
     showEventPayload: true,
+    showStructuredDataExplorerAttributes: true,
     informationPanelIsOpen: false,
     examplePanelIsOpen: false,
     currentEventsResultPage: 1,
@@ -70,6 +71,16 @@ export const switchInformationPanelCommand = () => ({
 
 export const switchExamplePanelCommand = () => ({
     type: 'SWITCH_EXAMPLE_PANEL_COMMAND'
+});
+
+
+export const switchShowEventPayloadCommand = () => ({
+    type: 'SWITCH_SHOW_EVENT_PAYLOAD_COMMAND'
+});
+
+
+export const switchShowStructuredDataExplorerAttributesCommand = () => ({
+    type: 'SWITCH_SHOW_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND'
 });
 
 
@@ -336,6 +347,22 @@ const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 examplePanelIsOpen: !state.examplePanelIsOpen
+            };
+        }
+
+
+        case 'SWITCH_SHOW_EVENT_PAYLOAD_COMMAND': {
+            return {
+                ...state,
+                showEventPayload: !state.showEventPayload
+            };
+        }
+
+
+        case 'SWITCH_SHOW_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND': {
+            return {
+                ...state,
+                showStructuredDataExplorerAttributes: !state.showStructuredDataExplorerAttributes
             };
         }
 

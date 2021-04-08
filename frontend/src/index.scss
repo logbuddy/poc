@@ -114,7 +114,7 @@ code {
   padding-left: 10% !important;
   padding-top: 1.5em !important;
   padding-bottom: 1.5em !important;
-  padding-right: 0 !important;
+  padding-right: 45px !important;
   width: 90% !important;
   height: 52px !important;
 }
@@ -135,6 +135,10 @@ code {
 
 .react_time_range__tick_label {
   margin-top: 17px !important;
+}
+
+.timeline-info-container {
+  margin-bottom: -45px;
 }
 
 .number-of-elements-per-hour-container {

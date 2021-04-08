@@ -297,7 +297,7 @@ class StructuredDataExplorerContainer extends Component {
             );
         }
 
-        const eventElements = [];
+        const resultElements = [];
         for (let event of this.props.reduxState.activeServer.server.structuredDataExplorerEvents) {
             const { values, keys, keysValues } = getAttributesForEvent(event);
 
@@ -333,7 +333,7 @@ class StructuredDataExplorerContainer extends Component {
                 if (add) keyValueAttributeElements.push(createKeyValueAttributeElement(keyValue));
             }
 
-            eventElements.push(
+            resultElements.push(
                 <Fragment key={event.id}>
                     <div className='row mb-3'>
                         <div className='col-sm-2 col-auto ps-1 pe-1 pt-0'>
@@ -369,28 +369,35 @@ class StructuredDataExplorerContainer extends Component {
                                             {JSON.stringify(JSON.parse(event.payload), null, 2)}
                                         </SyntaxHighlighter>
                                     }
+
                                     {
-                                        valueAttributeElements.length > 0
+                                        this.props.reduxState.activeServer.showStructuredDataExplorerAttributes
                                         &&
                                         <Fragment>
-                                            <hr/>
-                                            {valueAttributeElements}
-                                        </Fragment>
-                                    }
-                                    {
-                                        keyAttributeElements.length > 0
-                                        &&
-                                        <Fragment>
-                                            <hr/>
-                                            {keyAttributeElements}
-                                        </Fragment>
-                                    }
-                                    {
-                                        keyValueAttributeElements.length > 0
-                                        &&
-                                        <Fragment>
-                                            <hr/>
-                                            {keyValueAttributeElements}
+                                            {
+                                                valueAttributeElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {valueAttributeElements}
+                                                </Fragment>
+                                            }
+                                            {
+                                                keyAttributeElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {keyAttributeElements}
+                                                </Fragment>
+                                            }
+                                            {
+                                                keyValueAttributeElements.length > 0
+                                                &&
+                                                <Fragment>
+                                                    <hr/>
+                                                    {keyValueAttributeElements}
+                                                </Fragment>
+                                            }
                                         </Fragment>
                                     }
                                 </span>
@@ -446,61 +453,68 @@ class StructuredDataExplorerContainer extends Component {
                                 }
                             </span>
                         </code>
-                        <div className='mb-4'>
-                            <p>
-                                Based on the currently loaded log entry, you can now explore related log entries on these three dimensions:
-                                {createKeyAttributeElement('key', false, false)},
-                                {createValueAttributeElement('value', false, false)},
-                                and
-                                {createKeyValueAttributeElement('key' + JsonHelper.separator + 'value', false, false)}.
-                            </p>
-                            <p>
-                                The list below shows all keys, all values, and all key-value pairs identified within the currently loaded log entry.
-                            </p>
-                            <p>
-                                Clicking on any one element shows those log entries from this server that also match
-                                the selected value, key, or key-value pair, and displays them below under the "Results" headline.
-                            </p>
-                            <p>
-                                Click the <PlusCircle/> icon of another value, key, or key-value pair to further filter down the
-                                resulting list of log entries.
-                            </p>
-                            <p>
-                                On each result, you can in turn refine your search further by click on the
-                                key, value, or key-value attributes of the result.
-                            </p>
-                        </div>
 
-                        <hr/>
+                        {
+                            this.props.reduxState.activeServer.showStructuredDataExplorerAttributes
+                            &&
+                            <Fragment>
+                                <div className='mb-4'>
+                                    <p>
+                                        Based on the currently loaded log entry, you can now explore related log entries on these three dimensions:
+                                        {createKeyAttributeElement('key', false, false)},
+                                        {createValueAttributeElement('value', false, false)},
+                                        and
+                                        {createKeyValueAttributeElement('key' + JsonHelper.separator + 'value', false, false)}.
+                                    </p>
+                                    <p>
+                                        The list below shows all keys, all values, and all key-value pairs identified within the currently loaded log entry.
+                                    </p>
+                                    <p>
+                                        Clicking on any one element shows those log entries from this server that also match
+                                        the selected value, key, or key-value pair, and displays them below under the "Results" headline.
+                                    </p>
+                                    <p>
+                                        Click the <PlusCircle/> icon of another value, key, or key-value pair to further filter down the
+                                        resulting list of log entries.
+                                    </p>
+                                    <p>
+                                        On each result, you can in turn refine your search further by click on the
+                                        key, value, or key-value attributes of the result.
+                                    </p>
+                                </div>
 
-                        <div className='mb-5'>
-                            <h5>Keys</h5>
-                            {keyElements}
-                        </div>
+                                <hr/>
 
-                        <div className='mb-5'>
-                            <h5>Values</h5>
-                            {valueElements}
-                        </div>
+                                <div className='mb-5'>
+                                    <h5>Keys</h5>
+                                    {keyElements}
+                                </div>
 
-                        <div className='mb-5'>
-                            <h5>Keys and values</h5>
-                            {keyValueElements}
-                        </div>
+                                <div className='mb-5'>
+                                    <h5>Values</h5>
+                                    {valueElements}
+                                </div>
+
+                                <div className='mb-5'>
+                                    <h5>Keys and values</h5>
+                                    {keyValueElements}
+                                </div>
+                            </Fragment>
+                        }
 
                         <h4 ref={this.resultsRef}>
                             {
-                                eventElements.length > 0
+                                resultElements.length > 0
                                 &&
-                                <Fragment>{eventElements.length}&nbsp;</Fragment>
+                                <Fragment>{resultElements.length}&nbsp;</Fragment>
                             }
                             {
-                                eventElements.length === 1
+                                resultElements.length === 1
                                 &&
                                 <Fragment>Result</Fragment>
                             }
                             {
-                                eventElements.length !== 1
+                                resultElements.length !== 1
                                 &&
                                 <Fragment>Results</Fragment>
                             }
@@ -521,14 +535,14 @@ class StructuredDataExplorerContainer extends Component {
                         <hr/>
                         <div className='container-fluid bg-deepdark rounded p-3 pt-2 pb-2'>
                             {
-                                eventElements.length > 0
+                                resultElements.length > 0
                                 &&
-                                eventElements
+                                resultElements
                             }
 
                             {
                                 (
-                                    eventElements.length === 0
+                                    resultElements.length === 0
                                     &&
                                     !this.props.reduxState.activeServer.retrieveStructuredDataExplorerEventsOperation.isRunning
                                 )

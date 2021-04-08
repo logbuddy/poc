@@ -2,6 +2,7 @@ import React from 'react';
 import { format } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
 import { DatetimeHelper } from 'herodot-shared';
+import { FileEarmarkCode, FileEarmarkCodeFill } from 'react-bootstrap-icons';
 
 const ServerTimelinePresentational = (
     {
@@ -13,7 +14,8 @@ const ServerTimelinePresentational = (
         timelineIntervalEnd,
         numberOfEventsPerHour,
         onUpdateCallback,
-        onChangeCallback
+        onChangeCallback,
+        toolbox
     }) => {
 
     const numberOfEventsPerHourElements = []
@@ -39,7 +41,7 @@ const ServerTimelinePresentational = (
 
     return (
         <div className='w-100 m-0 sticky-top bg-deepdark border-secondary border-bottom border-1 p-2'>
-            <div className='container-fluid'>
+            <div className='container-fluid timeline-info-container'>
                 <div className='row tiny text-secondary'>
                     <div className='col align-self-start'>
                         {format(currentSelectedTimelineIntervalStart, 'PPPP')}
@@ -50,10 +52,12 @@ const ServerTimelinePresentational = (
                         {format(currentSelectedTimelineIntervalEnd, 'PPPP')}
                         <br/>
                         {format(currentSelectedTimelineIntervalEnd, 'p')}
+
+                        {toolbox}
                     </div>
                 </div>
-
             </div>
+
             <div className='react_time_range__time_range_container number-of-elements-per-hour-container'>
                 <div style={{position: 'relative', width: '100%'}}>
                     {numberOfEventsPerHourElements}

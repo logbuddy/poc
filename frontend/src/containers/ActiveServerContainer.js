@@ -1,23 +1,21 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { X } from 'react-bootstrap-icons';
+import {FileEarmarkCodeFill, FileEarmarkCode, X} from 'react-bootstrap-icons';
 import {
     closeActiveServerCommand,
     closeStructuredDataExplorerCommand,
     retrieveEventsCommand,
     retrieveStructuredDataExplorerEventsCommand,
     selectedTimelineIntervalsUpdatedEvent,
-    switchExamplePanelCommand,
-    switchInformationPanelCommand
+    switchExamplePanelCommand, switchShowEventPayloadCommand, switchShowStructuredDataExplorerAttributesCommand,
 } from '../redux/reducers/activeServer';
 import ServerTimelinePresentational from '../presentationals/ServerTimelinePresentational';
 import { DatetimeHelper } from 'herodot-shared';
 import ServerInformationPanelContainer from './ServerInformationPanelContainer';
-import ServerExamplePanelPresentational from "../presentationals/ServerExamplePanelPresentational";
-import ServerEventsPanelContainer from "./ServerEventsPanelContainer";
-import StructuredDataExplorerContainer from "./StructuredDataExplorerContainer";
-import {act} from "@testing-library/react";
+import ServerExamplePanelPresentational from '../presentationals/ServerExamplePanelPresentational';
+import ServerEventsPanelContainer from './ServerEventsPanelContainer';
+import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
 
 class ActiveServerContainer extends Component {
 
@@ -36,6 +34,63 @@ class ActiveServerContainer extends Component {
 
         const activeServer = this.props.reduxState.activeServer;
         const server = activeServer.server;
+
+        const toolbox = <div className='text-white-75'>
+
+            {
+                activeServer.eventLoadedInStructuredDataExplorer !== null
+                &&
+                <Fragment>
+                    {
+                        activeServer.showStructuredDataExplorerAttributes
+                        &&
+                        <div
+                            className='small clickable d-inline-block'
+                            onClick={ () => this.props.dispatch(switchShowStructuredDataExplorerAttributesCommand()) }
+                        >
+                    <span className="explorer-key-value-badge tiny">
+                        <span className="badge bg-primary ms-1 me-0 mb-1 explorer-key-value-badge-key">&nbsp;</span>
+                        <span className="badge bg-success ms-0 me-1 mb-1 explorer-key-value-badge-value">&nbsp;</span>
+                    </span>
+                        </div>
+                    }
+                    {
+                        activeServer.showStructuredDataExplorerAttributes
+                        ||
+                        <div
+                            className='small clickable d-inline-block'
+                            onClick={ () => this.props.dispatch(switchShowStructuredDataExplorerAttributesCommand()) }
+                        >
+                    <span className="explorer-key-value-badge tiny">
+                        <span className="badge bg-dark ms-1 me-0 mb-1 explorer-key-value-badge-key">&nbsp;</span>
+                        <span className="badge bg-secondary ms-0 me-1 mb-1 explorer-key-value-badge-value">&nbsp;</span>
+                    </span>
+                        </div>
+                    }
+                </Fragment>
+            }
+
+            {
+                activeServer.showEventPayload
+                &&
+                <div
+                    className='small clickable d-inline-block'
+                    onClick={ () => this.props.dispatch(switchShowEventPayloadCommand()) }
+                >
+                    <FileEarmarkCodeFill />
+                </div>
+            }
+            {
+                activeServer.showEventPayload
+                ||
+                <div
+                    className='small clickable d-inline-block'
+                    onClick={ () => this.props.dispatch(switchShowEventPayloadCommand()) }
+                >
+                    <FileEarmarkCode />
+                </div>
+            }
+        </div>;
 
         return (
             <Fragment>
@@ -56,6 +111,7 @@ class ActiveServerContainer extends Component {
                             this.props.dispatch(retrieveStructuredDataExplorerEventsCommand());
                         }
                     }}
+                    toolbox={toolbox}
                 />
 
                 {
