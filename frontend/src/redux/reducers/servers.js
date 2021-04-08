@@ -125,15 +125,6 @@ const reducer = (state = initialState, action) => {
             const updateServerlist = (existingServerlist, newServerlist) => {
                 const updatedServerlist = [];
                 for (let newServerlistEntry of newServerlist) {
-                    if (newServerlistEntry.latestEventsBy.length === 0) {
-                        for (let existingServerlistEntry of existingServerlist) {
-                            if (   existingServerlistEntry.latestEventsBy.length > 0
-                                && existingServerlistEntry.id === newServerlistEntry.id
-                            ) {
-                                newServerlistEntry.latestEventsBy = existingServerlistEntry.latestEventsBy;
-                            }
-                        }
-                    }
                     newServerlistEntry.numberOfEventsPerHour = [];
                     for (let i = 0; i < 8*24; i++) {
                         newServerlistEntry.numberOfEventsPerHour.push(Math.round(Math.random() * 1000));

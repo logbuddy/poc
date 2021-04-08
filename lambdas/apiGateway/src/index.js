@@ -400,61 +400,9 @@ const handleRetrieveServerListRequest = async (event) => {
             title: serversFromDbResult.Items[i].title,
             type,
             latestEventSortValue: null,
-            latestEvents: [],
-            latestEventsBy: []
+            events: [],
+            structuredDataExplorerEvents: []
         });
-    }
-
-    for (let i = 0; i < serversFromDb.length; i++) {
-        const queryParamsServerEvents = {
-            TableName: 'server_events',
-            Limit: 10000,
-            ScanIndexForward: false,
-            KeyConditionExpression: '' +
-                'servers_id = :servers_id' +
-                ' AND sort_value BETWEEN :selected_timeline_interval_start AND :selected_timeline_interval_end',
-            ExpressionAttributeValues: {
-                ':servers_id': serversFromDb[i].id,
-                ':selected_timeline_interval_start': selectedTimelineIntervalStart,
-                ':selected_timeline_interval_end': selectedTimelineIntervalEnd,
-            }
-        };
-
-        // See https://github.com/aws/aws-sdk-js/issues/2700#issuecomment-512243758
-        // for an explanation why we don't use docClient.query().promise()
-        const serverEventsFromDbResultPromise = new Promise((resolve, reject) => {
-            docClient.query(queryParamsServerEvents, (err, data) => {
-                if (err) {
-                    _console.error(err);
-                    reject(err);
-                } else {
-                    resolve(data);
-                }
-            });
-        });
-
-        const serverEventsFromDbResult = await serverEventsFromDbResultPromise;
-
-        for (let j = 0; j < serverEventsFromDbResult.Items.length; j++) {
-            if (j === 0) {
-                serversFromDb[i].latestEventSortValue = serverEventsFromDbResult.Items[j].sort_value;
-            }
-            let id = null;
-            if (serverEventsFromDbResult.Items[j].hasOwnProperty('id')) {
-                id = serverEventsFromDbResult.Items[j].id;
-            }
-            serversFromDb[i].latestEvents.push({
-                id: id,
-                serverId: serverEventsFromDbResult.Items[j].servers_id,
-                userId: serverEventsFromDbResult.Items[j].users_id,
-                receivedAt: serverEventsFromDbResult.Items[j].received_at,
-                sortValue: serverEventsFromDbResult.Items[j].sort_value,
-                createdAt: serverEventsFromDbResult.Items[j].server_event_created_at,
-                createdAtUtc: serverEventsFromDbResult.Items[j].server_event_created_at_utc,
-                source: serverEventsFromDbResult.Items[j].server_event_source,
-                payload: serverEventsFromDbResult.Items[j].server_event_payload,
-            });
-        }
     }
 
     return {
@@ -705,8 +653,8 @@ const handleCreateServerRequest = async (event) => {
             apiKeyId: loggingApiKeyId,
             title: requestBodyParsedAsJson.title,
             latestEventSortValue: null,
-            latestEvents: [],
-            latestEventsBy: []
+            events: [],
+            structuredDataExplorerEvents: []
         })
     };
 };
