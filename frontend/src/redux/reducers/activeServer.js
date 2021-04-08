@@ -537,6 +537,13 @@ const reducer = (state = initialState, action) => {
         }
 
 
+        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT': {
+            return {
+                ...initialState
+            }
+        }
+
+
         default: {
             return state;
         }

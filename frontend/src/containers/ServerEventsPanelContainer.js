@@ -96,7 +96,7 @@ class ServerEventsPanelContainer extends Component {
         return (
             <Fragment>
                 <h2
-                    className='m-3 mb-3'>
+                    className='m-3 mb-4'>
                     Log events
                 </h2>
 
