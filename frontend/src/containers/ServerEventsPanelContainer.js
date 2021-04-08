@@ -96,7 +96,7 @@ class ServerEventsPanelContainer extends Component {
                     Log events
                 </h2>
 
-                <div className='card-body bg-deepdark rounded p-1 ms-3 me-3 mb-3'>
+                <div className='card-body rounded p-0 ms-3 me-3 mb-3'>
                     <div className='input-group'>
                         <div className='input-group-text bg-dark border-dark'>Filter events</div>
                         <input
