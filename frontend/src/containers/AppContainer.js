@@ -12,6 +12,7 @@ import RegisterContainer from './RegisterContainer';
 import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
 import { logOutOfAccountCommand } from "../redux/reducers/session";
+import ActiveServerContainer from './ActiveServerContainer';
 
 const Navigation = (params) => (
     <Fragment>
@@ -69,8 +70,6 @@ class AppContainer extends Component {
                     <nav className='navbar navbar-expand navbar-dark bg-secondary ps-1'>
                         <div className="container-fluid">
                             <Navigation reduxState={this.props.reduxState} />
-
-
                             {
                                 this.props.reduxState.session.isLoggedIn
                                 &&
@@ -117,6 +116,9 @@ class AppContainer extends Component {
                         </Route>
                         <Route path='/servers/'>
                             <ServersContainer />
+                        </Route>
+                        <Route path='/server/'>
+                            <ActiveServerContainer />
                         </Route>
                         <Route exact path='/'>
                             <div className='container-fluid'>

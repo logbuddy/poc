@@ -1,5 +1,4 @@
-import DatetimeHelper from '../../../shared/DatetimeHelper.mjs';
-const { endOfToday, subDays, set } = require('date-fns');
+import { DatetimeHelper } from '../../../shared/src/index';
 
 const AWS = require('aws-sdk');
 const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');
@@ -93,6 +92,31 @@ const authenticateWebappRequest = async (eventHeaders) => {
 
     return getWebappApiKeyResult;
 };
+
+
+const serverBelongsToUser = (serverId, userId) => new Promise((resolve, reject) => {
+    docClient.query({
+        TableName: 'servers',
+        KeyConditionExpression: 'users_id = :users_id',
+        ExpressionAttributeValues: {
+            ':users_id': userId
+        }
+    }, (err, data) => {
+        if (err) {
+            _console.error(err);
+            reject(err);
+        } else {
+            _console.log(data);
+            for (let i = 0; i < data.Count; i++) {
+                if (data.Items[i].id === serverId) {
+                    resolve(true);
+                }
+            }
+            resolve(false);
+        }
+    });
+});
+
 
 const unknownWebappApiKeyIdResponse = (event) => ({
     statusCode: 403,
@@ -202,7 +226,7 @@ const handleRegisterAccountRequest = async (event) => {
     }
 };
 
-const handleCreateWebappApiKey = async (event) => {
+const handleCreateWebappApiKeyRequest = async (event) => {
     let credentialsFromRequestJson;
     if (event.isBase64Encoded) {
         credentialsFromRequestJson = (Buffer.from(event.body, 'base64')).toString('utf8');
@@ -295,27 +319,39 @@ const handleCreateWebappApiKey = async (event) => {
 const getSelectedTimelineIntervalValues = (event) => {
     let selectedTimelineIntervalStart;
     let selectedTimelineIntervalEnd;
-    if (   !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
+    if (   !event.hasOwnProperty('queryStringParameters')
+        || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalStart')
         || !event.queryStringParameters.hasOwnProperty('selectedTimelineIntervalEnd')
     ) {
-        selectedTimelineIntervalStart =
-            JSON.stringify(
-                set(subDays(new Date(), 7), { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 })
-            ).substring(3, 22)
-        ;
-        selectedTimelineIntervalEnd =
-            JSON.stringify(
-                endOfToday()
-            ).substring(3, 22);
+        selectedTimelineIntervalStart = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedTimelineIntervalStart);
+        selectedTimelineIntervalEnd = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.selectedTimelineIntervalEnd);
     } else {
-        selectedTimelineIntervalStart = event.queryStringParameters.selectedTimelineIntervalStart.substring(0, 19);
-        selectedTimelineIntervalEnd = event.queryStringParameters.selectedTimelineIntervalEnd.substring(0, 19);
+        selectedTimelineIntervalStart = event.queryStringParameters.selectedTimelineIntervalStart.substr(0, 19);
+        selectedTimelineIntervalEnd = event.queryStringParameters.selectedTimelineIntervalEnd.substr(0, 19);
     }
 
     return { selectedTimelineIntervalStart, selectedTimelineIntervalEnd };
 };
 
-const handleRetrieveServerList = async (event) => {
+const getTimelineIntervalValues = (event) => {
+    let timelineIntervalStart;
+    let timelineIntervalEnd;
+    if (   !event.hasOwnProperty('queryStringParameters')
+        || !event.queryStringParameters.hasOwnProperty('timelineIntervalStart')
+        || !event.queryStringParameters.hasOwnProperty('timelineIntervalEnd')
+    ) {
+        timelineIntervalStart = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.timelineIntervalStart);
+        timelineIntervalEnd = DatetimeHelper.dateObjectToUTCDatetimeString(DatetimeHelper.timelineConfig.timelineIntervalEnd);
+    } else {
+        timelineIntervalStart = event.queryStringParameters.timelineIntervalStart.substr(0, 19);
+        timelineIntervalEnd = event.queryStringParameters.timelineIntervalEnd.substr(0, 19);
+    }
+
+    return { timelineIntervalStart, timelineIntervalEnd };
+};
+
+
+const handleRetrieveServerListRequest = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
     if (webappApiKey === null) {
@@ -429,7 +465,188 @@ const handleRetrieveServerList = async (event) => {
 };
 
 
-const handleCreateServer = async (event) => {
+const handleRetrieveServerEventsRequest = async (event) => {
+    const webappApiKey = await authenticateWebappRequest(event.headers);
+
+    if (!(event.hasOwnProperty('pathParameters') && event.pathParameters.hasOwnProperty('serverId'))) {
+        return {
+            statusCode: 400,
+            headers: corsHeaders(event),
+            body: JSON.stringify({
+                message: 'Problem with query path',
+                expectedRequestPath: '/servers/{serverId}/events',
+                actualRequestPath: event.rawPath
+            }, null, 2)
+        };
+    }
+
+    const serverId = event.pathParameters.serverId;
+
+    if (await serverBelongsToUser(serverId, webappApiKey.users_id) === false) {
+        return {
+            statusCode: 403,
+            headers: corsHeaders(event),
+            body: JSON.stringify({
+                message: `Server ${serverId} does not belong to user ${webappApiKey.users_id}.`,
+            }, null, 2)
+        };
+    }
+
+    const { selectedTimelineIntervalStart, selectedTimelineIntervalEnd } = getSelectedTimelineIntervalValues(event);
+
+    const serverEvents = await new Promise((resolve, reject) => {
+        docClient.query(
+            {
+                TableName: 'server_events',
+                Limit: 10000,
+                ScanIndexForward: false,
+                KeyConditionExpression: '' +
+                    'servers_id = :servers_id' +
+                    ' AND sort_value BETWEEN :selected_timeline_interval_start AND :selected_timeline_interval_end',
+                ExpressionAttributeValues: {
+                    ':servers_id': serverId,
+                    ':selected_timeline_interval_start': selectedTimelineIntervalStart,
+                    ':selected_timeline_interval_end': selectedTimelineIntervalEnd,
+                }
+            }, (err, data) => {
+            if (err) {
+                _console.error(err);
+                reject(err);
+            } else {
+                _console.log(data);
+                let serverEvents = [];
+                for (let i = 0; i < data.Count; i++) {
+                    let id = null;
+                    if (data.Items[i].hasOwnProperty('id')) {
+                        id = data.Items[i].id;
+                    }
+
+                    serverEvents.push({
+                        id: id,
+                        serverId: data.Items[i].servers_id,
+                        userId: data.Items[i].users_id,
+                        receivedAt: data.Items[i].received_at,
+                        sortValue: data.Items[i].sort_value,
+                        createdAt: data.Items[i].server_event_created_at,
+                        createdAtUtc: data.Items[i].server_event_created_at_utc,
+                        source: data.Items[i].server_event_source,
+                        payload: data.Items[i].server_event_payload,
+                    });
+                }
+                resolve(serverEvents);
+            }
+        });
+    });
+
+    return {
+        statusCode: 200,
+        headers: corsHeaders(event),
+        body: JSON.stringify(serverEvents)
+    };
+};
+
+
+const handleRetrieveNumberOfServerEventsPerHourRequest = async (event) => {
+    const webappApiKey = await authenticateWebappRequest(event.headers);
+
+    if (!(event.hasOwnProperty('pathParameters') && event.pathParameters.hasOwnProperty('serverId'))) {
+        return {
+            statusCode: 400,
+            headers: corsHeaders(event),
+            body: JSON.stringify({
+                message: 'Problem with query path',
+                expectedRequestPath: '/servers/{serverId}/number-of-events-per-hour',
+                actualRequestPath: event.rawPath
+            }, null, 2)
+        };
+    }
+
+    const serverId = event.pathParameters.serverId;
+
+    if (await serverBelongsToUser(serverId, webappApiKey.users_id) === false) {
+        return {
+            statusCode: 403,
+            headers: corsHeaders(event),
+            body: JSON.stringify({
+                message: `Server ${serverId} does not belong to user ${webappApiKey.users_id}.`,
+            }, null, 2)
+        };
+    }
+
+    const { timelineIntervalStart, timelineIntervalEnd } = getTimelineIntervalValues(event);
+
+    const expressionAttributeValues = {
+        ':servers_id': serverId,
+        ':start': timelineIntervalStart,
+        ':end': timelineIntervalEnd,
+    };
+
+    _console.debug('expressionAttributeValues', expressionAttributeValues);
+
+    const serverEvents = await new Promise((resolve, reject) => {
+        docClient.query(
+            {
+                TableName: 'server_events',
+                Limit: 10000,
+                ScanIndexForward: false,
+                KeyConditionExpression: '' +
+                    'servers_id = :servers_id' +
+                    ' AND sort_value BETWEEN :start AND :end',
+                ExpressionAttributeValues: expressionAttributeValues
+            }, (err, data) => {
+            if (err) {
+                _console.error(err);
+                reject(err);
+            } else {
+                _console.log(data);
+                const events = [];
+                for (let i = 0; i < data.Count; i++) {
+                    let id = null;
+                    if (data.Items[i].hasOwnProperty('id')) {
+                        id = data.Items[i].id;
+                    }
+
+                    events.push({
+                        id: id,
+                        serverId: data.Items[i].servers_id,
+                        userId: data.Items[i].users_id,
+                        receivedAt: data.Items[i].received_at,
+                        sortValue: data.Items[i].sort_value,
+                        createdAt: data.Items[i].server_event_created_at,
+                        createdAtUtc: data.Items[i].server_event_created_at_utc,
+                        source: data.Items[i].server_event_source,
+                        payload: data.Items[i].server_event_payload,
+                    });
+                }
+                resolve(events);
+            }
+        });
+    });
+
+    const hours = DatetimeHelper.getListOfHoursBetweenUtcDateStrings(timelineIntervalStart, timelineIntervalEnd);
+    const numberOfEventsPerHour = [];
+
+    for (let index in hours) {
+        numberOfEventsPerHour[index] = 0;
+    }
+
+    for (let serverEvent of serverEvents) {
+        for (let index in hours) {
+            if (serverEvent.sortValue.startsWith(hours[index])) {
+                numberOfEventsPerHour[index] = numberOfEventsPerHour[index] + 1;
+            }
+        }
+    }
+
+    return {
+        statusCode: 200,
+        headers: corsHeaders(event),
+        body: JSON.stringify(numberOfEventsPerHour)
+    };
+};
+
+
+const handleCreateServerRequest = async (event) => {
 
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
@@ -524,30 +741,7 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
         }
     }
 
-    const serverBelongsToUser = await new Promise((resolve, reject) => {
-        docClient.query({
-            TableName: 'servers',
-            KeyConditionExpression: 'users_id = :users_id',
-            ExpressionAttributeValues: {
-                ':users_id': webappApiKey.users_id
-            }
-        }, (err, data) => {
-            if (err) {
-                _console.error(err);
-                reject(err);
-            } else {
-                _console.log(data);
-                for (let i = 0; i < data.Count; i++) {
-                    if (data.Items[i].id === serverId) {
-                        resolve(true);
-                    }
-                }
-                resolve(false);
-            }
-        });
-    });
-
-    if (!serverBelongsToUser) {
+    if (await serverBelongsToUser(serverId, webappApiKey.users_id) === false) {
         return {
             statusCode: 403,
             headers: corsHeaders(event),
@@ -559,6 +753,17 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
 
     const { selectedTimelineIntervalStart, selectedTimelineIntervalEnd } = getSelectedTimelineIntervalValues(event);
 
+    const expressionAttributeValues = {
+        ':servers_id': serverId,
+        ':selected_timeline_interval_end': selectedTimelineIntervalEnd
+    }
+
+    if (latestSeenSortValue === null) {
+        expressionAttributeValues[':start'] = selectedTimelineIntervalStart
+    } else {
+        expressionAttributeValues[':start'] = latestSeenSortValue
+    }
+
     const yetUnseenServerEvents = await new Promise((resolve, reject) => {
         const params = {
             TableName: 'server_events',
@@ -566,12 +771,8 @@ const handleRetrieveYetUnseenServerEventsRequest = async (event) => {
             ScanIndexForward: false,
             KeyConditionExpression: '' +
                 'servers_id = :servers_id' +
-                ' AND sort_value BETWEEN :selected_timeline_interval_start AND :selected_timeline_interval_end',
-            ExpressionAttributeValues: {
-                ':servers_id': serverId,
-                ':selected_timeline_interval_start': selectedTimelineIntervalStart,
-                ':selected_timeline_interval_end': selectedTimelineIntervalEnd,
-            }
+                ' AND sort_value BETWEEN :start AND :selected_timeline_interval_end',
+            ExpressionAttributeValues: expressionAttributeValues
         };
         docClient.query(params, (err, data) => {
             if (err) {
@@ -652,30 +853,7 @@ const handleRetrieveServerEventsByRequest = async (event) => {
 
     const reqServerId = event.queryStringParameters.serverId;
 
-    const serverBelongsToUser = await new Promise((resolve, reject) => {
-        docClient.query({
-            TableName: 'servers',
-            KeyConditionExpression: 'users_id = :users_id',
-            ExpressionAttributeValues: {
-                ':users_id': webappApiKey.users_id
-            }
-        }, (err, data) => {
-            if (err) {
-                _console.error(err);
-                reject(err);
-            } else {
-                _console.log(data);
-                for (let i = 0; i < data.Count; i++) {
-                    if (data.Items[i].id === reqServerId) {
-                        resolve(true);
-                    }
-                }
-                resolve(false);
-            }
-        });
-    });
-
-    if (!serverBelongsToUser) {
+    if (await serverBelongsToUser(reqServerId, webappApiKey.users_id) === false) {
         return {
             statusCode: 403,
             headers: corsHeaders(event),
@@ -917,15 +1095,23 @@ exports.handler = async (event) => {
     }
 
     if (event.routeKey === 'POST /webapp-api-keys') {
-        return handleCreateWebappApiKey(event);
+        return handleCreateWebappApiKeyRequest(event);
     }
 
     if (event.routeKey === 'GET /servers') {
-        return handleRetrieveServerList(event);
+        return handleRetrieveServerListRequest(event);
     }
 
     if (event.routeKey === 'POST /servers') {
-        return handleCreateServer(event);
+        return handleCreateServerRequest(event);
+    }
+
+    if (event.routeKey === 'GET /servers/{serverId}/events') {
+        return handleRetrieveServerEventsRequest(event);
+    }
+
+    if (event.routeKey === 'GET /servers/{serverId}/number-of-events-per-hour') {
+        return handleRetrieveNumberOfServerEventsPerHourRequest(event);
     }
 
     if (event.routeKey === 'GET /yet-unseen-server-events') {

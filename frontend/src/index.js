@@ -15,7 +15,6 @@ if (   urlParams.has('directLoginEmail')
     console.debug(`Found direct login info in ${window.location.search}`);
     document.cookie = `loggedInEmail=${urlParams.get('directLoginEmail')};path=/;SameSite=Lax`;
     document.cookie = `webappApiKeyId=${urlParams.get('directLoginWebappApiKeyId')};path=/;SameSite=Lax`;
-    document.cookie = `flipAllLatestEventsElementsOpen=1;path=/;SameSite=Lax`;
     window.location = '/#/servers/';
 } else {
     ReactDOM.render(

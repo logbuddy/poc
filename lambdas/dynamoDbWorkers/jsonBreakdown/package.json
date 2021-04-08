@@ -1,5 +1,5 @@
 {
-  "name": "restBackend",
+  "name": "herodot-lambdas-queueworkers-jsonbreakdown",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,12 +8,8 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "aws-sdk": "^2.875.0",
-    "rollup": "^2.44.0"
-  },
-  "type": "module",
   "dependencies": {
-    "date-fns": "^2.19.0"
+    "aws-sdk": "^2.882.0",
+    "rollup": "^2.44.0"
   }
 }

@@ -1,0 +1,21 @@
+{
+  "name": "herodot-shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "build-tests": "rollup ./tests/index.js --file ./build/test-bundle.cjs --format commonjs",
+    "test": "npm run build-tests && node ./build/test-bundle.cjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "date-fns": "^2.20.0",
+    "rollup": "^2.44.0"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {},
+  "description": ""
+}

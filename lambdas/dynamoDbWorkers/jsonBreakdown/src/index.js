@@ -1,4 +1,4 @@
-import JsonHelper from '../../../../shared/JsonHelper.mjs';
+import { JsonHelper } from '../../../../shared/src/index';
 
 const AWS = require('aws-sdk');
 

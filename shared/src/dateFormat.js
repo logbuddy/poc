@@ -12,7 +12,7 @@
  * The mask defaults to dateFormat.masks.default.
  */
 
-var dateFormat = function () {
+const dateFormat = function () {
     var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g,
         timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
         timezoneClip = /[^-+\dA-Z]/g,
@@ -119,49 +119,4 @@ dateFormat.i18n = {
     ]
 };
 
-// For convenience...
-Date.prototype.format = function (mask, utc) {
-    return dateFormat(this, mask, utc);
-};
-
-
-const getUTCDatetimeString = (val) => {
-    // is this an integer for an epoch timestamp, but given as a string?
-    if (   typeof(val) === 'string'
-        && !isNaN(parseInt(val))
-        && /^\d+$/.test(val)
-    ) {
-        val = parseInt(val);
-    }
-
-    // is this an integer for an epoch timestamp?
-    if (Number.isInteger(val) && val <= 4102444800) {
-        return (new Date(val * 1000)).format('isoUtcDateTime');
-    }
-
-    // string with or without T separator, but without timezone specifier at the end,
-    // like '2021-03-24T08:30:39'
-    if (   typeof(val) === 'string'
-        && val.length === 19
-    ) {
-        val = val + 'Z';
-    }
-
-    try {
-        return (new Date(val)).format('isoUtcDateTime');
-    } catch (e) {
-        console.error(e);
-        return null;
-    }
-};
-
-const dateObjectToUTCDatetimeString = (o) => {
-    return JSON.stringify(o).replace('"', '').substring(0, 19) + 'Z';
-};
-
-const DatetimeHelper = {
-    getUTCDatetimeString,
-    dateObjectToUTCDatetimeString
-};
-
-export default DatetimeHelper;
+export default dateFormat;

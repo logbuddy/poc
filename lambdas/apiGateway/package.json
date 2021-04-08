@@ -1,5 +1,5 @@
 {
-  "name": "jsonbreakdown",
+  "name": "herodot-lambdas-restbackend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,9 +8,10 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "aws-sdk": "^2.875.0",
+  "type": "module",
+  "dependencies": {
+    "aws-sdk": "^2.882.0",
+    "date-fns": "^2.20.0",
     "rollup": "^2.44.0"
-  },
-  "type": "module"
+  }
 }
