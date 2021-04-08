@@ -341,7 +341,11 @@ class StructuredDataExplorerContainer extends Component {
                                 {
                                     (event.hasOwnProperty('createdAtUtc') && event.createdAtUtc !== null)
                                     &&
-                                    format(new Date(event.createdAtUtc), 'PPPP · pp')
+                                    <span>
+                                        {format(new Date(event.createdAtUtc), 'PPPP')}
+                                        <br/>
+                                        {format(new Date(event.createdAtUtc), 'pp')}
+                                    </span>
                                 }
                                 {
                                     (event.hasOwnProperty('createdAtUtc') && event.createdAtUtc !== null)

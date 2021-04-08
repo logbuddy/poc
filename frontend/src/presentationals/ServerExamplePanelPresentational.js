@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import {ChevronDown, ChevronRight} from 'react-bootstrap-icons';
 
 const ServerExamplePanelPresentational = ({ server, isOpen, onSwitch }) => (

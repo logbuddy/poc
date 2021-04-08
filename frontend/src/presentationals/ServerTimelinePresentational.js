@@ -2,7 +2,6 @@ import React from 'react';
 import { format } from 'date-fns';
 import TimeRange from 'react-timeline-range-slider';
 import { DatetimeHelper } from 'herodot-shared';
-import { FileEarmarkCode, FileEarmarkCodeFill } from 'react-bootstrap-icons';
 
 const ServerTimelinePresentational = (
     {
