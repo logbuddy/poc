@@ -49,4 +49,40 @@ export default () => {
             '2021-01-01T03',
         ]
     );
+
+    assert.deepEqual(
+        DatetimeHelper.getListOfHoursBetweenUtcDateStrings(
+            '2021-01-01T00:00:00Z',
+            '2021-01-01T02:59:59Z',
+        ),
+        [
+            '2021-01-01T00',
+            '2021-01-01T01',
+            '2021-01-01T02',
+        ]
+    );
+
+    assert.deepEqual(
+        DatetimeHelper.getListOfHoursBetweenUtcDateStrings(
+            '2021-01-01T00:59:59Z',
+            '2021-01-01T02:59:59Z',
+        ),
+        [
+            '2021-01-01T00',
+            '2021-01-01T01',
+            '2021-01-01T02',
+        ]
+    );
+
+    assert.deepEqual(
+        DatetimeHelper.getListOfHoursBetweenUtcDateStrings(
+            '2021-01-31T23:05:07.348Z',
+            '2021-02-01T01:59:59Z',
+        ),
+        [
+            '2021-01-31T23',
+            '2021-02-01T00',
+            '2021-02-01T01',
+        ]
+    );
 };

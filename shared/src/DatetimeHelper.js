@@ -42,17 +42,26 @@ const dateObjectToUTCDatetimeString = (o) => {
 
 const getListOfHoursBetweenUtcDateStrings = (startString, endString) => {
     const hours = [];
-    let currentHour = set(
-        parse(startString, "yyyy-MM-dd'T'HH:mm:ssX", new Date()),
-        { hours: 0, minutes: 0, seconds: 0, milliseconds: 0}
-    );
-    const endHour = set(
-        parse(endString, "yyyy-MM-dd'T'HH:mm:ssX", new Date()),
-        { hours: 0, minutes: 0, seconds: 0, milliseconds: 0}
+
+    let currentHour = new Date(
+        Date.UTC(
+            startString.substr(0, 4),
+            parseInt(startString.substr(5, 2)) - 1,
+            startString.substr(8, 2),
+            startString.substr(11, 2),
+        )
     );
 
-    console.log(currentHour);
-    while (currentHour <= endHour) {
+    const endDate = new Date(
+        Date.UTC(
+            endString.substr(0, 4),
+            parseInt(endString.substr(5, 2)) - 1,
+            endString.substr(8, 2),
+            endString.substr(11, 2),
+        )
+    );
+
+    while (currentHour <= endDate) {
         hours.push(
             JSON.stringify(currentHour).replace('"', '').substring(0, 13)
         );
