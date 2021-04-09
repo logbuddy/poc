@@ -31,7 +31,7 @@ class ActiveServerContainer extends Component {
         const activeServer = this.props.reduxState.activeServer;
         const server = activeServer.server;
 
-        const toolbox = <div className='text-white-75'>
+        const toolbox = <div className='mt-2 text-white-75'>
 
             {
                 activeServer.eventLoadedInStructuredDataExplorer !== null
@@ -44,7 +44,7 @@ class ActiveServerContainer extends Component {
                             className='small clickable d-inline-block'
                             onClick={ () => this.props.dispatch(switchShowStructuredDataExplorerAttributesCommand()) }
                         >
-                    <span className="explorer-key-value-badge tiny">
+                    <span className="explorer-key-value-badge">
                         <span className="badge bg-primary ms-1 me-0 mb-1 explorer-key-value-badge-key">&nbsp;</span>
                         <span className="badge bg-success ms-0 me-1 mb-1 explorer-key-value-badge-value">&nbsp;</span>
                     </span>
@@ -57,7 +57,7 @@ class ActiveServerContainer extends Component {
                             className='small clickable d-inline-block'
                             onClick={ () => this.props.dispatch(switchShowStructuredDataExplorerAttributesCommand()) }
                         >
-                    <span className="explorer-key-value-badge tiny">
+                    <span className="explorer-key-value-badge">
                         <span className="badge bg-dark ms-1 me-0 mb-1 explorer-key-value-badge-key">&nbsp;</span>
                         <span className="badge bg-secondary ms-0 me-1 mb-1 explorer-key-value-badge-value">&nbsp;</span>
                     </span>
@@ -70,20 +70,20 @@ class ActiveServerContainer extends Component {
                 activeServer.showEventPayload
                 &&
                 <div
-                    className='small clickable d-inline-block'
+                    className='clickable d-inline-block'
                     onClick={ () => this.props.dispatch(switchShowEventPayloadCommand()) }
                 >
-                    <FileEarmarkCodeFill />
+                    <FileEarmarkCodeFill width='15px' height='15px' />
                 </div>
             }
             {
                 activeServer.showEventPayload
                 ||
                 <div
-                    className='small clickable d-inline-block'
+                    className='clickable d-inline-block'
                     onClick={ () => this.props.dispatch(switchShowEventPayloadCommand()) }
                 >
-                    <FileEarmarkCode />
+                    <FileEarmarkCode width='15px' height='15px' />
                 </div>
             }
         </div>;
