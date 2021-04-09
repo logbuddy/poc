@@ -5,7 +5,7 @@ import {FileEarmarkCodeFill, FileEarmarkCode, X} from 'react-bootstrap-icons';
 import {
     closeActiveServerCommand,
     closeStructuredDataExplorerCommand,
-    retrieveEventsCommand,
+    retrieveEventsCommand, retrieveNumberOfEventsPerHourCommand,
     retrieveStructuredDataExplorerEventsCommand,
     selectedTimelineIntervalsUpdatedEvent,
     switchExamplePanelCommand, switchShowEventPayloadCommand, switchShowStructuredDataExplorerAttributesCommand,
@@ -19,12 +19,8 @@ import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
 
 class ActiveServerContainer extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            mouseIsOnDisableShowEventPayloadElement: false,
-            mouseIsOnEnableShowEventPayloadElement: false,
-        };
+    componentDidMount() {
+        this.props.dispatch(retrieveNumberOfEventsPerHourCommand());
     }
 
     render() {

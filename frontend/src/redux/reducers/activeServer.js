@@ -13,6 +13,8 @@ const initialState = {
         latestEventSortValue: null,
         numberOfEventsPerHour: []
     },
+    pollForYetUnseenEvents: true,
+    skipPollingForYetUnseenEvents: false,
     showEventPayload: true,
     showStructuredDataExplorerAttributes: true,
     informationPanelIsOpen: false,
@@ -50,8 +52,6 @@ const initialState = {
 
 export const makeServerActiveCommand = (server) => (dispatch) => {
     dispatch(madeServerActiveEvent(server));
-    dispatch(retrieveEventsCommand());
-    dispatch(retrieveNumberOfEventsPerHourCommand());
 };
 
 export const madeServerActiveEvent = (server) => ({
@@ -82,6 +82,94 @@ export const switchShowEventPayloadCommand = () => ({
 export const switchShowStructuredDataExplorerAttributesCommand = () => ({
     type: 'SWITCH_SHOW_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND'
 });
+
+
+export const switchPollForYetUnseenEventsCommand = () => ({
+    type: 'SWITCH_POLL_FOR_YET_UNSEEN_EVENTS_COMMAND'
+});
+
+export const switchSkipPollingForYetUnseenEvents = () => ({
+    type: 'SWITCH_SKIP_POLLING_FOR_YET_UNSEEN_EVENTS'
+});
+
+
+const retrieveYetUnseenEventsStartedEvent = () => ({
+    type: 'RETRIEVE_YET_UNSEEN_EVENTS_STARTED_EVENT'
+});
+
+const retrieveYetUnseenEventsFailedEvent = (errorMessage) => ({
+    type: 'RETRIEVE_YET_UNSEEN_EVENTS_FAILED_EVENT',
+    errorMessage
+});
+
+const retrieveYetUnseenEventsSucceededEvent = (yetUnseenEvents) => ({
+    type: 'RETRIEVE_YET_UNSEEN_EVENTS_SUCCEEDED_EVENT',
+    yetUnseenEvents
+});
+
+
+export const retrieveYetUnseenEventsCommand = () => (dispatch, getState) => {
+
+    console.debug('retrieveYetUnseenEventsCommand');
+
+    const repeat = () => {
+        if (getState().activeServer.server.id !== null) {
+            setTimeout(
+                () => {
+                    dispatch(retrieveYetUnseenEventsCommand());
+                },
+                2000
+            );
+        }
+    }
+
+    if (getState().activeServer.skipPollingForYetUnseenEvents) {
+        repeat();
+        return;
+    }
+
+    if (getState().activeServer.retrieveYetUnseenEventsOperation.isRunning) {
+        console.warn(`A retrieveYetUnseenEventsCommand is already running, aborting.`);
+        return;
+    }
+
+    dispatch(retrieveYetUnseenEventsStartedEvent());
+
+    let responseWasOk = true;
+    apiFetch(
+        `/yet-unseen-server-events`,
+        'GET',
+        getState().session.webappApiKeyId,
+        null,
+        {
+            serverId: getState().activeServer.server.id,
+            latestSeenSortValue: getState().activeServer.server.latestEventSortValue,
+            selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalStart),
+            selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalEnd)
+        }
+    )
+        .then(response => {
+            console.debug(response);
+            if (!response.ok) {
+                responseWasOk = false;
+            }
+            return response.json();
+        })
+
+        .then(responseContentAsArray => {
+            if (!responseWasOk) {
+                dispatch(retrieveYetUnseenEventsFailedEvent(responseContentAsArray));
+            } else {
+                dispatch(retrieveYetUnseenEventsSucceededEvent(responseContentAsArray));
+                repeat();
+            }
+        })
+
+        .catch(function(error) {
+            console.error(error)
+            dispatch(retrieveYetUnseenEventsFailedEvent(error.toString()));
+        });
+};
 
 
 export const changeCurrentEventsResultPageCommand = (page) => ({
@@ -178,7 +266,6 @@ export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch, getS
         queryParams
     )
         .then(response => {
-            console.debug(response);
             if (!response.ok) {
                 responseWasOk = false;
             }
@@ -230,7 +317,6 @@ export const retrieveEventsCommand = () => (dispatch, getState) => {
         }
     )
         .then(response => {
-            console.debug(response);
             if (!response.ok) {
                 responseWasOk = false;
             }
@@ -242,6 +328,7 @@ export const retrieveEventsCommand = () => (dispatch, getState) => {
                 dispatch(retrieveEventsFailedEvent(responseContentAsObject));
             } else {
                 dispatch(retrieveEventsSucceededEvent(responseContentAsObject));
+                dispatch(retrieveYetUnseenEventsCommand());
             }
         })
 
@@ -283,7 +370,6 @@ export const retrieveNumberOfEventsPerHourCommand = () => (dispatch, getState) =
         }
     )
         .then(response => {
-            console.debug(response);
             if (!response.ok) {
                 responseWasOk = false;
             }
@@ -366,6 +452,73 @@ const reducer = (state = initialState, action) => {
             };
         }
 
+
+        case 'SWITCH_POLL_FOR_YET_UNSEEN_EVENTS_COMMAND': {
+            return {
+                ...state,
+                pollForYetUnseenEvents: !state.pollForYetUnseenEvents
+            };
+        }
+
+        case 'SWITCH_SKIP_POLLING_FOR_YET_UNSEEN_EVENTS': {
+            return {
+                ...state,
+                skipPollingForYetUnseenEvents: !state.skipPollingForYetUnseenEvents
+            };
+        }
+
+        case 'RETRIEVE_YET_UNSEEN_EVENTS_STARTED_EVENT': {
+            return {
+                ...state,
+                retrieveYetUnseenEventsOperation: {
+                    ...state.retrieveYetUnseenEventsOperation,
+                    isRunning: true,
+                    justFinishedSuccessfully: false,
+                    errorMessage: null
+                }
+            };
+        }
+
+        case 'RETRIEVE_YET_UNSEEN_EVENTS_FAILED_EVENT': {
+            return {
+                ...state,
+                retrieveYetUnseenEventsOperation: {
+                    ...state.retrieveYetUnseenEventsOperation,
+                    isRunning: false,
+                    justFinishedSuccessfully: false,
+                    errorMessage: action.errorMessage
+                }
+            };
+        }
+
+        case 'RETRIEVE_YET_UNSEEN_EVENTS_SUCCEEDED_EVENT': {
+            if (action.yetUnseenEvents.length > 0) {
+                return {
+                    ...state,
+                    server: {
+                        ...state.server,
+                        events: action.yetUnseenEvents.concat(state.server.events).slice(0, 10000),
+                        latestEventSortValue: action.yetUnseenEvents[0].sortValue
+                    },
+                    retrieveYetUnseenEventsOperation: {
+                        ...state.retrieveYetUnseenEventsOperation,
+                        isRunning: false,
+                        justFinishedSuccessfully: true,
+                        errorMessage: null
+                    }
+                };
+            } else {
+                return {
+                    ...state,
+                    retrieveYetUnseenEventsOperation: {
+                        ...state.retrieveYetUnseenEventsOperation,
+                        isRunning: false,
+                        justFinishedSuccessfully: true,
+                        errorMessage: null
+                    }
+                };
+            }
+        }
 
         case 'CHANGE_CURRENT_EVENTS_RESULT_PAGE_COMMAND': {
             return {

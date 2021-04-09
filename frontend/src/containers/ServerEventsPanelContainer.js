@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import ServerEventPresentational from "../presentationals/ServerEventPresentational";
-import PaginatorPresentational from "../presentationals/PaginatorPresentational";
+import ServerEventPresentational from '../presentationals/ServerEventPresentational';
+import PaginatorPresentational from '../presentationals/PaginatorPresentational';
 import {
     changeCurrentEventsResultPageCommand,
-    loadEventIntoStructuredDataExplorerCommand
-} from "../redux/reducers/activeServer";
+    loadEventIntoStructuredDataExplorerCommand,
+    retrieveEventsCommand
+} from '../redux/reducers/activeServer';
 
 
 const itemsPerPage = 25;
@@ -42,6 +43,10 @@ class ServerEventsPanelContainer extends Component {
             filterText: '',
             eventLoadedInStructuredDataExplorer: null,
         };
+    }
+
+    componentDidMount() {
+        this.props.dispatch(retrieveEventsCommand());
     }
 
     handlePageClicked = (page) => {
