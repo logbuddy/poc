@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { DiscFill } from 'react-bootstrap-icons';
 import ServerEventPresentational from '../presentationals/ServerEventPresentational';
 import PaginatorPresentational from '../presentationals/PaginatorPresentational';
 import {
     changeCurrentEventsResultPageCommand,
     loadEventIntoStructuredDataExplorerCommand,
-    retrieveEventsCommand
+    retrieveEventsCommand, switchPollForYetUnseenEventsCommand
 } from '../redux/reducers/activeServer';
 
 
@@ -100,8 +101,7 @@ class ServerEventsPanelContainer extends Component {
 
         return (
             <Fragment>
-                <h2
-                    className='m-3 mb-4'>
+                <h2 className='m-3'>
                     Log events
                 </h2>
 
@@ -143,6 +143,31 @@ class ServerEventsPanelContainer extends Component {
                             onPageClicked={ (page) => this.handlePageClicked(page) }
                         />
                     }
+                </div>
+
+                <div
+                    className='me-3 text-end tiny'
+                >
+                    <div
+                        className='d-inline-block clickable'
+                        onClick={ () => this.props.dispatch(switchPollForYetUnseenEventsCommand()) }
+                    >
+                        {
+                            this.props.reduxState.activeServer.pollForYetUnseenEvents
+                            &&
+                            <span className='text-white-50'>
+                                Polling for new events...
+                                <DiscFill className='spinning spinning-small text-primary' />
+                            </span>
+                        }
+                        {
+                            this.props.reduxState.activeServer.pollForYetUnseenEvents
+                            ||
+                            <span className='text-white-50'>
+                                Not polling for new events.
+                            </span>
+                        }
+                    </div>
                 </div>
 
                 {
