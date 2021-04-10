@@ -11,7 +11,7 @@ import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './RegisterContainer';
 import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
-import { logOutOfAccountCommand } from "../redux/reducers/session";
+import { logOutOfAccountCommand } from '../redux/reducers/session';
 import ActiveServerContainer from './ActiveServerContainer';
 
 const Navigation = (params) => (

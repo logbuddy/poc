@@ -1,7 +1,7 @@
 import React, {Component, Fragment} from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import ErrorMessagePresentational from "../presentationals/ErrorMessagePresentational";
+import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational';
 import { registerAccountCommand } from '../redux/reducers/session';
 
 class RegisterContainer extends Component {
