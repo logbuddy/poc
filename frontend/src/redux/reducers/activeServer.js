@@ -1,6 +1,9 @@
 import { apiFetch } from '../util';
 import { DatetimeHelper } from 'herodot-shared';
 
+export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
+export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
+
 const initialState = {
     server: {
         id: null,
@@ -13,6 +16,7 @@ const initialState = {
         latestEventSortValue: null,
         numberOfEventsPerHour: []
     },
+    logEventsPresentationMode: LOG_EVENTS_PRESENTATION_MODE_DEFAULT,
     pollForYetUnseenEvents: true,
     skipPollingForYetUnseenEvents: false,
     showEventPayload: true,
@@ -63,6 +67,13 @@ export const madeServerActiveEvent = (server) => ({
 export const closeActiveServerCommand = () => ({
     type: 'CLOSE_ACTIVE_SERVER_COMMAND'
 });
+
+
+export const cycleLogEventsPresentationModeCommand = () => {
+    return {
+        type: 'CYCLE_LOG_EVENTS_PRESENTATION_MODE_COMMAND'
+    };
+};
 
 
 export const switchInformationPanelCommand = () => ({
@@ -406,18 +417,37 @@ const reducer = (state = initialState, action) => {
         case 'MADE_SERVER_ACTIVE_EVENT': {
             return {
                 ...state,
+
                 server: {
                     ...action.server,
                     events: [],
                     structuredDataExplorerEvents: [],
                     latestEventSortValue: null,
                     numberOfEventsPerHour: []
-                }
+                },
+
+                logEventsPresentationMode: action.server.type === 'dayz'
+                    ? LOG_EVENTS_PRESENTATION_MODE_DEFAULT
+                    : LOG_EVENTS_PRESENTATION_MODE_COMPACT,
+
+                showEventPayload: action.server.type !== 'dayz',
             };
         }
 
         case 'CLOSE_ACTIVE_SERVER_COMMAND': {
             return initialState;
+        }
+
+
+        case 'CYCLE_LOG_EVENTS_PRESENTATION_MODE_COMMAND': {
+            let newMode = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
+            if (state.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT) {
+                newMode = LOG_EVENTS_PRESENTATION_MODE_COMPACT;
+            }
+            return {
+                ...state,
+                logEventsPresentationMode: newMode
+            };
         }
 
 

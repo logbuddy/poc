@@ -4,8 +4,8 @@ import { DiscFill } from 'react-bootstrap-icons';
 import ServerEventPresentational from '../presentationals/ServerEventPresentational';
 import PaginatorPresentational from '../presentationals/PaginatorPresentational';
 import {
-    changeCurrentEventsResultPageCommand,
-    loadEventIntoStructuredDataExplorerCommand,
+    changeCurrentEventsResultPageCommand, cycleLogEventsPresentationModeCommand,
+    loadEventIntoStructuredDataExplorerCommand, LOG_EVENTS_PRESENTATION_MODE_DEFAULT,
     retrieveEventsCommand, switchPollForYetUnseenEventsCommand
 } from '../redux/reducers/activeServer';
 
@@ -93,8 +93,18 @@ class ServerEventsPanelContainer extends Component {
                         serverType={server.type}
                         showPayload={this.props.reduxState.activeServer.showEventPayload}
                         onClick={ () => this.props.dispatch(loadEventIntoStructuredDataExplorerCommand(event)) }
+                        presentationMode={this.props.reduxState.activeServer.logEventsPresentationMode}
                     />
-                    <hr className='mb-4'/>
+                    {
+                        this.props.reduxState.activeServer.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT
+                        &&
+                        <hr className='mb-4'/>
+                    }
+                    {
+                        this.props.reduxState.activeServer.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT
+                        ||
+                        <div className='mb-2'/>
+                    }
                 </Fragment>
             );
         }
@@ -145,28 +155,46 @@ class ServerEventsPanelContainer extends Component {
                     }
                 </div>
 
-                <div
-                    className='me-3 text-end tiny'
-                >
+                <div>
                     <div
-                        className='d-inline-block clickable'
-                        onClick={ () => this.props.dispatch(switchPollForYetUnseenEventsCommand()) }
+                        className='me-3 text-end tiny'
                     >
-                        {
-                            this.props.reduxState.activeServer.pollForYetUnseenEvents
-                            &&
-                            <span className='text-white-50'>
-                                Polling for new events...
-                                <DiscFill className='spinning spinning-small text-primary' />
-                            </span>
-                        }
-                        {
-                            this.props.reduxState.activeServer.pollForYetUnseenEvents
-                            ||
-                            <span className='text-white-50'>
-                                Not polling for new events.
-                            </span>
-                        }
+                        <div
+                            className='d-inline-block clickable me-3 border-1 border-bottom border-secondary pb-2'
+                            onClick={ () => this.props.dispatch(cycleLogEventsPresentationModeCommand()) }
+                        >
+                            {
+                                this.props.reduxState.activeServer.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT
+                                &&
+                                'Default view'
+                            }
+                            {
+                                this.props.reduxState.activeServer.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT
+                                ||
+                                'Compact view'
+                            }
+                        </div>
+
+                        <div
+                            className='d-inline-block clickable border-1 border-bottom border-secondary pb-2'
+                            onClick={ () => this.props.dispatch(switchPollForYetUnseenEventsCommand()) }
+                        >
+                            {
+                                this.props.reduxState.activeServer.pollForYetUnseenEvents
+                                &&
+                                <span className='text-white-50'>
+                                    Polling for new events...
+                                    <DiscFill className='spinning spinning-small text-primary' />
+                                </span>
+                            }
+                            {
+                                this.props.reduxState.activeServer.pollForYetUnseenEvents
+                                ||
+                                <span className='text-white-50'>
+                                    Not polling for new events.
+                                </span>
+                            }
+                        </div>
                     </div>
                 </div>
 
