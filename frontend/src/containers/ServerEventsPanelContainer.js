@@ -160,7 +160,7 @@ class ServerEventsPanelContainer extends Component {
                         className='me-3 text-end tiny'
                     >
                         <div
-                            className='d-inline-block clickable me-3 border-1 border-bottom border-secondary pb-2'
+                            className='d-inline-block clickable me-3 border-1 border-bottom border-secondary pb-1'
                             onClick={ () => this.props.dispatch(cycleLogEventsPresentationModeCommand()) }
                         >
                             {
@@ -176,13 +176,13 @@ class ServerEventsPanelContainer extends Component {
                         </div>
 
                         <div
-                            className='d-inline-block clickable border-1 border-bottom border-secondary pb-2'
+                            className='d-inline-block clickable border-1 border-bottom border-secondary pb-1'
                             onClick={ () => this.props.dispatch(switchPollForYetUnseenEventsCommand()) }
                         >
                             {
                                 this.props.reduxState.activeServer.pollForYetUnseenEvents
                                 &&
-                                <span className='text-white-50'>
+                                <span>
                                     Polling for new events...
                                     <DiscFill className='spinning spinning-small text-primary' />
                                 </span>
