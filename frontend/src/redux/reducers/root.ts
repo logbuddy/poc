@@ -8,3 +8,12 @@ export default combineReducers({
     servers,
     activeServer
 });
+
+export interface BasicAction {
+    readonly type: string
+}
+
+export interface ErrorAction {
+    readonly type: string,
+    readonly errorMessage: string
+}

@@ -1,6 +1,24 @@
 import { apiFetch } from '../util';
+import { Dispatch } from 'redux';
+import { BasicAction, ErrorAction } from './root';
 
-const initialState = {
+interface SessionState {
+    readonly isLoggedIn: boolean,
+    readonly loggedInEmail: null | string,
+    readonly webappApiKeyId: null | string,
+    readonly registration: {
+        readonly isRunning: boolean,
+        readonly justFinishedSuccessfully: boolean,
+        readonly errorMessage: null | string
+    },
+    readonly login: {
+        readonly isRunning: boolean,
+        readonly justFinishedSuccessfully: boolean,
+        readonly errorMessage: null | string
+    }
+}
+
+const initialState: SessionState = {
     isLoggedIn: false,
     loggedInEmail: null,
     webappApiKeyId: null,
@@ -17,23 +35,39 @@ const initialState = {
 };
 
 
-const registerAccountStartedEvent = () => ({
-    type: 'REGISTER_ACCOUNT_STARTED_EVENT'
+interface RegisterAccountStartedEventAction extends BasicAction {
+    readonly type: 'RegisterAccountStartedEvent'
+}
+
+const registerAccountStartedEvent = (): RegisterAccountStartedEventAction => ({
+    type: 'RegisterAccountStartedEvent'
 });
 
-const registerAccountFailedEvent = (errorMessage) => ({
-    type: 'REGISTER_ACCOUNT_FAILED_EVENT',
+
+interface RegisterAccountFailedEventAction extends ErrorAction {
+    type: 'RegisterAccountFailedEvent'
+}
+
+const registerAccountFailedEvent = (errorMessage: string): RegisterAccountFailedEventAction => ({
+    type: 'RegisterAccountFailedEvent',
     errorMessage
 });
 
-const registerAccountSucceededEvent = (userId, email, password) => ({
-    type: 'REGISTER_ACCOUNT_SUCCEEDED_EVENT',
+
+interface RegisterAccountSucceededEventAction extends BasicAction {
+    type: 'RegisterAccountSucceededEvent',
+    readonly userId: string,
+    readonly email: string
+}
+
+
+const registerAccountSucceededEvent = (userId: string, email: string): RegisterAccountSucceededEventAction => ({
+    type: 'RegisterAccountSucceededEvent',
     userId,
-    email,
-    password
+    email
 });
 
-export const registerAccountCommand = (email, password) => (dispatch) => {
+export const registerAccountCommand = (email: string, password: string) => (dispatch: Dispatch) => {
 
     dispatch(registerAccountStartedEvent());
 
@@ -52,7 +86,7 @@ export const registerAccountCommand = (email, password) => (dispatch) => {
                 console.debug(responseContentAsObject);
                 dispatch(registerAccountFailedEvent(responseContentAsObject));
             } else {
-                dispatch(registerAccountSucceededEvent(responseContentAsObject, email, password));
+                dispatch(registerAccountSucceededEvent(responseContentAsObject, email));
             }
         })
 
@@ -62,23 +96,38 @@ export const registerAccountCommand = (email, password) => (dispatch) => {
 };
 
 
-const logIntoAccountStartedEvent = () => ({
-    type: 'LOG_INTO_ACCOUNT_STARTED_EVENT'
+interface LogIntoAccountStartedEventAction extends BasicAction {
+    type: 'LogIntoAccountStartedEvent'
+}
+
+const logIntoAccountStartedEvent = (): LogIntoAccountStartedEventAction => ({
+    type: 'LogIntoAccountStartedEvent'
 });
 
-const logIntoAccountFailedEvent = (errorMessage) => ({
-    type: 'LOG_INTO_ACCOUNT_FAILED_EVENT',
+
+interface LogIntoAccountFailedEventAction extends ErrorAction {
+    type: 'LogIntoAccountFailedEvent'
+}
+
+const logIntoAccountFailedEvent = (errorMessage: string): LogIntoAccountFailedEventAction => ({
+    type: 'LogIntoAccountFailedEvent',
     errorMessage
 });
 
-const logIntoAccountSucceededEvent = (apiKeyId, email, password) => ({
-    type: 'LOG_INTO_ACCOUNT_SUCCEEDED_EVENT',
-    webappApiKeyId: apiKeyId,
-    email,
-    password
+
+interface LogIntoAccountSucceededEventAction extends BasicAction {
+    readonly type: 'LogIntoAccountSucceededEvent',
+    readonly email: string,
+    readonly webappApiKeyId: string
+}
+
+const logIntoAccountSucceededEvent = (webappApiKeyId: string, email: string): LogIntoAccountSucceededEventAction => ({
+    type: 'LogIntoAccountSucceededEvent',
+    webappApiKeyId,
+    email
 });
 
-export const logIntoAccountCommand = (email, password) => (dispatch) => {
+export const logIntoAccountCommand = (email: string, password: string) => (dispatch: Dispatch): void => {
 
     dispatch(logIntoAccountStartedEvent());
 
@@ -96,7 +145,7 @@ export const logIntoAccountCommand = (email, password) => (dispatch) => {
             if (!responseWasOk) {
                 dispatch(logIntoAccountFailedEvent(responseContentAsObject));
             } else {
-                dispatch(logIntoAccountSucceededEvent(responseContentAsObject, email, password));
+                dispatch(logIntoAccountSucceededEvent(responseContentAsObject, email));
             }
         })
 
@@ -107,18 +156,24 @@ export const logIntoAccountCommand = (email, password) => (dispatch) => {
 };
 
 
-const logOutOfAccountStartedEvent = () => ({
-    type: 'LOG_OUT_OF_ACCOUNT_STARTED_EVENT'
+interface LogOutOfAccountStartedEventAction extends BasicAction {
+    type: 'LogOutOfAccountStartedEvent'
+}
+
+const logOutOfAccountStartedEvent = (): LogOutOfAccountStartedEventAction => ({
+    type: 'LogOutOfAccountStartedEvent'
 });
 
-const logOutOfAccountSucceededEvent = (apiKeyId, email, password) => ({
-    type: 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT',
-    webappApiKeyId: apiKeyId,
-    email,
-    password
+
+interface LogOutOfAccountSucceededEventAction extends BasicAction {
+    type: 'LogOutOfAccountSucceededEvent'
+}
+
+const logOutOfAccountSucceededEvent = (): LogOutOfAccountSucceededEventAction => ({
+    type: 'LogOutOfAccountSucceededEvent'
 });
 
-export const logOutOfAccountCommand = () => (dispatch) => {
+export const logOutOfAccountCommand = () => (dispatch: Dispatch) => {
     dispatch(logOutOfAccountStartedEvent());
     document.cookie = `loggedInEmail=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
     document.cookie = `webappApiKeyId=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
@@ -126,9 +181,22 @@ export const logOutOfAccountCommand = () => (dispatch) => {
 };
 
 
-const reducer = (state = initialState, action) => {
+export type SessionAction =
+    | LogIntoAccountStartedEventAction
+    | LogIntoAccountFailedEventAction
+    | LogIntoAccountSucceededEventAction
+
+    | RegisterAccountStartedEventAction
+    | RegisterAccountFailedEventAction
+    | RegisterAccountSucceededEventAction
+
+    | LogOutOfAccountStartedEventAction
+    | LogOutOfAccountSucceededEventAction;
+
+
+const reducer = (state = initialState, action: SessionAction): SessionState => {
     switch (action.type) {
-        case 'REGISTER_ACCOUNT_STARTED_EVENT':
+        case 'RegisterAccountStartedEvent':
             return {
                 ...state,
                 registration: {
@@ -137,7 +205,7 @@ const reducer = (state = initialState, action) => {
                 }
             }
 
-        case 'REGISTER_ACCOUNT_SUCCEEDED_EVENT':
+        case 'RegisterAccountSucceededEvent':
             return {
                 ...state,
                 registration: {
@@ -146,7 +214,7 @@ const reducer = (state = initialState, action) => {
                 }
             }
 
-        case 'REGISTER_ACCOUNT_FAILED_EVENT':
+        case 'RegisterAccountFailedEvent':
             return {
                 ...state,
                 registration: {
@@ -156,7 +224,7 @@ const reducer = (state = initialState, action) => {
             }
 
 
-        case 'LOG_INTO_ACCOUNT_STARTED_EVENT':
+        case 'LogIntoAccountStartedEvent':
             return {
                 ...state,
                 isLoggedIn: false,
@@ -168,7 +236,7 @@ const reducer = (state = initialState, action) => {
                 }
             }
 
-        case 'LOG_INTO_ACCOUNT_SUCCEEDED_EVENT':
+        case 'LogIntoAccountSucceededEvent':
             document.cookie = `loggedInEmail=${action.email};path=/`;
             document.cookie = `webappApiKeyId=${action.webappApiKeyId};path=/`;
             return {
@@ -182,7 +250,7 @@ const reducer = (state = initialState, action) => {
                 }
             }
 
-        case 'LOG_INTO_ACCOUNT_FAILED_EVENT':
+        case 'LogIntoAccountFailedEvent':
             return {
                 ...state,
                 isLoggedIn: false,
@@ -194,7 +262,7 @@ const reducer = (state = initialState, action) => {
                 }
             }
 
-        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT':
+        case 'LogOutOfAccountSucceededEvent':
             return {
                 ...initialState,
                 isLoggedIn: false,
