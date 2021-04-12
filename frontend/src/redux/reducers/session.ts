@@ -1,8 +1,6 @@
 import { apiFetch } from '../util';
-import {AnyAction, Dispatch} from 'redux';
-import {BasicAction, ErrorAction, Operation} from './root';
-import {ThunkAction} from "redux-thunk";
-import {RootStateOrAny} from "react-redux";
+import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
+import { ThunkDispatch } from 'redux-thunk';
 
 export interface SessionState {
     readonly isLoggedIn: boolean,
@@ -61,7 +59,7 @@ const registerAccountSucceededEvent = (userId: string, email: string): RegisterA
     email
 });
 
-export const registerAccountCommand = (email: string, password: string) => (dispatch: Dispatch): void => {
+export const registerAccountCommand = (email: string, password: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>): void => {
 
     dispatch(registerAccountStartedEvent());
 
@@ -121,7 +119,7 @@ const logIntoAccountSucceededEvent = (webappApiKeyId: string, email: string): Lo
     email
 });
 
-export const logIntoAccountCommand = (email: string, password: string) => (dispatch: Dispatch) => {
+export const logIntoAccountCommand = (email: string, password: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>) => {
 
     dispatch(logIntoAccountStartedEvent());
 
@@ -167,7 +165,7 @@ const logOutOfAccountSucceededEvent = (): LogOutOfAccountSucceededEventAction =>
     type: 'LogOutOfAccountSucceededEvent'
 });
 
-export const logOutOfAccountCommand = () => (dispatch: Dispatch): void => {
+export const logOutOfAccountCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>): void => {
     dispatch(logOutOfAccountStartedEvent());
     document.cookie = `loggedInEmail=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
     document.cookie = `webappApiKeyId=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;

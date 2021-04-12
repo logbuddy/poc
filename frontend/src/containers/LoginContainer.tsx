@@ -1,9 +1,9 @@
-import React, {Component, SyntheticEvent} from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { logIntoAccountCommand } from '../redux/reducers/session';
-import {ConnectedComponentProps, ReduxState} from '../redux/reducers/root';
+import { ConnectedComponentProps } from '../redux/store';
 
 interface State {
     readonly email: string,
@@ -75,4 +75,5 @@ class LoginContainer extends Component<ConnectedComponentProps, State> {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(LoginContainer);

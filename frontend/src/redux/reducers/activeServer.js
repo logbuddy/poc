@@ -4,7 +4,7 @@ import { DatetimeHelper } from 'herodot-shared';
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
 
-const initialState = {
+export const initialState = {
     server: {
         id: null,
         type: null,
@@ -761,4 +761,3 @@ const reducer = (state = initialState, action) => {
 }
 
 export default reducer;
-export { initialState };
