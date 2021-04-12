@@ -3,22 +3,28 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational';
 import { registerAccountCommand } from '../redux/reducers/session';
+import { ConnectedComponentProps } from '../redux/store';
 
-class RegisterContainer extends Component {
-    constructor(props) {
+interface ReactState {
+    readonly email: string,
+    readonly password: string
+}
+
+class RegisterContainer extends Component<ConnectedComponentProps, ReactState> {
+    constructor(props: ConnectedComponentProps) {
         super(props);
         this.state = { email: '', password: '' };
     }
 
-    handleChangeEmail = (event) => {
+    handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ ...this.state, email: event.target.value, password: this.state.password });
     }
 
-    handleChangePassword = (event) => {
+    handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ ...this.state, password: event.target.value, email: this.state.email });
     }
 
-    handleSubmit = (event) => {
+    handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         this.props.dispatch(registerAccountCommand(this.state.email, this.state.password));
         event.preventDefault();
     }
@@ -28,7 +34,7 @@ class RegisterContainer extends Component {
             return (<Redirect to='/' />);
         }
 
-        if (this.props.reduxState.session.justFinishedRegistration) {
+        if (this.props.reduxState.session.registrationOperation.justFinishedSuccessfully) {
             return (<Redirect to='/login' />);
         }
 
@@ -80,4 +86,5 @@ class RegisterContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(RegisterContainer);

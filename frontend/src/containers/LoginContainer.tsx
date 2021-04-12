@@ -5,12 +5,12 @@ import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentat
 import { logIntoAccountCommand } from '../redux/reducers/session';
 import { ConnectedComponentProps } from '../redux/store';
 
-interface State {
+interface ReactState {
     readonly email: string,
     readonly password: string
 }
 
-class LoginContainer extends Component<ConnectedComponentProps, State> {
+class LoginContainer extends Component<ConnectedComponentProps, ReactState> {
     constructor(props: ConnectedComponentProps) {
         super(props);
         this.state = { email: '', password: '' };
