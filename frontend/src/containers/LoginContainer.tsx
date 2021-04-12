@@ -1,24 +1,36 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import React, {Component, SyntheticEvent} from 'react';
+import {connect, ConnectedProps} from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { logIntoAccountCommand } from '../redux/reducers/session';
+import {ConnectedComponentProps, ReduxState} from '../redux/reducers/root';
 
-class LoginContainer extends Component {
-    constructor(props) {
+interface ReactState {
+    readonly email: string,
+    readonly password: string
+}
+
+const connector = connect(
+    reduxState => ({ reduxState }),
+    dispatch => ({ dispatch })
+);
+
+
+class LoginContainer extends Component<ConnectedProps<typeof connector>, ReactState> {
+    constructor(props: ConnectedProps<typeof connector>) {
         super(props);
         this.state = { email: '', password: '' };
     }
 
-    handleChangeEmail = (event) => {
+    handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ ...this.state, email: event.target.value, password: this.state.password });
     }
 
-    handleChangePassword = (event) => {
+    handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ ...this.state, password: event.target.value, email: this.state.email });
     }
 
-    handleSubmit = (event) => {
+    handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         this.props.dispatch(logIntoAccountCommand(this.state.email, this.state.password));
         event.preventDefault();
     }
@@ -66,7 +78,4 @@ class LoginContainer extends Component {
     }
 }
 
-export default connect(
-    reduxState => ({ reduxState }),
-    dispatch => ({ dispatch })
-)(LoginContainer);
+export default connector(LoginContainer);

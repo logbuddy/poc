@@ -1,8 +1,10 @@
 import { apiFetch } from '../util';
-import { Dispatch } from 'redux';
+import {AnyAction, Dispatch} from 'redux';
 import {BasicAction, ErrorAction, Operation} from './root';
+import {ThunkAction} from "redux-thunk";
+import {RootStateOrAny} from "react-redux";
 
-interface SessionState {
+export interface SessionState {
     readonly isLoggedIn: boolean,
     readonly loggedInEmail: null | string,
     readonly webappApiKeyId: null | string,
@@ -119,7 +121,7 @@ const logIntoAccountSucceededEvent = (webappApiKeyId: string, email: string): Lo
     email
 });
 
-export const logIntoAccountCommand = (email: string, password: string) => (dispatch: Dispatch): void => {
+export const logIntoAccountCommand = (email: string, password: string) => (dispatch: Dispatch) => {
 
     dispatch(logIntoAccountStartedEvent());
 
