@@ -17,3 +17,9 @@ export interface ErrorAction {
     readonly type: string,
     readonly errorMessage: string
 }
+
+export interface Operation {
+    readonly isRunning: boolean,
+    readonly justFinishedSuccessfully: boolean,
+    readonly errorMessage: null | string
+}

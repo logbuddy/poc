@@ -45,7 +45,7 @@ const Navigation = (params) => (
                     <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
                 </li>
                 {
-                    params.reduxState.session.registration.justFinishedSuccessfully
+                    params.reduxState.session.registrationOperation.justFinishedSuccessfully
                     ||
                     <li className='nav-item'>
                         <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>

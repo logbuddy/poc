@@ -33,12 +33,12 @@ class LoginContainer extends Component {
                 <div className='row'>
                     <div className='col-xs-auto col-sm-12 col-md-8 col-lg-6 col-xl-4'>
                         {
-                            this.props.reduxState.session.registration.justFinishedSuccessfully
+                            this.props.reduxState.session.registrationOperation.justFinishedSuccessfully
                             &&
                             <div className='alert alert-success'>Registration finished successfully. Please log in.</div>
                         }
                         <h1>Login</h1>
-                        <ErrorMessagePresentational message={this.props.reduxState.session.login.errorMessage} />
+                        <ErrorMessagePresentational message={this.props.reduxState.session.loginOperation.errorMessage} />
                         <form onSubmit={this.handleSubmit} className='mt-4'>
                             <div className="mb-4">
                                 <input className='form-control' type='text' id='email' placeholder='E-Mail' value={this.state.email} onChange={this.handleChangeEmail} />
@@ -48,12 +48,12 @@ class LoginContainer extends Component {
                             </div>
                             <div className="mt-4">
                                 {
-                                    this.props.reduxState.session.login.isRunning
+                                    this.props.reduxState.session.loginOperation.isRunning
                                     &&
                                     <button className='btn btn-warning disabled'>Processing login...</button>
                                 }
                                 {
-                                    this.props.reduxState.session.login.isRunning
+                                    this.props.reduxState.session.loginOperation.isRunning
                                     ||
                                     <button className='btn btn-primary' type='submit'>Log in</button>
                                 }

@@ -1,33 +1,25 @@
 import { apiFetch } from '../util';
 import { Dispatch } from 'redux';
-import { BasicAction, ErrorAction } from './root';
+import {BasicAction, ErrorAction, Operation} from './root';
 
 interface SessionState {
     readonly isLoggedIn: boolean,
     readonly loggedInEmail: null | string,
     readonly webappApiKeyId: null | string,
-    readonly registration: {
-        readonly isRunning: boolean,
-        readonly justFinishedSuccessfully: boolean,
-        readonly errorMessage: null | string
-    },
-    readonly login: {
-        readonly isRunning: boolean,
-        readonly justFinishedSuccessfully: boolean,
-        readonly errorMessage: null | string
-    }
+    readonly registrationOperation: Operation,
+    readonly loginOperation: Operation
 }
 
 const initialState: SessionState = {
     isLoggedIn: false,
     loggedInEmail: null,
     webappApiKeyId: null,
-    registration: {
+    registrationOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    login: {
+    loginOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
@@ -67,7 +59,7 @@ const registerAccountSucceededEvent = (userId: string, email: string): RegisterA
     email
 });
 
-export const registerAccountCommand = (email: string, password: string) => (dispatch: Dispatch) => {
+export const registerAccountCommand = (email: string, password: string) => (dispatch: Dispatch): void => {
 
     dispatch(registerAccountStartedEvent());
 
@@ -173,7 +165,7 @@ const logOutOfAccountSucceededEvent = (): LogOutOfAccountSucceededEventAction =>
     type: 'LogOutOfAccountSucceededEvent'
 });
 
-export const logOutOfAccountCommand = () => (dispatch: Dispatch) => {
+export const logOutOfAccountCommand = () => (dispatch: Dispatch): void => {
     dispatch(logOutOfAccountStartedEvent());
     document.cookie = `loggedInEmail=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
     document.cookie = `webappApiKeyId=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
@@ -199,8 +191,8 @@ const reducer = (state = initialState, action: SessionAction): SessionState => {
         case 'RegisterAccountStartedEvent':
             return {
                 ...state,
-                registration: {
-                    ...initialState.registration,
+                registrationOperation: {
+                    ...initialState.registrationOperation,
                     isRunning: true
                 }
             }
@@ -208,8 +200,8 @@ const reducer = (state = initialState, action: SessionAction): SessionState => {
         case 'RegisterAccountSucceededEvent':
             return {
                 ...state,
-                registration: {
-                    ...initialState.registration,
+                registrationOperation: {
+                    ...initialState.registrationOperation,
                     justFinishedSuccessfully: true
                 }
             }
@@ -217,8 +209,8 @@ const reducer = (state = initialState, action: SessionAction): SessionState => {
         case 'RegisterAccountFailedEvent':
             return {
                 ...state,
-                registration: {
-                    ...initialState.registration,
+                registrationOperation: {
+                    ...initialState.registrationOperation,
                     errorMessage: action.errorMessage
                 }
             }
@@ -230,8 +222,8 @@ const reducer = (state = initialState, action: SessionAction): SessionState => {
                 isLoggedIn: false,
                 loggedInEmail: null,
                 webappApiKeyId: null,
-                login: {
-                    ...initialState.login,
+                loginOperation: {
+                    ...initialState.loginOperation,
                     isRunning: true
                 }
             }
@@ -244,8 +236,8 @@ const reducer = (state = initialState, action: SessionAction): SessionState => {
                 isLoggedIn: true,
                 loggedInEmail: action.email,
                 webappApiKeyId: action.webappApiKeyId,
-                login: {
-                    ...initialState.login,
+                loginOperation: {
+                    ...initialState.loginOperation,
                     justFinishedSuccessfully: true
                 }
             }
@@ -256,8 +248,8 @@ const reducer = (state = initialState, action: SessionAction): SessionState => {
                 isLoggedIn: false,
                 loggedInEmail: null,
                 webappApiKeyId: null,
-                login: {
-                    ...initialState.login,
+                loginOperation: {
+                    ...initialState.loginOperation,
                     errorMessage: action.errorMessage
                 }
             }

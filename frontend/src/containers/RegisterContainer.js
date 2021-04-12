@@ -35,19 +35,19 @@ class RegisterContainer extends Component {
         return (
             <Fragment>
                 {
-                    this.props.reduxState.session.registration.justFinishedSuccessfully
+                    this.props.reduxState.session.registrationOperation.justFinishedSuccessfully
                     &&
                     <Redirect to='/login' />
                 }
 
                 {
-                    this.props.reduxState.session.registration.justFinishedSuccessfully
+                    this.props.reduxState.session.registrationOperation.justFinishedSuccessfully
                     ||
                     <div className='container-fluid ps-4 mt-4'>
                         <div className='row'>
                             <div className='col-xs-auto col-sm-12 col-md-8 col-lg-6 col-xl-4'>
                                 <h1>Registration</h1>
-                                <ErrorMessagePresentational message={this.props.reduxState.session.registration.errorMessage} />
+                                <ErrorMessagePresentational message={this.props.reduxState.session.registrationOperation.errorMessage} />
                                 <form onSubmit={this.handleSubmit} className='mt-4'>
                                     <div className="mb-4">
                                         <input className='form-control' type='text' name='name' placeholder='E-Mail' value={this.state.email} onChange={this.handleChangeEmail} />
@@ -57,12 +57,12 @@ class RegisterContainer extends Component {
                                     </div>
                                     <div className="mt-4 mb-3">
                                         {
-                                            this.props.reduxState.session.registration.isRunning
+                                            this.props.reduxState.session.registrationOperation.isRunning
                                             &&
                                             <button className='btn btn-warning disabled'>Processing registration...</button>
                                         }
                                         {
-                                            this.props.reduxState.session.registration.isRunning
+                                            this.props.reduxState.session.registrationOperation.isRunning
                                             ||
                                             <button className='btn btn-primary' type='submit'>Register</button>
                                         }
