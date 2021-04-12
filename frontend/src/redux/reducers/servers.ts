@@ -1,6 +1,30 @@
 import { apiFetch } from '../util';
+import { ErrorAction, Operation } from './root';
 
-const initialState = {
+interface ServerEvent {
+
+}
+
+interface Server {
+    id: null | string,
+    type: null | string,
+    title: null | string,
+    userId: null | string,
+    apiKeyId: null | string,
+    events: Array<ServerEvent>,
+    structuredDataExplorerEvents: Array<ServerEvent>,
+    latestEventSortValue: null | string,
+    numberOfEventsPerHour: Array<number>
+}
+
+export interface ServersState {
+    showEventPayload: boolean,
+    readonly retrieveServerListOperation: Operation,
+    readonly createServerOperation: Operation,
+    serverList: Array<Server>
+}
+
+const initialState: ServersState = {
     showEventPayload: true,
     retrieveServerListOperation: {
         isRunning: false,
@@ -67,7 +91,7 @@ const createServerStartedEvent = () => ({
     type: 'CREATE_SERVER_STARTED_EVENT'
 });
 
-const createServerFailedEvent = (errorMessage) => ({
+const createServerFailedEvent = (errorMessage: string): ErrorAction => ({
     type: 'CREATE_SERVER_FAILED_EVENT',
     errorMessage
 });
