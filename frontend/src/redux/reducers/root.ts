@@ -1,4 +1,4 @@
-import { AnyAction, combineReducers } from 'redux';
+import {AnyAction, combineReducers, Dispatch} from 'redux';
 import session, { SessionState } from './session';
 import servers from './servers';
 import activeServer from './activeServer';
@@ -32,5 +32,5 @@ export interface ReduxState {
 
 export interface ConnectedComponentProps {
     readonly reduxState: ReduxState,
-    readonly dispatch: DispatchProp
+    readonly dispatch: Dispatch
 }

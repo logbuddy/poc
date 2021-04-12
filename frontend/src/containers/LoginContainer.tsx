@@ -1,23 +1,17 @@
 import React, {Component, SyntheticEvent} from 'react';
-import {connect, ConnectedProps} from 'react-redux';
+import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { logIntoAccountCommand } from '../redux/reducers/session';
 import {ConnectedComponentProps, ReduxState} from '../redux/reducers/root';
 
-interface ReactState {
+interface State {
     readonly email: string,
     readonly password: string
 }
 
-const connector = connect(
-    reduxState => ({ reduxState }),
-    dispatch => ({ dispatch })
-);
-
-
-class LoginContainer extends Component<ConnectedProps<typeof connector>, ReactState> {
-    constructor(props: ConnectedProps<typeof connector>) {
+class LoginContainer extends Component<ConnectedComponentProps, State> {
+    constructor(props: ConnectedComponentProps) {
         super(props);
         this.state = { email: '', password: '' };
     }
@@ -78,4 +72,7 @@ class LoginContainer extends Component<ConnectedProps<typeof connector>, ReactSt
     }
 }
 
-export default connector(LoginContainer);
+export default connect(
+    reduxState => ({ reduxState }),
+    dispatch => ({ dispatch })
+)(LoginContainer);
