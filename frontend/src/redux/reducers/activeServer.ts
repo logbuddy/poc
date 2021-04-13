@@ -2,7 +2,8 @@
 import { DatetimeHelper } from 'herodot-shared';
 import { apiFetch } from '../util';
 import { ServerEvent } from './servers';
-import { Operation } from './root';
+import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
+import { ThunkDispatch } from 'redux-thunk';
 
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
@@ -95,74 +96,117 @@ export const initialState: ActiveServerState = {
     timelineIntervalEnd: DatetimeHelper.timelineConfig.timelineIntervalEnd,
 };
 
-export const makeServerActiveCommand = (server) => (dispatch) => {
+
+export const makeServerActiveCommand = (server: Server) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>) => {
     dispatch(madeServerActiveEvent(server));
 };
 
-export const madeServerActiveEvent = (server) => ({
-    type: 'MADE_SERVER_ACTIVE_EVENT',
+
+interface MadeServerActiveEventAction extends BasicAction {
+    type: 'MadeServerActiveCommand'
+    server: Server
+}
+
+export const madeServerActiveEvent = (server: Server): MadeServerActiveEventAction => ({
+    type: 'MadeServerActiveCommand',
     server
 });
 
 
-export const closeActiveServerCommand = () => ({
-    type: 'CLOSE_ACTIVE_SERVER_COMMAND'
+interface CloseActiveServerCommandAction extends BasicAction {
+    type: 'CloseActiveServerCommand'
+}
+
+export const closeActiveServerCommand = (): CloseActiveServerCommandAction => ({
+    type: 'CloseActiveServerCommand'
 });
 
 
-export const cycleLogEventsPresentationModeCommand = () => {
-    return {
-        type: 'CYCLE_LOG_EVENTS_PRESENTATION_MODE_COMMAND'
-    };
-};
+interface CycleLogEventsPresentationModeCommandAction extends BasicAction {
+    type: 'CycleLogEventsPresentationModeCommand'
+}
 
-
-export const switchInformationPanelCommand = () => ({
-    type: 'SWITCH_INFORMATION_PANEL_COMMAND'
-});
-
-export const switchExamplePanelCommand = () => ({
-    type: 'SWITCH_EXAMPLE_PANEL_COMMAND'
+export const cycleLogEventsPresentationModeCommand = (): CycleLogEventsPresentationModeCommandAction => ({
+    type: 'CycleLogEventsPresentationModeCommand'
 });
 
 
-export const switchShowEventPayloadCommand = () => ({
-    type: 'SWITCH_SHOW_EVENT_PAYLOAD_COMMAND'
+interface SwitchInformationPanelCommandAction extends BasicAction {
+    type: 'SwitchInformationPanelCommand'
+}
+
+export const switchInformationPanelCommand = (): SwitchInformationPanelCommandAction => ({
+    type: 'SwitchInformationPanelCommand'
 });
 
 
-export const switchShowStructuredDataExplorerAttributesCommand = () => ({
-    type: 'SWITCH_SHOW_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND'
+interface SwitchExamplePanelCommandAction extends BasicAction {
+    type: 'SwitchExamplePanelCommand'
+}
+
+export const switchExamplePanelCommand = (): SwitchExamplePanelCommandAction => ({
+    type: 'SwitchExamplePanelCommand'
 });
 
 
-export const switchPollForYetUnseenEventsCommand = () => ({
-    type: 'SWITCH_POLL_FOR_YET_UNSEEN_EVENTS_COMMAND'
+interface SwitchShowEventPayloadCommandAction extends BasicAction {
+    type: 'SwitchShowEventPayloadCommand'
+}
+
+export const switchShowEventPayloadCommand = (): SwitchShowEventPayloadCommandAction => ({
+    type: 'SwitchShowEventPayloadCommand'
 });
 
-export const switchSkipPollingForYetUnseenEvents = () => ({
-    type: 'SWITCH_SKIP_POLLING_FOR_YET_UNSEEN_EVENTS'
+
+interface SwitchShowStructuredDataExplorerAttributesCommandAction extends BasicAction {
+    type: 'SwitchShowStructuredDataExplorerAttributesCommand'
+}
+
+export const switchShowStructuredDataExplorerAttributesCommand = (): SwitchShowStructuredDataExplorerAttributesCommandAction => ({
+    type: 'SwitchShowStructuredDataExplorerAttributesCommand'
 });
 
 
-const retrieveYetUnseenEventsStartedEvent = () => ({
-    type: 'RETRIEVE_YET_UNSEEN_EVENTS_STARTED_EVENT'
+interface SwitchPollForYetUnseenEventsCommandAction extends BasicAction {
+    type: 'SwitchPollForYetUnseenEventsCommand'
+}
+
+export const switchPollForYetUnseenEventsCommand = (): SwitchPollForYetUnseenEventsCommandAction => ({
+    type: 'SwitchPollForYetUnseenEventsCommand'
 });
 
-const retrieveYetUnseenEventsFailedEvent = (errorMessage) => ({
-    type: 'RETRIEVE_YET_UNSEEN_EVENTS_FAILED_EVENT',
+
+interface RetrieveYetUnseenEventsStartedEventAction extends BasicAction {
+    type: 'RetrieveYetUnseenEventsStartedEvent'
+}
+
+const retrieveYetUnseenEventsStartedEvent = (): RetrieveYetUnseenEventsStartedEventAction => ({
+    type: 'RetrieveYetUnseenEventsStartedEvent'
+});
+
+
+interface RetrieveYetUnseenEventsFailedEventAction extends ErrorAction {
+    type: 'RetrieveYetUnseenEventsFailedEvent'
+}
+
+const retrieveYetUnseenEventsFailedEvent = (errorMessage: string): RetrieveYetUnseenEventsFailedEventAction => ({
+    type: 'RetrieveYetUnseenEventsFailedEvent',
     errorMessage
 });
 
-const retrieveYetUnseenEventsSucceededEvent = (yetUnseenEvents) => ({
-    type: 'RETRIEVE_YET_UNSEEN_EVENTS_SUCCEEDED_EVENT',
+
+interface RetrieveYetUnseenEventsSucceededEventAction extends BasicAction {
+    type: 'RetrieveYetUnseenEventsSucceededEvent',
+    yetUnseenEvents: Array<ServerEvent>
+}
+
+const retrieveYetUnseenEventsSucceededEvent = (yetUnseenEvents: Array<ServerEvent>): RetrieveYetUnseenEventsSucceededEventAction => ({
+    type: 'RetrieveYetUnseenEventsSucceededEvent',
     yetUnseenEvents
 });
 
 
-export const retrieveYetUnseenEventsCommand = () => (dispatch, getState) => {
-
-    console.debug('retrieveYetUnseenEventsCommand');
+export const retrieveYetUnseenEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
     const repeat = () => {
         if (getState().activeServer.server.id !== null) {
@@ -224,34 +268,65 @@ export const retrieveYetUnseenEventsCommand = () => (dispatch, getState) => {
 };
 
 
-export const changeCurrentEventsResultPageCommand = (page) => ({
-    type: 'CHANGE_CURRENT_EVENTS_RESULT_PAGE_COMMAND',
+interface ChangeCurrentEventsResultPageCommandAction extends BasicAction {
+    type: 'ChangeCurrentEventsResultPageCommand',
+    page: number
+}
+
+export const changeCurrentEventsResultPageCommand = (page: number): ChangeCurrentEventsResultPageCommandAction => ({
+    type: 'ChangeCurrentEventsResultPageCommand',
     page
 });
 
 
-export const loadEventIntoStructuredDataExplorerCommand = (event) => ({
-    type: 'LOAD_EVENT_INTO_STRUCTURED_DATA_EXPLORER_COMMAND',
+interface LoadEventIntoStructuredDataExplorerCommandAction extends BasicAction {
+    type: 'LoadEventIntoStructuredDataExplorerCommand',
+    event: ServerEvent
+}
+
+export const loadEventIntoStructuredDataExplorerCommand = (event: ServerEvent): LoadEventIntoStructuredDataExplorerCommandAction => ({
+    type: 'LoadEventIntoStructuredDataExplorerCommand',
     event
 });
 
-export const closeStructuredDataExplorerCommand = () => ({
-    type: 'CLOSE_STRUCTURED_DATA_EXPLORER_COMMAND'
+
+interface CloseStructuredDataExplorerCommandAction extends BasicAction {
+    type: 'CloseStructuredDataExplorerCommand'
+}
+
+export const closeStructuredDataExplorerCommand = (): CloseStructuredDataExplorerCommandAction => ({
+    type: 'CloseStructuredDataExplorerCommand'
 });
 
-export const selectActiveStructuredDataExplorerAttributeCommand = (byName, byVal) => ({
-    type: 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+
+interface SelectActiveStructuredDataExplorerAttributeCommandAction extends BasicAction {
+    type: 'SelectActiveStructuredDataExplorerAttributeCommand',
+    byName: string,
+    byVal: string
+}
+
+export const selectActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string): SelectActiveStructuredDataExplorerAttributeCommandAction => ({
+    type: 'SelectActiveStructuredDataExplorerAttributeCommand',
     byName,
     byVal
 });
 
-export const addActiveStructuredDataExplorerAttributeCommand = (byName, byVal) => ({
-    type: 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND',
+
+interface AddActiveStructuredDataExplorerAttributeCommandAction extends BasicAction {
+    type: 'AddActiveStructuredDataExplorerAttributeCommand',
+    byName: string,
+    byVal: string
+}
+
+export const addActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string): AddActiveStructuredDataExplorerAttributeCommandAction => ({
+    type: 'AddActiveStructuredDataExplorerAttributeCommand',
     byName,
     byVal
 });
 
-export const removeActiveStructuredDataExplorerAttributeCommand = (byName, byVal) => (dispatch, getState) => {
+
+
+export const removeActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
     dispatch(removedActiveStructuredDataExplorerAttributeEvent(byName, byVal));
     if (getState().activeServer.activeStructuredDataExplorerAttributes.length === 0) {
         dispatch(resetStructuredDataExplorerEventsCommand());

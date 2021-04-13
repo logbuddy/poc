@@ -1,6 +1,6 @@
 import { AnyAction, combineReducers } from 'redux';
 import session, { SessionAction, SessionState } from './session';
-import activeServer from './activeServer';
+import activeServer, {ActiveServerState} from './activeServer';
 import servers, { ServersAction, ServersState } from './servers';
 
 export default combineReducers({
@@ -26,11 +26,7 @@ export interface Operation {
 export interface ReduxState {
     readonly session: SessionState,
     readonly servers: ServersState,
-    readonly activeServer: {
-        readonly server: {
-            readonly id: string
-        }
-    }
+    readonly activeServer: ActiveServerState
 }
 
 export type ValidAction = SessionAction | ServersAction;
