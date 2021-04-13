@@ -1,7 +1,9 @@
 import React from 'react';
-import {ChevronDown, ChevronRight} from 'react-bootstrap-icons';
+import { ChevronDown, ChevronRight } from 'react-bootstrap-icons';
+import { Server } from '../redux/reducers/activeServer';
 
-const ServerExamplePanelPresentational = ({ server, isOpen, onSwitch }) => (
+const ServerExamplePanelPresentational = ({ server, isOpen, onSwitch }:
+                                              { server: Server, isOpen: boolean, onSwitch: () => any }) => (
     <div className='card-body bg-dark pt-0 pb-0'>
         <div
             className='clickable'

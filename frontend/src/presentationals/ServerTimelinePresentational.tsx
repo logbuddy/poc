@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { format } from 'date-fns';
+// @ts-ignore
 import TimeRange from 'react-timeline-range-slider';
+// @ts-ignore
 import { DatetimeHelper } from 'herodot-shared';
 
 const ServerTimelinePresentational = (
@@ -15,7 +17,19 @@ const ServerTimelinePresentational = (
         onUpdateCallback,
         onChangeCallback,
         toolbox
-    }) => {
+    }:
+        {
+            initialSelectedTimelineIntervalStart: Date,
+            initialSelectedTimelineIntervalEnd: Date,
+            currentSelectedTimelineIntervalStart: Date,
+            currentSelectedTimelineIntervalEnd: Date,
+            timelineIntervalStart: Date,
+            timelineIntervalEnd: Date,
+            numberOfEventsPerHour: Array<number>,
+            onUpdateCallback: (start: Date, end: Date) => any,
+            onChangeCallback: () => any,
+            toolbox: ReactElement
+        }) => {
 
     const numberOfEventsPerHourElements = []
 
@@ -66,7 +80,7 @@ const ServerTimelinePresentational = (
                 mode={1}
                 error={false}
                 ticksNumber={DatetimeHelper.timelineConfig.ticksNumber}
-                formatTick={(ms) =>
+                formatTick={(ms: number) =>
                     `${format(new Date(ms), 'LLL')} ${format(new Date(ms), 'd')}`
                 }
                 step={60 * 60 * 1000 / 4}
@@ -78,7 +92,7 @@ const ServerTimelinePresentational = (
                     timelineIntervalStart,
                     timelineIntervalEnd
                 ]}
-                onUpdateCallback={ (v) => onUpdateCallback(v.time[0], v.time[1]) }
+                onUpdateCallback={ (v: { time: Array<Date>}) => onUpdateCallback(v.time[0], v.time[1]) }
                 onChangeCallback={ () => onChangeCallback() }
             />
         </div>
