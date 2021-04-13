@@ -9,6 +9,8 @@ import { LogOutOfAccountSucceededEventAction } from './session';
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
 
+export type LogEventsPresentationMode = 0 | 1;
+
 export interface Server {
     id: null | string,
     type: null | string,
@@ -23,7 +25,7 @@ export interface Server {
 
 export interface ActiveServerState {
     server: Server,
-    logEventsPresentationMode: 0 | 1,
+    logEventsPresentationMode: LogEventsPresentationMode,
     pollForYetUnseenEvents: boolean,
     showEventPayload: boolean,
     showStructuredDataExplorerAttributes: boolean,
@@ -650,7 +652,7 @@ const reducer = (state: ActiveServerState = initialState, action: ActiveServerAc
 
 
         case 'CycleLogEventsPresentationModeCommand': {
-            let newMode: 0 | 1 = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
+            let newMode: LogEventsPresentationMode = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
             if (state.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT) {
                 newMode = LOG_EVENTS_PRESENTATION_MODE_COMPACT;
             }

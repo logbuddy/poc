@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 
-const PaginatorPresentational = ({ numberOfItems, itemsPerPage, currentPage, onPageClicked }: { numberOfItems: number, itemsPerPage: number, currentPage: number, onPageClicked: (page: number) => any }) => {
+const PaginatorPresentational = ({ numberOfItems, itemsPerPage, currentPage, onPageClicked }:
+                                     { numberOfItems: number, itemsPerPage: number, currentPage: number, onPageClicked: (page: number) => any }) => {
     const numberOfPages = Math.ceil(numberOfItems / itemsPerPage);
 
     const pageElements = [];
