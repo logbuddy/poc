@@ -1,7 +1,7 @@
 import config from '../config';
 
-export const apiFetch = (path, method, webappApiKeyId = null, body = null, queryParams = {}) => {
-    const headers = {
+export const apiFetch = (path: string, method: 'GET' | 'POST' | 'PUT' | 'OPTIONS' | 'HEAD', webappApiKeyId: null | string = null, body: null | string = null, queryParams: { [key: string]: string } = {}) => {
+    const headers: { [key: string]: string } = {
         'Content-Type': 'application/json',
     };
 
