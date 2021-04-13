@@ -4,12 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rollup ./src/index.js --file ./build/bundle.js --format es"
+    "build": "tsc && rollup ts-dist/lambdas/dynamoDbWorkers/jsonBreakdown/src/index.js --file ./build/bundle.js --format es"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^14.14.37",
     "aws-sdk": "^2.882.0",
-    "rollup": "^2.44.0"
+    "rollup": "^2.44.0",
+    "typescript": "^4.2.4"
   }
 }

@@ -1,26 +1,31 @@
 import { JsonHelper } from '../../../../shared/src/index';
+import { AWSError } from 'aws-sdk';
+import { BatchWriteItemOutput } from 'aws-sdk/clients/dynamodb';
 
+// @ts-ignore
 const AWS = require('aws-sdk');
 
 const AWS_REGION = 'eu-central-1';
 
 
 const consoleOp = false;
-const _console = {};
-_console.debug = (...data) => {
-    if (consoleOp) console.debug(...data);
-}
-_console.log = (...data) => {
-    if (consoleOp) console.log(...data);
-}
-_console.error = (...data) => {
-    if (consoleOp) console.error(...data);
-}
+const _console: { debug: (...data: any) => void, log: (...data: any) => void, error: (...data: any) => void, } = {
+    debug: (...data) => {
+        if (consoleOp) console.debug(...data);
+    },
+    log: (...data) => {
+        if (consoleOp) console.log(...data);
+    },
+    error: (...data) => {
+        if (consoleOp) console.error(...data);
+    }
+};
 
 
 AWS.config.update({region: AWS_REGION});
 const docClient = new AWS.DynamoDB.DocumentClient();
 
+// @ts-ignore
 exports.handler = async (event) => {
     for (const record of event.Records) {
         _console.log(record.eventID);
@@ -93,7 +98,7 @@ exports.handler = async (event) => {
                                             'server_events_by_key': itemsBatch
                                         }
                                     },
-                                    (err, data) => {
+                                    (err: AWSError, data: BatchWriteItemOutput) => {
                                         if (err) {
                                             _console.error(err);
                                             reject(err);
@@ -154,7 +159,7 @@ exports.handler = async (event) => {
                                             'server_events_by_key_value': itemsBatch
                                         }
                                     },
-                                    (err, data) => {
+                                    (err: AWSError, data: BatchWriteItemOutput) => {
                                         if (err) {
                                             _console.error(err);
                                             reject(err);
@@ -173,7 +178,7 @@ exports.handler = async (event) => {
                     } catch (e) {
                         _console.error('batchWritePromisesForBrokenDownKeysAndValuesItems finished with error.', e);
                     }
-                    
+
                 } else {
                     _console.debug("Not going to break down payload because it's neither object nor array");
                 }
@@ -218,7 +223,7 @@ exports.handler = async (event) => {
                                         'server_events_by_value': itemsBatch
                                     }
                                 },
-                                (err, data) => {
+                                (err: AWSError, data: BatchWriteItemOutput) => {
                                     if (err) {
                                         _console.error(err);
                                         reject(err);
