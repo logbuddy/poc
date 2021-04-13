@@ -1,7 +1,7 @@
 import { apiFetch } from '../util';
-import {BasicAction, ErrorAction, Operation, ReduxState} from './root';
-import {ThunkDispatch} from "redux-thunk";
-import {LogOutOfAccountSucceededEventAction} from "./session";
+import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
+import { ThunkDispatch } from 'redux-thunk';
+import { LogOutOfAccountSucceededEventAction } from './session';
 
 export interface ServerEvent {
     id: string,

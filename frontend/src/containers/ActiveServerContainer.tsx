@@ -11,13 +11,15 @@ import {
     switchExamplePanelCommand, switchShowEventPayloadCommand, switchShowStructuredDataExplorerAttributesCommand,
 } from '../redux/reducers/activeServer';
 import ServerTimelinePresentational from '../presentationals/ServerTimelinePresentational';
+// @ts-ignore
 import { DatetimeHelper } from 'herodot-shared';
 import ServerInformationPanelContainer from './ServerInformationPanelContainer';
 import ServerExamplePanelPresentational from '../presentationals/ServerExamplePanelPresentational';
 import ServerEventsPanelContainer from './ServerEventsPanelContainer';
 import StructuredDataExplorerContainer from './StructuredDataExplorerContainer';
+import { ConnectedComponentProps } from '../redux/store';
 
-class ActiveServerContainer extends Component {
+class ActiveServerContainer extends Component<ConnectedComponentProps> {
 
     componentDidMount() {
         this.props.dispatch(retrieveNumberOfEventsPerHourCommand());
@@ -98,7 +100,7 @@ class ActiveServerContainer extends Component {
                     timelineIntervalStart={activeServer.timelineIntervalStart}
                     timelineIntervalEnd={activeServer.timelineIntervalEnd}
                     numberOfEventsPerHour={activeServer.server.numberOfEventsPerHour}
-                    onUpdateCallback={ (start, end) => this.props.dispatch(selectedTimelineIntervalsUpdatedEvent(start, end)) }
+                    onUpdateCallback={ (start: Date, end: Date) => this.props.dispatch(selectedTimelineIntervalsUpdatedEvent(start, end)) }
                     onChangeCallback={ () => {
                         this.props.dispatch(retrieveEventsCommand());
                         if (   activeServer.eventLoadedInStructuredDataExplorer !== null
@@ -179,4 +181,5 @@ class ActiveServerContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(ActiveServerContainer);

@@ -4,7 +4,7 @@ import { apiFetch } from '../util';
 import { ServerEvent } from './servers';
 import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
 import { ThunkDispatch } from 'redux-thunk';
-import {LogOutOfAccountSucceededEventAction} from "./session";
+import { LogOutOfAccountSucceededEventAction } from './session';
 
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;

@@ -9,7 +9,7 @@ import {
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { makeServerActiveCommand } from '../redux/reducers/activeServer';
 import ActiveServerContainer from './ActiveServerContainer';
-import {ConnectedComponentProps} from "../redux/store";
+import { ConnectedComponentProps } from '../redux/store';
 
 interface ReactState {
     readonly createServerTitle: string
