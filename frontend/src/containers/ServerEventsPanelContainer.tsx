@@ -8,12 +8,14 @@ import {
     loadEventIntoStructuredDataExplorerCommand, LOG_EVENTS_PRESENTATION_MODE_DEFAULT,
     retrieveEventsCommand, switchPollForYetUnseenEventsCommand
 } from '../redux/reducers/activeServer';
+import { ConnectedComponentProps } from '../redux/store';
+import { ServerEvent } from '../redux/reducers/servers';
 
 
 const itemsPerPage = 25;
 
-const textMatchesSearchterm = (text, searchterm) => {
-    const buildRegEx = (str, keywords) => {
+const textMatchesSearchterm = (text: string, searchterm: string) => {
+    const buildRegEx = (str: string, keywords: string): RegExp => {
         return new RegExp("(?=.*?\\b" +
             keywords
                 .split(" ")
@@ -23,7 +25,7 @@ const textMatchesSearchterm = (text, searchterm) => {
         );
     }
 
-    const test = (str, keywords, expected) => {
+    const test = (str: string, keywords: string, expected: boolean) => {
         return buildRegEx(str, keywords).test(str) === expected
     }
 
@@ -34,15 +36,21 @@ const textMatchesSearchterm = (text, searchterm) => {
     }
 };
 
-class ServerEventsPanelContainer extends Component {
-    constructor(props) {
+
+interface ReactState {
+    mouseIsOnDisableShowEventPayloadElement: boolean,
+    mouseIsOnEnableShowEventPayloadElement: boolean,
+    filterText: string
+}
+
+class ServerEventsPanelContainer extends Component<ConnectedComponentProps, ReactState> {
+    constructor(props: ConnectedComponentProps) {
         super(props);
 
         this.state = {
             mouseIsOnDisableShowEventPayloadElement: false,
             mouseIsOnEnableShowEventPayloadElement: false,
-            filterText: '',
-            eventLoadedInStructuredDataExplorer: null,
+            filterText: ''
         };
     }
 
@@ -50,11 +58,11 @@ class ServerEventsPanelContainer extends Component {
         this.props.dispatch(retrieveEventsCommand());
     }
 
-    handlePageClicked = (page) => {
+    handlePageClicked = (page: number) => {
         this.props.dispatch(changeCurrentEventsResultPageCommand(page));
     }
 
-    handleChangeFilterText = (event) => {
+    handleChangeFilterText = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             ...this.state,
             filterText: event.target.value
@@ -68,7 +76,7 @@ class ServerEventsPanelContainer extends Component {
         const server = activeServer.server;
 
 
-        const filteredEvents = (events) => events
+        const filteredEvents = (events: Array<ServerEvent>) => events
             .filter((event) =>
                 textMatchesSearchterm(
                     `${event.createdAt} ${event.source} ${event.payload}`,
@@ -77,7 +85,7 @@ class ServerEventsPanelContainer extends Component {
             )
         ;
 
-        const filteredEventsForCurrentPage = (events) => filteredEvents(events)
+        const filteredEventsForCurrentPage = (events: Array<ServerEvent>) => filteredEvents(events)
             .slice(
                 (this.props.reduxState.activeServer.currentEventsResultPage - 1) * itemsPerPage,
                 (this.props.reduxState.activeServer.currentEventsResultPage - 1) * itemsPerPage + itemsPerPage
@@ -150,7 +158,7 @@ class ServerEventsPanelContainer extends Component {
                             numberOfItems={filteredEvents(server.events).length}
                             itemsPerPage={itemsPerPage}
                             currentPage={this.props.reduxState.activeServer.currentEventsResultPage}
-                            onPageClicked={ (page) => this.handlePageClicked(page) }
+                            onPageClicked={ (page: number) => this.handlePageClicked(page) }
                         />
                     }
                 </div>
@@ -214,7 +222,7 @@ class ServerEventsPanelContainer extends Component {
                             numberOfItems={filteredEvents(server.events).length}
                             itemsPerPage={itemsPerPage}
                             currentPage={this.props.reduxState.activeServer.currentEventsResultPage}
-                            onPageClicked={ (page) => this.handlePageClicked(page) }
+                            onPageClicked={ (page: number) => this.handlePageClicked(page) }
                         />
                     </div>
                 }
@@ -226,4 +234,5 @@ class ServerEventsPanelContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(ServerEventsPanelContainer);

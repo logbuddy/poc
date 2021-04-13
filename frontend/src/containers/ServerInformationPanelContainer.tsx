@@ -2,17 +2,29 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { ChevronDown, ChevronRight, Clipboard } from 'react-bootstrap-icons';
 import { switchInformationPanelCommand} from '../redux/reducers/activeServer';
+import { ConnectedComponentProps } from '../redux/store';
 
-class ServerInformationPanelContainer extends Component {
-    constructor(props) {
+
+interface ReactState {
+    showCopySuccessBadgeForId: null | string
+}
+
+class ServerInformationPanelContainer extends Component<ConnectedComponentProps, ReactState> {
+
+    copyElements: {
+        [key: string]: HTMLInputElement
+    }
+
+    constructor(props: ConnectedComponentProps) {
         super(props);
         this.state = {
-            showCopySuccessBadgeForId: null,
+            showCopySuccessBadgeForId: null
         };
         this.copyElements = {};
     }
 
-    copyCodeToClipboard = (id) => {
+
+    copyCodeToClipboard = (id: string) => {
         const el = this.copyElements[id];
         el.select();
         document.execCommand('copy');
@@ -57,10 +69,10 @@ class ServerInformationPanelContainer extends Component {
                                     <input
                                         type='text'
                                         className='form-control text-primary code border border-dark bg-dark'
-                                        value={server.id}
+                                        value={`${server.id}`}
                                         readOnly={true}
                                         disabled={false}
-                                        ref={(element) => this.copyElements[server.id + 'id'] = element}
+                                        ref={(element: HTMLInputElement) => this.copyElements[server.id + 'id'] = element}
                                     />
                                     {
                                         this.state.showCopySuccessBadgeForId === server.id + 'id'
@@ -90,10 +102,10 @@ class ServerInformationPanelContainer extends Component {
                                     <input
                                         type='text'
                                         className='form-control text-primary code border border-dark bg-dark'
-                                        value={server.userId}
+                                        value={`${server.userId}`}
                                         readOnly={true}
                                         disabled={false}
-                                        ref={(element) => this.copyElements[server.id + 'userId'] = element}
+                                        ref={(element: HTMLInputElement) => this.copyElements[server.id + 'userId'] = element}
                                     />
                                     {
                                         this.state.showCopySuccessBadgeForId === server.id + 'userId'
@@ -121,10 +133,10 @@ class ServerInformationPanelContainer extends Component {
                                     <input
                                         type='text'
                                         className='form-control text-primary code border border-dark bg-dark'
-                                        value={server.apiKeyId}
+                                        value={`${server.apiKeyId}`}
                                         readOnly={true}
                                         disabled={false}
-                                        ref={(element) => this.copyElements[server.id + 'apiKeyId'] = element}
+                                        ref={(element: HTMLInputElement) => this.copyElements[server.id + 'apiKeyId'] = element}
                                     />
                                     {
                                         this.state.showCopySuccessBadgeForId === server.id + 'apiKeyId'
@@ -155,4 +167,5 @@ class ServerInformationPanelContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(ServerInformationPanelContainer);

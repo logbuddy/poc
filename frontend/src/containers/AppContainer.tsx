@@ -13,8 +13,10 @@ import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
 import { logOutOfAccountCommand } from '../redux/reducers/session';
 import ActiveServerContainer from './ActiveServerContainer';
+import { ReduxState } from '../redux/reducers/root';
+import { ConnectedComponentProps } from '../redux/store';
 
-const Navigation = (params) => (
+const Navigation = (props: { reduxState: ReduxState }) => (
     <Fragment>
         <ul className='navbar-nav me-auto'>
             {
@@ -27,7 +29,7 @@ const Navigation = (params) => (
                 </li>
             }
             {
-                params.reduxState.session.isLoggedIn
+                props.reduxState.session.isLoggedIn
                 &&
                 <li className='nav-item'>
                     <NavLink className='nav-link' activeClassName='active' to='/servers/'>
@@ -38,14 +40,14 @@ const Navigation = (params) => (
         </ul>
 
         {
-            params.reduxState.session.isLoggedIn
+            props.reduxState.session.isLoggedIn
             ||
             <ul className='navbar-nav ms-auto'>
                 <li className='nav-item'>
                     <NavLink className='nav-link' activeClassName='active' to='/login'>Login</NavLink>
                 </li>
                 {
-                    params.reduxState.session.registrationOperation.justFinishedSuccessfully
+                    props.reduxState.session.registrationOperation.justFinishedSuccessfully
                     ||
                     <li className='nav-item'>
                         <NavLink className='nav-link' activeClassName='active' to='/register'>Register</NavLink>
@@ -56,8 +58,13 @@ const Navigation = (params) => (
     </Fragment>
 );
 
-class AppContainer extends Component {
-    constructor(props) {
+
+interface ReactState {
+    showLogoutCta: boolean
+}
+
+class AppContainer extends Component<ConnectedComponentProps, ReactState> {
+    constructor(props: ConnectedComponentProps) {
         super(props);
         this.state = { showLogoutCta: false };
     }
@@ -210,4 +217,5 @@ class AppContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(AppContainer);

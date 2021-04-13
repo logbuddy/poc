@@ -136,6 +136,8 @@ const ServerEventPresentational = ({ event, serverType, showPayload, onClick, pr
             </Fragment>
         );
     }
+
+    return <Fragment/>;
 };
 
 export default ServerEventPresentational;
