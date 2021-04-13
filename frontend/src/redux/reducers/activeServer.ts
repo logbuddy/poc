@@ -4,6 +4,7 @@ import { apiFetch } from '../util';
 import { ServerEvent } from './servers';
 import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
 import { ThunkDispatch } from 'redux-thunk';
+import {LogOutOfAccountSucceededEventAction} from "./session";
 
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
@@ -24,19 +25,14 @@ export interface ActiveServerState {
     server: Server,
     logEventsPresentationMode: 0 | 1,
     pollForYetUnseenEvents: boolean,
-    skipPollingForYetUnseenEvents: boolean,
     showEventPayload: boolean,
     showStructuredDataExplorerAttributes: boolean,
     informationPanelIsOpen: boolean,
     examplePanelIsOpen: boolean,
     currentEventsResultPage: number,
     retrieveEventsOperation: Operation,
-    retrieveYetUnseenEventsOperation: Operation & {
-        mustBeSkipped: false,
-    },
-    retrieveNumberOfEventsPerHourOperation: Operation & {
-        mustBeSkipped: false,
-    },
+    retrieveYetUnseenEventsOperation: Operation,
+    retrieveNumberOfEventsPerHourOperation: Operation,
     retrieveStructuredDataExplorerEventsOperation: Operation,
     eventLoadedInStructuredDataExplorer: null | ServerEvent,
     activeStructuredDataExplorerAttributes: Array<any>,
@@ -60,7 +56,6 @@ export const initialState: ActiveServerState = {
     },
     logEventsPresentationMode: LOG_EVENTS_PRESENTATION_MODE_DEFAULT,
     pollForYetUnseenEvents: true,
-    skipPollingForYetUnseenEvents: false,
     showEventPayload: true,
     showStructuredDataExplorerAttributes: true,
     informationPanelIsOpen: false,
@@ -72,13 +67,11 @@ export const initialState: ActiveServerState = {
         errorMessage: null
     },
     retrieveYetUnseenEventsOperation: {
-        mustBeSkipped: false,
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
     },
     retrieveNumberOfEventsPerHourOperation: {
-        mustBeSkipped: false,
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
@@ -219,11 +212,6 @@ export const retrieveYetUnseenEventsCommand = () => (dispatch: ThunkDispatch<Red
         }
     }
 
-    if (getState().activeServer.skipPollingForYetUnseenEvents) {
-        repeat();
-        return;
-    }
-
     if (getState().activeServer.retrieveYetUnseenEventsOperation.isRunning) {
         console.warn(`A retrieveYetUnseenEventsCommand is already running, aborting.`);
         return;
@@ -335,33 +323,60 @@ export const removeActiveStructuredDataExplorerAttributeCommand = (byName: strin
     }
 };
 
-const removedActiveStructuredDataExplorerAttributeEvent = (byName, byVal) => ({
-    type: 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT',
+
+interface RemovedActiveStructuredDataExplorerAttributeCommandAction extends BasicAction {
+    type: 'RemovedActiveStructuredDataExplorerAttributeCommand',
+    byName: string,
+    byVal: string
+}
+
+const removedActiveStructuredDataExplorerAttributeEvent = (byName: string, byVal: string): RemovedActiveStructuredDataExplorerAttributeCommandAction => ({
+    type: 'RemovedActiveStructuredDataExplorerAttributeCommand',
     byName,
     byVal
 });
 
 
-const retrieveStructuredDataExplorerEventsStartedEvent = () => ({
-    type: 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_STARTED_EVENT'
+interface RetrieveStructuredDataExplorerEventsStartedEventAction extends BasicAction {
+    type: 'RetrieveStructuredDataExplorerEventsStartedEvent'
+}
+
+const retrieveStructuredDataExplorerEventsStartedEvent = (): RetrieveStructuredDataExplorerEventsStartedEventAction => ({
+    type: 'RetrieveStructuredDataExplorerEventsStartedEvent'
 });
 
-const retrieveStructuredDataExplorerEventsFailedEvent = (errorMessage) => ({
-    type: 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_FAILED_EVENT',
+
+interface RetrieveStructuredDataExplorerEventsFailedEventAction extends ErrorAction {
+    type: 'RetrieveStructuredDataExplorerEventsFailedEvent'
+}
+
+const retrieveStructuredDataExplorerEventsFailedEvent = (errorMessage: string): RetrieveStructuredDataExplorerEventsFailedEventAction => ({
+    type: 'RetrieveStructuredDataExplorerEventsFailedEvent',
     errorMessage
 });
 
-const retrieveStructuredDataExplorerEventsSucceededEvent = (events) => ({
-    type: 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_SUCCEEDED_EVENT',
+
+interface RetrieveStructuredDataExplorerEventsSucceededEventAction extends BasicAction {
+    type: 'RetrieveStructuredDataExplorerEventsSucceededEvent',
+    events: Array<ServerEvent>
+}
+
+const retrieveStructuredDataExplorerEventsSucceededEvent = (events: Array<ServerEvent>): RetrieveStructuredDataExplorerEventsSucceededEventAction => ({
+    type: 'RetrieveStructuredDataExplorerEventsSucceededEvent',
     events
 });
 
-export const resetStructuredDataExplorerEventsCommand = () => ({
-    type: 'RESET_STRUCTURED_DATA_EXPLORER_EVENTS_COMMAND'
+
+interface ResetStructuredDataExplorerEventsCommandAction extends BasicAction {
+    type: 'ResetStructuredDataExplorerEventsCommand'
+}
+
+export const resetStructuredDataExplorerEventsCommand = (): ResetStructuredDataExplorerEventsCommandAction => ({
+    type: 'ResetStructuredDataExplorerEventsCommand'
 });
 
 
-export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch, getState) => {
+export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
     if (getState().activeServer.activeStructuredDataExplorerAttributes.length === 0) {
         console.error('Was asked to retrieve Structured Data Explorer events, but no attributes are set.');
@@ -370,7 +385,7 @@ export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch, getS
 
     dispatch(retrieveStructuredDataExplorerEventsStartedEvent());
 
-    const queryParams = {
+    const queryParams: any = {
         serverId: getState().activeServer.server.id,
         selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalStart),
         selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalEnd)
@@ -414,21 +429,36 @@ export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch, getS
 };
 
 
-export const retrieveEventsStartedEvent = () => ({
-    type: 'RETRIEVE_EVENTS_STARTED_EVENT'
+interface RetrieveEventsStartedEventAction extends BasicAction {
+    type: 'RetrieveEventsStartedEvent'
+}
+
+export const retrieveEventsStartedEvent = (): RetrieveEventsStartedEventAction => ({
+    type: 'RetrieveEventsStartedEvent'
 });
 
-export const retrieveEventsFailedEvent = (errorMessage) => ({
-    type: 'RETRIEVE_EVENTS_FAILED_EVENT',
+
+interface RetrieveEventsFailedEventAction extends ErrorAction {
+    type: 'RetrieveEventsFailedEvent'
+}
+
+export const retrieveEventsFailedEvent = (errorMessage: string): RetrieveEventsFailedEventAction => ({
+    type: 'RetrieveEventsFailedEvent',
     errorMessage
 });
 
-const retrieveEventsSucceededEvent = (events) => ({
-    type: 'RETRIEVE_EVENTS_SUCCEEDED_EVENT',
+
+interface RetrieveEventsSucceededEventAction extends BasicAction {
+    type: 'RetrieveEventsSucceededEvent',
+    events: Array<ServerEvent>
+}
+
+const retrieveEventsSucceededEvent = (events: Array<ServerEvent>): RetrieveEventsSucceededEventAction => ({
+    type: 'RetrieveEventsSucceededEvent',
     events
 });
 
-export const retrieveEventsCommand = () => (dispatch, getState) => {
+export const retrieveEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
     dispatch(retrieveEventsStartedEvent());
 
@@ -467,21 +497,36 @@ export const retrieveEventsCommand = () => (dispatch, getState) => {
 };
 
 
-export const retrieveNumberOfEventsPerHourStartedEvent = () => ({
-    type: 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_STARTED_EVENT'
+interface RetrieveNumberOfEventsPerHourStartedEventAction extends BasicAction {
+    type: 'RetrieveNumberOfEventsPerHourStartedEvent'
+}
+
+export const retrieveNumberOfEventsPerHourStartedEvent = (): RetrieveNumberOfEventsPerHourStartedEventAction => ({
+    type: 'RetrieveNumberOfEventsPerHourStartedEvent'
 });
 
-export const retrieveNumberOfEventsPerHourFailedEvent = (errorMessage) => ({
-    type: 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_FAILED_EVENT',
+
+interface RetrieveNumberOfEventsPerHourFailedEventAction extends ErrorAction {
+    type: 'RetrieveNumberOfEventsPerHourFailedEvent'
+}
+
+export const retrieveNumberOfEventsPerHourFailedEvent = (errorMessage: string): RetrieveNumberOfEventsPerHourFailedEventAction => ({
+    type: 'RetrieveNumberOfEventsPerHourFailedEvent',
     errorMessage
 });
 
-const retrieveNumberOfEventsPerHourSucceededEvent = (numberOfEventsPerHour) => ({
-    type: 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_SUCCEEDED_EVENT',
+
+interface RetrieveNumberOfEventsPerHourSucceededEventAction extends BasicAction {
+    type: 'RetrieveNumberOfEventsPerHourSucceededEvent',
+    numberOfEventsPerHour: Array<number>
+}
+
+const retrieveNumberOfEventsPerHourSucceededEvent = (numberOfEventsPerHour: Array<number>): RetrieveNumberOfEventsPerHourSucceededEventAction => ({
+    type: 'RetrieveNumberOfEventsPerHourSucceededEvent',
     numberOfEventsPerHour
 });
 
-export const retrieveNumberOfEventsPerHourCommand = () => (dispatch, getState) => {
+export const retrieveNumberOfEventsPerHourCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
     dispatch(retrieveNumberOfEventsPerHourStartedEvent());
 
@@ -519,18 +564,67 @@ export const retrieveNumberOfEventsPerHourCommand = () => (dispatch, getState) =
 };
 
 
-export const selectedTimelineIntervalsUpdatedEvent = (selectedTimelineIntervalStart, selectedTimelineIntervalEnd) => ({
-    type: 'SELECTED_TIMELINE_INTERVALS_UPDATED_EVENT',
+interface SelectedTimelineIntervalsUpdatedEventAction extends BasicAction {
+    type: 'SelectedTimelineIntervalsUpdatedEvent',
+    selectedTimelineIntervalStart: Date,
+    selectedTimelineIntervalEnd: Date,
+}
+
+export const selectedTimelineIntervalsUpdatedEvent = (selectedTimelineIntervalStart: Date, selectedTimelineIntervalEnd: Date): SelectedTimelineIntervalsUpdatedEventAction => ({
+    type: 'SelectedTimelineIntervalsUpdatedEvent',
     selectedTimelineIntervalStart,
     selectedTimelineIntervalEnd
 })
 
 
-const reducer = (state = initialState, action) => {
+export type ActiveServerAction =
+    | MadeServerActiveEventAction
+    | CloseActiveServerCommandAction
+
+    | AddActiveStructuredDataExplorerAttributeCommandAction
+    | SelectActiveStructuredDataExplorerAttributeCommandAction
+    | RemovedActiveStructuredDataExplorerAttributeCommandAction
+
+    | ChangeCurrentEventsResultPageCommandAction
+
+    | LoadEventIntoStructuredDataExplorerCommandAction
+    | ResetStructuredDataExplorerEventsCommandAction
+    | CloseStructuredDataExplorerCommandAction
+
+    | RetrieveEventsStartedEventAction
+    | RetrieveEventsFailedEventAction
+    | RetrieveEventsSucceededEventAction
+
+    | RetrieveNumberOfEventsPerHourStartedEventAction
+    | RetrieveNumberOfEventsPerHourFailedEventAction
+    | RetrieveNumberOfEventsPerHourSucceededEventAction
+
+    | RetrieveYetUnseenEventsStartedEventAction
+    | RetrieveYetUnseenEventsFailedEventAction
+    | RetrieveYetUnseenEventsSucceededEventAction
+
+    | RetrieveStructuredDataExplorerEventsStartedEventAction
+    | RetrieveStructuredDataExplorerEventsFailedEventAction
+    | RetrieveStructuredDataExplorerEventsSucceededEventAction
+
+    | SelectedTimelineIntervalsUpdatedEventAction
+
+    | CycleLogEventsPresentationModeCommandAction
+
+    | SwitchExamplePanelCommandAction
+    | SwitchInformationPanelCommandAction
+
+    | SwitchPollForYetUnseenEventsCommandAction
+
+    | SwitchShowEventPayloadCommandAction
+    | SwitchShowStructuredDataExplorerAttributesCommandAction;
+
+
+const reducer = (state: ActiveServerState = initialState, action: ActiveServerAction | LogOutOfAccountSucceededEventAction): ActiveServerState => {
 
     switch (action.type) {
 
-        case 'MADE_SERVER_ACTIVE_EVENT': {
+        case 'MadeServerActiveCommand': {
             return {
                 ...state,
 
@@ -550,13 +644,13 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'CLOSE_ACTIVE_SERVER_COMMAND': {
+        case 'CloseActiveServerCommand': {
             return initialState;
         }
 
 
-        case 'CYCLE_LOG_EVENTS_PRESENTATION_MODE_COMMAND': {
-            let newMode = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
+        case 'CycleLogEventsPresentationModeCommand': {
+            let newMode: 0 | 1 = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
             if (state.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT) {
                 newMode = LOG_EVENTS_PRESENTATION_MODE_COMPACT;
             }
@@ -567,7 +661,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SWITCH_INFORMATION_PANEL_COMMAND': {
+        case 'SwitchInformationPanelCommand': {
             return {
                 ...state,
                 informationPanelIsOpen: !state.informationPanelIsOpen
@@ -575,7 +669,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SWITCH_EXAMPLE_PANEL_COMMAND': {
+        case 'SwitchExamplePanelCommand': {
             return {
                 ...state,
                 examplePanelIsOpen: !state.examplePanelIsOpen
@@ -583,7 +677,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SWITCH_SHOW_EVENT_PAYLOAD_COMMAND': {
+        case 'SwitchShowEventPayloadCommand': {
             return {
                 ...state,
                 showEventPayload: !state.showEventPayload
@@ -591,7 +685,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SWITCH_SHOW_STRUCTURED_DATA_EXPLORER_ATTRIBUTES_COMMAND': {
+        case 'SwitchShowStructuredDataExplorerAttributesCommand': {
             return {
                 ...state,
                 showStructuredDataExplorerAttributes: !state.showStructuredDataExplorerAttributes
@@ -599,21 +693,14 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SWITCH_POLL_FOR_YET_UNSEEN_EVENTS_COMMAND': {
+        case 'SwitchPollForYetUnseenEventsCommand': {
             return {
                 ...state,
                 pollForYetUnseenEvents: !state.pollForYetUnseenEvents
             };
         }
 
-        case 'SWITCH_SKIP_POLLING_FOR_YET_UNSEEN_EVENTS': {
-            return {
-                ...state,
-                skipPollingForYetUnseenEvents: !state.skipPollingForYetUnseenEvents
-            };
-        }
-
-        case 'RETRIEVE_YET_UNSEEN_EVENTS_STARTED_EVENT': {
+        case 'RetrieveYetUnseenEventsStartedEvent': {
             return {
                 ...state,
                 retrieveYetUnseenEventsOperation: {
@@ -625,7 +712,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_YET_UNSEEN_EVENTS_FAILED_EVENT': {
+        case 'RetrieveYetUnseenEventsFailedEvent': {
             return {
                 ...state,
                 retrieveYetUnseenEventsOperation: {
@@ -637,7 +724,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_YET_UNSEEN_EVENTS_SUCCEEDED_EVENT': {
+        case 'RetrieveYetUnseenEventsSucceededEvent': {
             if (action.yetUnseenEvents.length > 0) {
                 return {
                     ...state,
@@ -666,7 +753,7 @@ const reducer = (state = initialState, action) => {
             }
         }
 
-        case 'CHANGE_CURRENT_EVENTS_RESULT_PAGE_COMMAND': {
+        case 'ChangeCurrentEventsResultPageCommand': {
             return {
                 ...state,
                 currentEventsResultPage: action.page
@@ -674,7 +761,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'LOAD_EVENT_INTO_STRUCTURED_DATA_EXPLORER_COMMAND': {
+        case 'LoadEventIntoStructuredDataExplorerCommand': {
             return {
                 ...state,
                 eventLoadedInStructuredDataExplorer: action.event,
@@ -687,7 +774,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'CLOSE_STRUCTURED_DATA_EXPLORER_COMMAND': {
+        case 'CloseStructuredDataExplorerCommand': {
             return {
                 ...state,
                 eventLoadedInStructuredDataExplorer: null,
@@ -700,14 +787,14 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SELECT_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+        case 'SelectActiveStructuredDataExplorerAttributeCommand': {
             return {
                 ...state,
                 activeStructuredDataExplorerAttributes: [{ byName: action.byName, byVal: action.byVal }]
             };
         }
 
-        case 'ADD_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_COMMAND': {
+        case 'AddActiveStructuredDataExplorerAttributeCommand': {
             return {
                 ...state,
                 activeStructuredDataExplorerAttributes: [
@@ -718,7 +805,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'REMOVED_ACTIVE_STRUCTURED_DATA_EXPLORER_ATTRIBUTE_EVENT': {
+        case 'RemovedActiveStructuredDataExplorerAttributeCommand': {
             const remainingAttributes = [];
             for (let attribute of state.activeStructuredDataExplorerAttributes) {
                 if (!(attribute.byName === action.byName && attribute.byVal === action.byVal)) {
@@ -742,7 +829,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_STARTED_EVENT': {
+        case 'RetrieveStructuredDataExplorerEventsStartedEvent': {
             return {
                 ...state,
                 retrieveStructuredDataExplorerEventsOperation: {
@@ -752,7 +839,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_FAILED_EVENT': {
+        case 'RetrieveStructuredDataExplorerEventsFailedEvent': {
             return {
                 ...state,
                 retrieveStructuredDataExplorerEventsOperation: {
@@ -763,7 +850,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_STRUCTURED_DATA_EXPLORER_EVENTS_SUCCEEDED_EVENT': {
+        case 'RetrieveStructuredDataExplorerEventsSucceededEvent': {
             return {
                 ...state,
                 retrieveStructuredDataExplorerEventsOperation: {
@@ -779,7 +866,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'RETRIEVE_EVENTS_STARTED_EVENT': {
+        case 'RetrieveEventsStartedEvent': {
             return {
                 ...state,
                 retrieveEventsOperation: {
@@ -790,7 +877,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_EVENTS_FAILED_EVENT': {
+        case 'RetrieveEventsFailedEvent': {
             return {
                 ...state,
                 retrieveEventsOperation: {
@@ -801,7 +888,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_EVENTS_SUCCEEDED_EVENT': {
+        case 'RetrieveEventsSucceededEvent': {
             return {
                 ...state,
                 retrieveEventsOperation: {
@@ -817,7 +904,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_STARTED_EVENT': {
+        case 'RetrieveNumberOfEventsPerHourStartedEvent': {
             return {
                 ...state,
                 retrieveNumberOfEventsPerHourOperation: {
@@ -827,7 +914,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_FAILED_EVENT': {
+        case 'RetrieveNumberOfEventsPerHourFailedEvent': {
             return {
                 ...state,
                 retrieveNumberOfEventsPerHourOperation: {
@@ -838,7 +925,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_NUMBER_OF_EVENTS_PER_HOUR_SUCCEEDED_EVENT': {
+        case 'RetrieveNumberOfEventsPerHourSucceededEvent': {
             return {
                 ...state,
                 retrieveNumberOfEventsPerHourOperation: {
@@ -854,7 +941,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'SELECTED_TIMELINE_INTERVALS_UPDATED_EVENT': {
+        case 'SelectedTimelineIntervalsUpdatedEvent': {
             return {
                 ...state,
                 selectedTimelineIntervalStart: action.selectedTimelineIntervalStart,
@@ -863,7 +950,7 @@ const reducer = (state = initialState, action) => {
         }
 
 
-        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT': {
+        case 'LogOutOfAccountSucceededEvent': {
             return {
                 ...initialState
             }
