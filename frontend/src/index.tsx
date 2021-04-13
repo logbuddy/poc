@@ -4,7 +4,6 @@ import { Provider } from 'react-redux'
 import './index.scss';
 import AppContainer from './containers/AppContainer';
 import configureStore from './redux/store';
-import reportWebVitals from './reportWebVitals';
 
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -15,6 +14,7 @@ if (   urlParams.has('directLoginEmail')
     console.debug(`Found direct login info in ${window.location.search}`);
     document.cookie = `loggedInEmail=${urlParams.get('directLoginEmail')};path=/;SameSite=Lax`;
     document.cookie = `webappApiKeyId=${urlParams.get('directLoginWebappApiKeyId')};path=/;SameSite=Lax`;
+    // @ts-ignore
     window.location = '/#/servers/';
 } else {
     ReactDOM.render(
@@ -23,9 +23,4 @@ if (   urlParams.has('directLoginEmail')
         </Provider>,
         document.getElementById('root')
     );
-
-    // If you want to start measuring performance in your app, pass a function
-    // to log results (for example: reportWebVitals(console.log))
-    // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-    reportWebVitals();
 }

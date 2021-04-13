@@ -228,8 +228,8 @@ export const retrieveYetUnseenEventsCommand = () => (dispatch: ThunkDispatch<Red
         getState().session.webappApiKeyId,
         null,
         {
-            serverId: getState().activeServer.server.id,
-            latestSeenSortValue: getState().activeServer.server.latestEventSortValue,
+            serverId: `${getState().activeServer.server.id}`,
+            latestSeenSortValue: `${getState().activeServer.server.latestEventSortValue}`,
             selectedTimelineIntervalStart: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalStart),
             selectedTimelineIntervalEnd: DatetimeHelper.dateObjectToUTCDatetimeString(getState().activeServer.selectedTimelineIntervalEnd)
         }
