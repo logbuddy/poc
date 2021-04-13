@@ -9,7 +9,7 @@ import { LogOutOfAccountSucceededEventAction } from './session';
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
 
-interface Server {
+export interface Server {
     id: null | string,
     type: null | string,
     title: null | string,

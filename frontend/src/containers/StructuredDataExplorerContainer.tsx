@@ -1,23 +1,27 @@
-import React, { Component, Fragment } from 'react';
-import {connect} from 'react-redux';
+import React, { Component, Fragment, RefObject } from 'react';
+import { connect } from 'react-redux';
+// @ts-ignore
+import { JsonHelper } from 'herodot-shared';
 import {
     addActiveStructuredDataExplorerAttributeCommand,
     removeActiveStructuredDataExplorerAttributeCommand,
     retrieveStructuredDataExplorerEventsCommand,
     selectActiveStructuredDataExplorerAttributeCommand,
 } from '../redux/reducers/activeServer';
-import { JsonHelper } from 'herodot-shared';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
-import {X, PlusCircle, DashCircle, Disc} from 'react-bootstrap-icons';
+import { X, PlusCircle, DashCircle, Disc } from 'react-bootstrap-icons';
 import DayzEventSkinPresentational from '../presentationals/eventSkins/dayz/DayzEventSkinPresentational';
 import { format } from 'date-fns';
+import { ServerEvent } from '../redux/reducers/servers';
+import { Server } from '../redux/reducers/activeServer';
+import { ConnectedComponentProps } from '../redux/store';
 
-const getAttributesForEvent = (event) => {
+const getAttributesForEvent = (event: ServerEvent) => {
     let parsedJson = null;
-    let values = [];
-    let keys = [];
-    let keysValues = [];
+    let values: Array<string> = [];
+    let keys: Array<string> = [];
+    let keysValues: Array<string> = [];
     try {
         parsedJson = JSON.parse(event.payload);
     } catch (e) {
@@ -42,8 +46,20 @@ const getAttributesForEvent = (event) => {
     }
 };
 
-class StructuredDataExplorerContainer extends Component {
-    constructor(props) {
+
+interface ReactState {
+    values: Array<string>,
+    keys: Array<string>,
+    keysValues: Array<string>
+}
+
+type StructuredDataExplorerContainerProps = ConnectedComponentProps & { server: Server, event: ServerEvent, onCloseClicked: () => any }
+
+class StructuredDataExplorerContainer extends Component<StructuredDataExplorerContainerProps, ReactState> {
+    titleRef: RefObject<any>
+    resultsRef: RefObject<any>
+
+    constructor(props: StructuredDataExplorerContainerProps) {
         super(props)
         this.titleRef = React.createRef();
         this.resultsRef = React.createRef();
@@ -64,17 +80,17 @@ class StructuredDataExplorerContainer extends Component {
         });
     };
 
-    handleSelectAttributeClicked = (byName, byVal) => {
+    handleSelectAttributeClicked = (byName: string, byVal: string) => {
         this.props.dispatch(selectActiveStructuredDataExplorerAttributeCommand(byName, byVal));
         this.props.dispatch(retrieveStructuredDataExplorerEventsCommand());
     }
 
-    handleAddAttributeClicked = (byName, byVal) => {
+    handleAddAttributeClicked = (byName: string, byVal: string) => {
         this.props.dispatch(addActiveStructuredDataExplorerAttributeCommand(byName, byVal));
         this.props.dispatch(retrieveStructuredDataExplorerEventsCommand());
     }
 
-    handleRemoveAttributeClicked = (byName, byVal) => {
+    handleRemoveAttributeClicked = (byName: string, byVal: string) => {
         this.props.dispatch(removeActiveStructuredDataExplorerAttributeCommand(byName, byVal));
     }
 
@@ -82,7 +98,7 @@ class StructuredDataExplorerContainer extends Component {
         this.calculateAttributes();
     };
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
+    componentDidUpdate(prevProps: Readonly<StructuredDataExplorerContainerProps>, prevState: Readonly<ReactState>, snapshot?: any) {
         if (prevProps.event.id !== this.props.event.id) {
             this.calculateAttributes();
             if (this.titleRef.current !== null) {
@@ -91,8 +107,9 @@ class StructuredDataExplorerContainer extends Component {
         }
     }
 
+
     render () {
-        const createAttributeElement = (byName, byVal, clickable = true, plus = true, minus = false) => {
+        const createAttributeElement = (byName: string, byVal: string, clickable = true, plus = true, minus = false) => {
             if (byName === 'value') {
                 return createValueAttributeElement(byVal, clickable, plus, minus);
             }
@@ -105,13 +122,13 @@ class StructuredDataExplorerContainer extends Component {
             throw new Error('Unknown byName');
         };
 
-        const createValueAttributeElement = (value, clickable = true, plus = true, minus = false) => {
+        const createValueAttributeElement = (value: string, clickable = true, plus = true, minus = false) => {
             return (
                 <Fragment key={value}>
                     <span
                         className={`badge bg-success ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
                         onClick={() => {
-                            if (clickable === true) {
+                            if (clickable) {
                                 this.handleSelectAttributeClicked(
                                     'value',
                                     value
@@ -128,7 +145,7 @@ class StructuredDataExplorerContainer extends Component {
                         <span
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
-                                if (clickable === true) {
+                                if (clickable) {
                                     this.handleAddAttributeClicked(
                                         'value',
                                         value
@@ -145,7 +162,7 @@ class StructuredDataExplorerContainer extends Component {
                         <span
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
-                                if (clickable === true) {
+                                if (clickable) {
                                     this.handleRemoveAttributeClicked(
                                         'value',
                                         value
@@ -160,13 +177,13 @@ class StructuredDataExplorerContainer extends Component {
             )
         };
 
-        const createKeyAttributeElement = (key, clickable = true, plus = true, minus = false) => {
+        const createKeyAttributeElement = (key: string, clickable = true, plus = true, minus = false) => {
             return (
                 <Fragment key={key}>
                     <span
                         className={`badge bg-primary ms-1 me-1 mb-1 ${clickable ? 'clickable' : ''}`}
                         onClick={() => {
-                            if (clickable === true) {
+                            if (clickable) {
                                 this.handleSelectAttributeClicked(
                                     'key',
                                     key
@@ -183,7 +200,7 @@ class StructuredDataExplorerContainer extends Component {
                         <span
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
-                                if (clickable === true) {
+                                if (clickable) {
                                     this.handleAddAttributeClicked(
                                         'key',
                                         key
@@ -200,7 +217,7 @@ class StructuredDataExplorerContainer extends Component {
                         <span
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
-                                if (clickable === true) {
+                                if (clickable) {
                                     this.handleRemoveAttributeClicked(
                                         'key',
                                         key
@@ -215,13 +232,13 @@ class StructuredDataExplorerContainer extends Component {
             )
         };
 
-        const createKeyValueAttributeElement = (keyValue, clickable = true, plus = true, minus = false) => {
+        const createKeyValueAttributeElement = (keyValue: string, clickable = true, plus = true, minus = false) => {
             return (
                 <Fragment key={keyValue}>
                     <span
                         className={`explorer-key-value-badge ${clickable ? 'clickable' : ''}`}
                         onClick={() => {
-                            if (clickable === true) {
+                            if (clickable) {
                                 this.handleSelectAttributeClicked(
                                     'keyValue',
                                     keyValue
@@ -243,7 +260,7 @@ class StructuredDataExplorerContainer extends Component {
                         <span
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
-                                if (clickable === true) {
+                                if (clickable) {
                                     this.handleAddAttributeClicked(
                                         'keyValue',
                                         keyValue
@@ -260,7 +277,7 @@ class StructuredDataExplorerContainer extends Component {
                         <span
                             className={`${clickable ? 'clickable' : ''} me-3`}
                             onClick={() => {
-                                if (clickable === true) {
+                                if (clickable) {
                                     this.handleRemoveAttributeClicked(
                                         'keyValue',
                                         keyValue
@@ -567,4 +584,5 @@ class StructuredDataExplorerContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(StructuredDataExplorerContainer);
