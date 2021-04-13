@@ -1,10 +1,51 @@
-import { apiFetch } from '../util';
+// @ts-ignore
 import { DatetimeHelper } from 'herodot-shared';
+import { apiFetch } from '../util';
+import { ServerEvent } from './servers';
+import { Operation } from './root';
 
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
 
-export const initialState = {
+interface Server {
+    id: null | string,
+    type: null | string,
+    title: null | string,
+    userId: null | string,
+    apiKeyId: null | string,
+    events: Array<ServerEvent>,
+    structuredDataExplorerEvents: Array<ServerEvent>,
+    latestEventSortValue: null | string,
+    numberOfEventsPerHour: Array<number>
+}
+
+export interface ActiveServerState {
+    server: Server,
+    logEventsPresentationMode: 0 | 1,
+    pollForYetUnseenEvents: boolean,
+    skipPollingForYetUnseenEvents: boolean,
+    showEventPayload: boolean,
+    showStructuredDataExplorerAttributes: boolean,
+    informationPanelIsOpen: boolean,
+    examplePanelIsOpen: boolean,
+    currentEventsResultPage: number,
+    retrieveEventsOperation: Operation,
+    retrieveYetUnseenEventsOperation: Operation & {
+        mustBeSkipped: false,
+    },
+    retrieveNumberOfEventsPerHourOperation: Operation & {
+        mustBeSkipped: false,
+    },
+    retrieveStructuredDataExplorerEventsOperation: Operation,
+    eventLoadedInStructuredDataExplorer: null | ServerEvent,
+    activeStructuredDataExplorerAttributes: Array<any>,
+    selectedTimelineIntervalStart: Date,
+    selectedTimelineIntervalEnd: Date,
+    timelineIntervalStart: Date,
+    timelineIntervalEnd: Date
+}
+
+export const initialState: ActiveServerState = {
     server: {
         id: null,
         type: null,

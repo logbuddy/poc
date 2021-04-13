@@ -3,7 +3,7 @@ import {BasicAction, ErrorAction, Operation, ReduxState} from './root';
 import {ThunkDispatch} from "redux-thunk";
 import {LogOutOfAccountSucceededEventAction} from "./session";
 
-interface ServerEvent {
+export interface ServerEvent {
     id: string,
     serverId: string,
     userId: string,
@@ -15,7 +15,7 @@ interface ServerEvent {
     payload: string,
 }
 
-interface Server {
+export interface Server {
     id: string,
     type: string,
     title: string,
@@ -23,7 +23,7 @@ interface Server {
     apiKeyId: string,
     events: Array<ServerEvent>,
     structuredDataExplorerEvents: Array<ServerEvent>,
-    latestEventSortValue: string,
+    latestEventSortValue: null | string,
     numberOfEventsPerHour: Array<number>
 }
 
