@@ -157,7 +157,7 @@ const logOutOfAccountStartedEvent = (): LogOutOfAccountStartedEventAction => ({
 });
 
 
-interface LogOutOfAccountSucceededEventAction extends BasicAction {
+export interface LogOutOfAccountSucceededEventAction extends BasicAction {
     type: 'LogOutOfAccountSucceededEvent'
 }
 

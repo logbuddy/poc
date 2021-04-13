@@ -9,9 +9,14 @@ import {
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { makeServerActiveCommand } from '../redux/reducers/activeServer';
 import ActiveServerContainer from './ActiveServerContainer';
+import {ConnectedComponentProps} from "../redux/store";
 
-class ServersContainer extends Component {
-    constructor(props) {
+interface ReactState {
+    readonly createServerTitle: string
+}
+
+class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
+    constructor(props: ConnectedComponentProps) {
         super(props);
         this.state = {
             createServerTitle: '',
@@ -19,15 +24,14 @@ class ServersContainer extends Component {
     }
 
     handleRefreshClicked = () => {
-        this.setState({ ...this.state, eventLoadedInStructuredDataExplorer: null });
         this.props.dispatch(retrieveServerListCommand());
     }
 
-    handleChangeCreateServerTitle = (event) => {
+    handleChangeCreateServerTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ ...this.state, createServerTitle: event.target.value });
     }
 
-    handleCreateServerClicked = (event) => {
+    handleCreateServerClicked = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         this.props.dispatch(createServerCommand(this.state.createServerTitle));
         this.setState({ ...this.state, createServerTitle: '' });
@@ -164,4 +168,5 @@ class ServersContainer extends Component {
 export default connect(
     reduxState => ({ reduxState }),
     dispatch => ({ dispatch })
+    // @ts-ignore
 )(ServersContainer);

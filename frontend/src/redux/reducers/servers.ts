@@ -1,19 +1,29 @@
 import { apiFetch } from '../util';
-import { ErrorAction, Operation } from './root';
+import {BasicAction, ErrorAction, Operation, ReduxState} from './root';
+import {ThunkDispatch} from "redux-thunk";
+import {LogOutOfAccountSucceededEventAction} from "./session";
 
 interface ServerEvent {
-
+    id: string,
+    serverId: string,
+    userId: string,
+    receivedAt: number,
+    sortValue: string,
+    createdAt: string,
+    createdAtUtc: string,
+    source: string,
+    payload: string,
 }
 
 interface Server {
-    id: null | string,
-    type: null | string,
-    title: null | string,
-    userId: null | string,
-    apiKeyId: null | string,
+    id: string,
+    type: string,
+    title: string,
+    userId: string,
+    apiKeyId: string,
     events: Array<ServerEvent>,
     structuredDataExplorerEvents: Array<ServerEvent>,
-    latestEventSortValue: null | string,
+    latestEventSortValue: string,
     numberOfEventsPerHour: Array<number>
 }
 
@@ -40,21 +50,37 @@ const initialState: ServersState = {
 };
 
 
-const retrieveServerListStartedEvent = () => ({
-    type: 'RETRIEVE_SERVER_LIST_STARTED_EVENT'
+interface RetrieveServerListStartedEventAction extends BasicAction {
+    type: 'RetrieveServerListStartedEvent'
+}
+
+const retrieveServerListStartedEvent = (): RetrieveServerListStartedEventAction => ({
+    type: 'RetrieveServerListStartedEvent'
 });
 
-const retrieveServerListFailedEvent = (errorMessage) => ({
-    type: 'RETRIEVE_SERVER_LIST_FAILED_EVENT',
+
+interface RetrieveServerListFailedEventAction extends ErrorAction {
+    type: 'RetrieveServerListFailedEvent'
+}
+
+const retrieveServerListFailedEvent = (errorMessage: string): RetrieveServerListFailedEventAction => ({
+    type: 'RetrieveServerListFailedEvent',
     errorMessage
 });
 
-const retrieveServerListSucceededEvent = (serverList) => ({
-    type: 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT',
+
+interface RetrieveServerListSucceededEventAction extends BasicAction {
+    type: 'RetrieveServerListSucceededEvent',
+    serverList: Array<Server>
+}
+
+const retrieveServerListSucceededEvent = (serverList: Array<Server>): RetrieveServerListSucceededEventAction => ({
+    type: 'RetrieveServerListSucceededEvent',
     serverList
 });
 
-export const retrieveServerListCommand = () => (dispatch, getState) => {
+
+export const retrieveServerListCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
     dispatch(retrieveServerListStartedEvent());
 
@@ -87,22 +113,37 @@ export const retrieveServerListCommand = () => (dispatch, getState) => {
 };
 
 
-const createServerStartedEvent = () => ({
-    type: 'CREATE_SERVER_STARTED_EVENT'
+interface CreateServerStartedEventAction extends BasicAction {
+    type: 'CreateServerStartedEvent'
+}
+
+const createServerStartedEvent = (): CreateServerStartedEventAction => ({
+    type: 'CreateServerStartedEvent'
 });
 
-const createServerFailedEvent = (errorMessage: string): ErrorAction => ({
-    type: 'CREATE_SERVER_FAILED_EVENT',
+
+interface CreateServerFailedEventAction extends ErrorAction {
+    type: 'CreateServerFailedEvent'
+}
+
+const createServerFailedEvent = (errorMessage: string): CreateServerFailedEventAction => ({
+    type: 'CreateServerFailedEvent',
     errorMessage
 });
 
-const createServerSucceededEvent = (server) => ({
-    type: 'CREATE_SERVER_SUCCEEDED_EVENT',
+
+interface CreateServerSucceededEventAction extends BasicAction {
+    type: 'CreateServerSucceededEvent',
+    server: Server
+}
+
+const createServerSucceededEvent = (server: Server): CreateServerSucceededEventAction => ({
+    type: 'CreateServerSucceededEvent',
     server
 });
 
 
-export const createServerCommand = (title) => (dispatch, getState) => {
+export const createServerCommand = (title: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
     dispatch(createServerStartedEvent());
 
@@ -132,11 +173,21 @@ export const createServerCommand = (title) => (dispatch, getState) => {
 };
 
 
-const reducer = (state = initialState, action) => {
+export type ServersAction =
+    | CreateServerStartedEventAction
+    | CreateServerFailedEventAction
+    | CreateServerSucceededEventAction
+
+    | RetrieveServerListStartedEventAction
+    | RetrieveServerListFailedEventAction
+    | RetrieveServerListSucceededEventAction;
+
+
+const reducer = (state = initialState, action: ServersAction | LogOutOfAccountSucceededEventAction) => {
 
     switch (action.type) {
 
-        case 'RETRIEVE_SERVER_LIST_STARTED_EVENT':
+        case 'RetrieveServerListStartedEvent':
             return {
                 ...state,
                 retrieveServerListOperation: {
@@ -145,8 +196,8 @@ const reducer = (state = initialState, action) => {
                 }
             };
 
-        case 'RETRIEVE_SERVER_LIST_SUCCEEDED_EVENT': {
-            const updateServerlist = (existingServerlist, newServerlist) => {
+        case 'RetrieveServerListSucceededEvent': {
+            const updateServerlist = (existingServerlist: Array<Server>, newServerlist: Array<Server>) => {
                 const updatedServerlist = [];
                 for (let newServerlistEntry of newServerlist) {
                     newServerlistEntry.numberOfEventsPerHour = [];
@@ -167,7 +218,7 @@ const reducer = (state = initialState, action) => {
             };
         }
 
-        case 'RETRIEVE_SERVER_LIST_FAILED_EVENT':
+        case 'RetrieveServerListFailedEvent':
             return {
                 ...state,
                 retrieveServerListOperation: {
@@ -178,7 +229,7 @@ const reducer = (state = initialState, action) => {
             };
 
 
-        case 'CREATE_SERVER_STARTED_EVENT':
+        case 'CreateServerStartedEvent':
             return {
                 ...state,
                 createServerOperation: {
@@ -187,7 +238,7 @@ const reducer = (state = initialState, action) => {
                 }
             };
 
-        case 'CREATE_SERVER_SUCCEEDED_EVENT':
+        case 'CreateServerSucceededEvent':
             return {
                 ...state,
                 createServerOperation: {
@@ -197,7 +248,7 @@ const reducer = (state = initialState, action) => {
                 serverList: [ action.server, ...state.serverList ],
             };
 
-        case 'CREATE_SERVER_FAILED_EVENT':
+        case 'CreateServerFailedEvent':
             return {
                 ...state,
                 createServerOperation: {
@@ -207,7 +258,7 @@ const reducer = (state = initialState, action) => {
             };
 
 
-        case 'LOG_OUT_OF_ACCOUNT_SUCCEEDED_EVENT': {
+        case 'LogOutOfAccountSucceededEvent': {
             return {
                 ...initialState
             }
