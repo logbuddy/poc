@@ -4,7 +4,7 @@ import { Redirect } from 'react-router-dom';
 import { ArrowClockwise, Disc } from 'react-bootstrap-icons';
 import {
     createServerCommand,
-    retrieveServerListCommand,
+    retrieveServersCommand,
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { makeServerActiveCommand } from '../redux/reducers/activeServer';
@@ -24,7 +24,7 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
     }
 
     handleRefreshClicked = () => {
-        this.props.dispatch(retrieveServerListCommand());
+        this.props.dispatch(retrieveServersCommand());
     }
 
     handleChangeCreateServerTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +38,7 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
     }
 
     componentDidMount() {
-        this.props.dispatch(retrieveServerListCommand());
+        this.props.dispatch(retrieveServersCommand());
     }
 
     render() {
@@ -50,9 +50,9 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
             return <ActiveServerContainer />;
         }
 
-        const serverListElements = [];
-        for (let server of this.props.reduxState.servers.serverList) {
-            serverListElements.push(
+        const serverElements = [];
+        for (let server of this.props.reduxState.servers.servers) {
+            serverElements.push(
                 <div key={server.id} className={`card bg-dark mt-4`}>
                     <div className='card-header border-bottom border-dark'>
                         <div className='row'>
@@ -89,12 +89,12 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
                         <ul className='navbar-nav ms-auto'>
                             <li className='nav-item text-center'>
                                 {
-                                    this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                    this.props.reduxState.servers.retrieveServersOperation.isRunning
                                     &&
-                                    <Disc className={`text-light ${this.props.reduxState.servers.retrieveServerListOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
+                                    <Disc className={`text-light ${this.props.reduxState.servers.retrieveServersOperation.isRunning ? 'spinning' : 'spinning not-spinning'}`} />
                                 }
                                 {
-                                    this.props.reduxState.servers.retrieveServerListOperation.isRunning
+                                    this.props.reduxState.servers.retrieveServersOperation.isRunning
                                     ||
                                     <span className='clickable' onClick={this.handleRefreshClicked}><ArrowClockwise className='spinning not-spinning' /></span>
                                 }
@@ -102,7 +102,7 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
                         </ul>
                     </div>
 
-                    <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServerListOperation.errorMessage} />
+                    <ErrorMessagePresentational message={this.props.reduxState.servers.retrieveServersOperation.errorMessage} />
 
                     <h1 className='mb-3 ms-3'>
                         My servers
@@ -145,13 +145,13 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
                     </div>
 
                     {
-                        serverListElements.length > 0
+                        serverElements.length > 0
                         &&
-                        serverListElements
+                        serverElements
                     }
 
                     {
-                        serverListElements.length > 0
+                        serverElements.length > 0
                         ||
                         <div className='mt-5 w-100 text-center'>
                             <h1 className='text-secondary'>

@@ -30,6 +30,7 @@ const preloadedState: ReduxState = {
         webappApiKeyId: preloadWebappApiKeyId
     },
     servers: serversInitialState,
+    // @ts-ignore
     activeServer: activeServerInitialState
 };
 

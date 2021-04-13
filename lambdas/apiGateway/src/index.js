@@ -351,7 +351,7 @@ const getTimelineIntervalValues = (event) => {
 };
 
 
-const handleRetrieveServerListRequest = async (event) => {
+const handleRetrieveServersRequest = async (event) => {
     const webappApiKey = await authenticateWebappRequest(event.headers);
 
     if (webappApiKey === null) {
@@ -1047,7 +1047,7 @@ exports.handler = async (event) => {
     }
 
     if (event.routeKey === 'GET /servers') {
-        return handleRetrieveServerListRequest(event);
+        return handleRetrieveServersRequest(event);
     }
 
     if (event.routeKey === 'POST /servers') {

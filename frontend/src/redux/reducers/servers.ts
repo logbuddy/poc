@@ -29,14 +29,14 @@ interface Server {
 
 export interface ServersState {
     showEventPayload: boolean,
-    readonly retrieveServerListOperation: Operation,
+    readonly retrieveServersOperation: Operation,
     readonly createServerOperation: Operation,
-    serverList: Array<Server>
+    servers: Array<Server>
 }
 
 const initialState: ServersState = {
     showEventPayload: true,
-    retrieveServerListOperation: {
+    retrieveServersOperation: {
         isRunning: false,
         justFinishedSuccessfully: false,
         errorMessage: null
@@ -46,43 +46,43 @@ const initialState: ServersState = {
         justFinishedSuccessfully: false,
         errorMessage: null
     },
-    serverList: []
+    servers: []
 };
 
 
-interface RetrieveServerListStartedEventAction extends BasicAction {
-    type: 'RetrieveServerListStartedEvent'
+interface RetrieveServersStartedEventAction extends BasicAction {
+    type: 'RetrieveServersStartedEvent'
 }
 
-const retrieveServerListStartedEvent = (): RetrieveServerListStartedEventAction => ({
-    type: 'RetrieveServerListStartedEvent'
+const retrieveServersStartedEvent = (): RetrieveServersStartedEventAction => ({
+    type: 'RetrieveServersStartedEvent'
 });
 
 
-interface RetrieveServerListFailedEventAction extends ErrorAction {
-    type: 'RetrieveServerListFailedEvent'
+interface RetrieveServersFailedEventAction extends ErrorAction {
+    type: 'RetrieveServersFailedEvent'
 }
 
-const retrieveServerListFailedEvent = (errorMessage: string): RetrieveServerListFailedEventAction => ({
-    type: 'RetrieveServerListFailedEvent',
+const retrieveServersFailedEvent = (errorMessage: string): RetrieveServersFailedEventAction => ({
+    type: 'RetrieveServersFailedEvent',
     errorMessage
 });
 
 
-interface RetrieveServerListSucceededEventAction extends BasicAction {
-    type: 'RetrieveServerListSucceededEvent',
-    serverList: Array<Server>
+interface RetrieveServersSucceededEventAction extends BasicAction {
+    type: 'RetrieveServersSucceededEvent',
+    servers: Array<Server>
 }
 
-const retrieveServerListSucceededEvent = (serverList: Array<Server>): RetrieveServerListSucceededEventAction => ({
-    type: 'RetrieveServerListSucceededEvent',
-    serverList
+const retrieveServersSucceededEvent = (servers: Array<Server>): RetrieveServersSucceededEventAction => ({
+    type: 'RetrieveServersSucceededEvent',
+    servers
 });
 
 
-export const retrieveServerListCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const retrieveServersCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
 
-    dispatch(retrieveServerListStartedEvent());
+    dispatch(retrieveServersStartedEvent());
 
     let responseWasOk = true;
     apiFetch(
@@ -100,15 +100,15 @@ export const retrieveServerListCommand = () => (dispatch: ThunkDispatch<ReduxSta
 
         .then(responseContentAsObject => {
             if (!responseWasOk) {
-                dispatch(retrieveServerListFailedEvent(responseContentAsObject));
+                dispatch(retrieveServersFailedEvent(responseContentAsObject));
             } else {
-                dispatch(retrieveServerListSucceededEvent(responseContentAsObject));
+                dispatch(retrieveServersSucceededEvent(responseContentAsObject));
             }
         })
 
         .catch(function(error) {
             console.error(error)
-            dispatch(retrieveServerListFailedEvent(error.toString()));
+            dispatch(retrieveServersFailedEvent(error.toString()));
         });
 };
 
@@ -178,54 +178,54 @@ export type ServersAction =
     | CreateServerFailedEventAction
     | CreateServerSucceededEventAction
 
-    | RetrieveServerListStartedEventAction
-    | RetrieveServerListFailedEventAction
-    | RetrieveServerListSucceededEventAction;
+    | RetrieveServersStartedEventAction
+    | RetrieveServersFailedEventAction
+    | RetrieveServersSucceededEventAction;
 
 
-const reducer = (state = initialState, action: ServersAction | LogOutOfAccountSucceededEventAction) => {
+const reducer = (state: ServersState = initialState, action: ServersAction | LogOutOfAccountSucceededEventAction): ServersState => {
 
     switch (action.type) {
 
-        case 'RetrieveServerListStartedEvent':
+        case 'RetrieveServersStartedEvent':
             return {
                 ...state,
-                retrieveServerListOperation: {
-                    ...initialState.retrieveServerListOperation,
+                retrieveServersOperation: {
+                    ...initialState.retrieveServersOperation,
                     isRunning: true
                 }
             };
 
-        case 'RetrieveServerListSucceededEvent': {
-            const updateServerlist = (existingServerlist: Array<Server>, newServerlist: Array<Server>) => {
-                const updatedServerlist = [];
-                for (let newServerlistEntry of newServerlist) {
-                    newServerlistEntry.numberOfEventsPerHour = [];
+        case 'RetrieveServersSucceededEvent': {
+            const updateServers = (existingServers: Array<Server>, retrievedServers: Array<Server>): Array<Server> => {
+                const updatedServers = [];
+                for (let server of retrievedServers) {
+                    server.numberOfEventsPerHour = [];
                     for (let i = 0; i < 8*24; i++) {
-                        newServerlistEntry.numberOfEventsPerHour.push(Math.round(Math.random() * 1000));
+                        server.numberOfEventsPerHour.push(Math.round(Math.random() * 1000));
                     }
-                    updatedServerlist.push(newServerlistEntry);
+                    updatedServers.push(server);
                 }
-                return updatedServerlist;
+                return updatedServers;
             };
             return {
                 ...state,
-                retrieveServerListOperation: {
-                    ...initialState.retrieveServerListOperation,
+                retrieveServersOperation: {
+                    ...initialState.retrieveServersOperation,
                     justFinishedSuccessfully: true
                 },
-                serverList: updateServerlist(state.serverList, action.serverList),
+                servers: updateServers(state.servers, action.servers),
             };
         }
 
-        case 'RetrieveServerListFailedEvent':
+        case 'RetrieveServersFailedEvent':
             return {
                 ...state,
-                retrieveServerListOperation: {
-                    ...initialState.retrieveServerListOperation,
+                retrieveServersOperation: {
+                    ...initialState.retrieveServersOperation,
                     errorMessage: action.errorMessage
                 },
-                serverList: initialState.serverList
+                servers: initialState.servers
             };
 
 
@@ -245,7 +245,7 @@ const reducer = (state = initialState, action: ServersAction | LogOutOfAccountSu
                     ...initialState.createServerOperation,
                     justFinishedSuccessfully: true
                 },
-                serverList: [ action.server, ...state.serverList ],
+                servers: [ action.server, ...state.servers ],
             };
 
         case 'CreateServerFailedEvent':
