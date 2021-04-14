@@ -8,13 +8,13 @@ import {
     useLocation
 } from 'react-router-dom';
 import { PersonCircle } from 'react-bootstrap-icons';
-import ServersContainer from './ServersContainer';
 import { logOutOfAccountCommand } from '../redux/reducers/session';
 import { ReduxState } from '../redux/reducers/root';
 import { ConnectedComponentProps } from '../redux/store';
 import LoginPresentational from '../presentationals/LoginPresentational';
 import RegistrationPresentational from '../presentationals/RegistrationPresentational';
 import ActiveServerPresentational from '../presentationals/ActiveServerPresentational';
+import ServersPresentational from '../presentationals/ServersPresentational';
 
 const Navigation = (props: { reduxState: ReduxState }) => (
     <Fragment>
@@ -122,7 +122,7 @@ class AppContainer extends Component<ConnectedComponentProps, ReactState> {
                             <RegistrationPresentational />
                         </Route>
                         <Route path='/servers/'>
-                            <ServersContainer />
+                            <ServersPresentational />
                         </Route>
                         <Route path='/server/'>
                             <ActiveServerPresentational />
