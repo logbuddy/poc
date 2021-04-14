@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import ErrorMessagePresentational from './ErrorMessagePresentational';
 import { ReduxState } from '../redux/reducers/root';
 import { logIntoAccountCommand } from '../redux/reducers/session';
+import { Redirect } from 'react-router-dom';
 
 const LoginPresentational = () => {
 
@@ -11,6 +12,10 @@ const LoginPresentational = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    if (reduxState.session.isLoggedIn) {
+        return (<Redirect to='/' />);
+    }
 
     return (
         <div className='container-fluid ps-4 mt-4'>
@@ -23,7 +28,10 @@ const LoginPresentational = () => {
                     }
                     <h1>Login</h1>
                     <ErrorMessagePresentational message={reduxState.session.loginOperation.errorMessage} />
-                    <form onSubmit={ e => { reduxDispatch(logIntoAccountCommand(email, password)); e.preventDefault(); } } className='mt-4'>
+                    <form
+                        onSubmit={ e => { reduxDispatch(logIntoAccountCommand(email, password)); e.preventDefault(); } }
+                        className='mt-4'
+                    >
                         <div className="mb-4">
                             <input className='form-control' type='text' id='email' placeholder='E-Mail' value={email} onChange={ e => setEmail(e.target.value) } />
                         </div>

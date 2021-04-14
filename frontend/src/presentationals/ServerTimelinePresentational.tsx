@@ -1,9 +1,10 @@
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 // @ts-ignore
 import TimeRange from 'react-timeline-range-slider';
 // @ts-ignore
 import { DatetimeHelper } from 'herodot-shared';
+import ActiveServerToolboxPresentational from './ActiveServerToolboxPresentational';
 
 const ServerTimelinePresentational = (
     {
@@ -15,8 +16,7 @@ const ServerTimelinePresentational = (
         timelineIntervalEnd,
         numberOfEventsPerHour,
         onUpdateCallback,
-        onChangeCallback,
-        toolbox
+        onChangeCallback
     }:
         {
             initialSelectedTimelineIntervalStart: Date,
@@ -27,8 +27,7 @@ const ServerTimelinePresentational = (
             timelineIntervalEnd: Date,
             numberOfEventsPerHour: Array<number>,
             onUpdateCallback: (start: Date, end: Date) => any,
-            onChangeCallback: () => any,
-            toolbox: ReactElement
+            onChangeCallback: () => any
         }) => {
 
     const numberOfEventsPerHourElements = []
@@ -66,7 +65,7 @@ const ServerTimelinePresentational = (
                         <br/>
                         {format(currentSelectedTimelineIntervalEnd, 'p')}
 
-                        {toolbox}
+                        <ActiveServerToolboxPresentational />
                     </div>
                 </div>
             </div>

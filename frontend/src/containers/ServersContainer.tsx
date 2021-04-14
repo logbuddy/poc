@@ -8,8 +8,8 @@ import {
 } from '../redux/reducers/servers';
 import ErrorMessagePresentational from '../presentationals/ErrorMessagePresentational'
 import { makeServerActiveCommand } from '../redux/reducers/activeServer';
-import ActiveServerContainer from './ActiveServerContainer';
 import { ConnectedComponentProps } from '../redux/store';
+import ActiveServerPresentational from '../presentationals/ActiveServerPresentational';
 
 interface ReactState {
     readonly createServerTitle: string
@@ -47,7 +47,7 @@ class ServersContainer extends Component<ConnectedComponentProps, ReactState> {
         }
 
         if (this.props.reduxState.activeServer.server.id !== null) {
-            return <ActiveServerContainer />;
+            return <ActiveServerPresentational />;
         }
 
         const serverElements = [];
