@@ -42,7 +42,7 @@ const RegistrationPresentational = () => {
                                 className='mt-4'
                             >
                                 <div className="mb-4">
-                                    <input className='form-control' type='text' name='name' placeholder='E-Mail' value={email} onChange={ e => setEmail(e.target.value) } />
+                                    <input className='form-control' type='text' name='name' data-testid='email-input' placeholder='E-Mail' value={email} onChange={ e => setEmail(e.target.value) } />
                                 </div>
                                 <div className="mb-4">
                                     <input className='form-control' type='password' name='password' placeholder='Password' value={password} onChange={ e => setPassword(e.target.value) } />
