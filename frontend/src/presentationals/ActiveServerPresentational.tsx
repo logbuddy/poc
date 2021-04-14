@@ -18,7 +18,7 @@ import StructuredDataExplorerContainer from '../containers/StructuredDataExplore
 import { X } from 'react-bootstrap-icons';
 import ServerInformationPanelContainer from '../containers/ServerInformationPanelContainer';
 import ServerExamplePanelPresentational from './ServerExamplePanelPresentational';
-import ServerEventsPanelContainer from '../containers/ServerEventsPanelContainer';
+import ServerEventsPanelPresentational from './ServerEventsPanelPresentational';
 
 const ActiveServerPresentational = () => {
 
@@ -113,7 +113,7 @@ const ActiveServerPresentational = () => {
                             onSwitch={() => reduxDispatch(switchExamplePanelCommand())}
                         />
 
-                        <ServerEventsPanelContainer />
+                        <ServerEventsPanelPresentational />
 
                     </div>
                 </div>
