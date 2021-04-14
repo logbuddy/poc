@@ -2,8 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux'
 import './index.scss';
-import AppContainer from './containers/AppContainer';
 import configureStore from './redux/store';
+import AppPresentational from './presentationals/AppPresentational';
+import { HashRouter as Router } from 'react-router-dom';
 
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -19,7 +20,9 @@ if (   urlParams.has('directLoginEmail')
 } else {
     ReactDOM.render(
         <Provider store={configureStore()}>
-            <AppContainer />
+            <Router>
+                <AppPresentational />
+            </Router>
         </Provider>,
         document.getElementById('root')
     );

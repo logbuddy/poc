@@ -14,11 +14,11 @@ import {
 } from '../redux/reducers/activeServer';
 import { Redirect } from 'react-router-dom';
 import ServerTimelinePresentational from './ServerTimelinePresentational';
-import StructuredDataExplorerContainer from '../containers/StructuredDataExplorerContainer';
 import { X } from 'react-bootstrap-icons';
 import ServerInformationPanelContainer from '../containers/ServerInformationPanelContainer';
 import ServerExamplePanelPresentational from './ServerExamplePanelPresentational';
 import ServerEventsPanelPresentational from './ServerEventsPanelPresentational';
+import StructuredDataExplorerPresentational from './StructuredDataExplorerPresentational';
 
 const ActiveServerPresentational = () => {
 
@@ -61,7 +61,7 @@ const ActiveServerPresentational = () => {
                 activeServer.eventLoadedInStructuredDataExplorer !== null
                 &&
                 <div className='card bg-dark m-2 mt-4'>
-                    <StructuredDataExplorerContainer
+                    <StructuredDataExplorerPresentational
                         server={server}
                         event={activeServer.eventLoadedInStructuredDataExplorer}
                         onCloseClicked={ () => reduxDispatch(closeStructuredDataExplorerCommand()) }
