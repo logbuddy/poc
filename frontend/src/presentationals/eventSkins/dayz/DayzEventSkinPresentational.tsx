@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
 import { PersonPlusFill, PersonXFill, Truck } from 'react-bootstrap-icons';
 import SkinBox from '../SkinBox';
-import { ServerEvent } from '../../../redux/reducers/servers';
+import { IServerEvent } from '../../../redux/reducers/servers';
 
-const DayzEventSkinPresentational = ({ event }: { event: ServerEvent }) => {
+const DayzEventSkinPresentational = ({ event }: { event: IServerEvent }) => {
     try {
         if (event.hasOwnProperty('source') && event.hasOwnProperty('payload')) {
             let parsedPayload = null;

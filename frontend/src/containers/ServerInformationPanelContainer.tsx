@@ -2,20 +2,20 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { ChevronDown, ChevronRight, Clipboard } from 'react-bootstrap-icons';
 import { switchInformationPanelCommand} from '../redux/reducers/activeServer';
-import { ConnectedComponentProps } from '../redux/store';
+import { IConnectedComponentProps } from '../redux/store';
 
 
-interface ReactState {
+interface IReactState {
     showCopySuccessBadgeForId: null | string
 }
 
-class ServerInformationPanelContainer extends Component<ConnectedComponentProps, ReactState> {
+class ServerInformationPanelContainer extends Component<IConnectedComponentProps, IReactState> {
 
     copyElements: {
         [key: string]: HTMLInputElement
     }
 
-    constructor(props: ConnectedComponentProps) {
+    constructor(props: IConnectedComponentProps) {
         super(props);
         this.state = {
             showCopySuccessBadgeForId: null

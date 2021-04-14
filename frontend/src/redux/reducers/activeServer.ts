@@ -1,50 +1,50 @@
 // @ts-ignore
 import { DatetimeHelper } from 'herodot-shared';
 import { apiFetch } from '../util';
-import { ServerEvent } from './servers';
-import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
+import { IServerEvent } from './servers';
+import { IBasicAction, IErrorAction, IOperation, IReduxState } from './root';
 import { ThunkDispatch } from 'redux-thunk';
-import { LogOutOfAccountSucceededEventAction } from './session';
+import { ILogOutOfAccountSucceededEventAction } from './session';
 
 export const LOG_EVENTS_PRESENTATION_MODE_DEFAULT = 0;
 export const LOG_EVENTS_PRESENTATION_MODE_COMPACT = 1;
 
-export type LogEventsPresentationMode = 0 | 1;
+export type TLogEventsPresentationMode = 0 | 1;
 
-export interface Server {
-    id: null | string,
-    type: null | string,
-    title: null | string,
-    userId: null | string,
-    apiKeyId: null | string,
-    events: Array<ServerEvent>,
-    structuredDataExplorerEvents: Array<ServerEvent>,
-    latestEventSortValue: null | string,
-    numberOfEventsPerHour: Array<number>
+export interface IServer {
+    readonly id: null | string,
+    readonly type: null | string,
+    readonly title: null | string,
+    readonly userId: null | string,
+    readonly apiKeyId: null | string,
+    readonly events: Array<IServerEvent>,
+    readonly structuredDataExplorerEvents: Array<IServerEvent>,
+    readonly latestEventSortValue: null | string,
+    readonly numberOfEventsPerHour: Array<number>
 }
 
-export interface ActiveServerState {
-    server: Server,
-    logEventsPresentationMode: LogEventsPresentationMode,
-    pollForYetUnseenEvents: boolean,
-    showEventPayload: boolean,
-    showStructuredDataExplorerAttributes: boolean,
-    informationPanelIsOpen: boolean,
-    examplePanelIsOpen: boolean,
-    currentEventsResultPage: number,
-    retrieveEventsOperation: Operation,
-    retrieveYetUnseenEventsOperation: Operation,
-    retrieveNumberOfEventsPerHourOperation: Operation,
-    retrieveStructuredDataExplorerEventsOperation: Operation,
-    eventLoadedInStructuredDataExplorer: null | ServerEvent,
-    activeStructuredDataExplorerAttributes: Array<any>,
-    selectedTimelineIntervalStart: Date,
-    selectedTimelineIntervalEnd: Date,
-    timelineIntervalStart: Date,
-    timelineIntervalEnd: Date
+export interface IActiveServerState {
+    readonly server: IServer,
+    readonly logEventsPresentationMode: TLogEventsPresentationMode,
+    readonly pollForYetUnseenEvents: boolean,
+    readonly showEventPayload: boolean,
+    readonly showStructuredDataExplorerAttributes: boolean,
+    readonly informationPanelIsOpen: boolean,
+    readonly examplePanelIsOpen: boolean,
+    readonly currentEventsResultPage: number,
+    readonly retrieveEventsOperation: IOperation,
+    readonly retrieveYetUnseenEventsOperation: IOperation,
+    readonly retrieveNumberOfEventsPerHourOperation: IOperation,
+    readonly retrieveStructuredDataExplorerEventsOperation: IOperation,
+    readonly eventLoadedInStructuredDataExplorer: null | IServerEvent,
+    readonly activeStructuredDataExplorerAttributes: Array<any>,
+    readonly selectedTimelineIntervalStart: Date,
+    readonly selectedTimelineIntervalEnd: Date,
+    readonly timelineIntervalStart: Date,
+    readonly timelineIntervalEnd: Date
 }
 
-export const initialState: ActiveServerState = {
+export const initialState: IActiveServerState = {
     server: {
         id: null,
         type: null,
@@ -92,116 +92,116 @@ export const initialState: ActiveServerState = {
 };
 
 
-export const makeServerActiveCommand = (server: Server) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>) => {
+export const makeServerActiveCommand = (server: IServer) => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>) => {
     dispatch(madeServerActiveEvent(server));
 };
 
 
-interface MadeServerActiveEventAction extends BasicAction {
-    type: 'MadeServerActiveCommand'
-    server: Server
+interface IMadeServerActiveEventAction extends IBasicAction {
+    readonly type: 'MadeServerActiveCommand'
+    readonly server: IServer
 }
 
-export const madeServerActiveEvent = (server: Server): MadeServerActiveEventAction => ({
+export const madeServerActiveEvent = (server: IServer): IMadeServerActiveEventAction => ({
     type: 'MadeServerActiveCommand',
     server
 });
 
 
-interface CloseActiveServerCommandAction extends BasicAction {
+interface ICloseActiveServerCommandAction extends IBasicAction {
+    readonly type: 'CloseActiveServerCommand'
+}
+
+export const closeActiveServerCommand = (): ICloseActiveServerCommandAction => ({
     type: 'CloseActiveServerCommand'
-}
-
-export const closeActiveServerCommand = (): CloseActiveServerCommandAction => ({
-    type: 'CloseActiveServerCommand'
 });
 
 
-interface CycleLogEventsPresentationModeCommandAction extends BasicAction {
-    type: 'CycleLogEventsPresentationModeCommand'
+interface ICycleLogEventsPresentationModeCommandAction extends IBasicAction {
+    readonly type: 'CycleLogEventsPresentationModeCommand'
 }
 
-export const cycleLogEventsPresentationModeCommand = (): CycleLogEventsPresentationModeCommandAction => ({
+export const cycleLogEventsPresentationModeCommand = (): ICycleLogEventsPresentationModeCommandAction => ({
     type: 'CycleLogEventsPresentationModeCommand'
 });
 
 
-interface SwitchInformationPanelCommandAction extends BasicAction {
+interface ISwitchInformationPanelCommandAction extends IBasicAction {
+    readonly type: 'SwitchInformationPanelCommand'
+}
+
+export const switchInformationPanelCommand = (): ISwitchInformationPanelCommandAction => ({
     type: 'SwitchInformationPanelCommand'
-}
-
-export const switchInformationPanelCommand = (): SwitchInformationPanelCommandAction => ({
-    type: 'SwitchInformationPanelCommand'
 });
 
 
-interface SwitchExamplePanelCommandAction extends BasicAction {
-    type: 'SwitchExamplePanelCommand'
+interface ISwitchExamplePanelCommandAction extends IBasicAction {
+    readonly type: 'SwitchExamplePanelCommand'
 }
 
-export const switchExamplePanelCommand = (): SwitchExamplePanelCommandAction => ({
+export const switchExamplePanelCommand = (): ISwitchExamplePanelCommandAction => ({
     type: 'SwitchExamplePanelCommand'
 });
 
 
-interface SwitchShowEventPayloadCommandAction extends BasicAction {
+interface ISwitchShowEventPayloadCommandAction extends IBasicAction {
+    readonly type: 'SwitchShowEventPayloadCommand'
+}
+
+export const switchShowEventPayloadCommand = (): ISwitchShowEventPayloadCommandAction => ({
     type: 'SwitchShowEventPayloadCommand'
-}
-
-export const switchShowEventPayloadCommand = (): SwitchShowEventPayloadCommandAction => ({
-    type: 'SwitchShowEventPayloadCommand'
 });
 
 
-interface SwitchShowStructuredDataExplorerAttributesCommandAction extends BasicAction {
-    type: 'SwitchShowStructuredDataExplorerAttributesCommand'
+interface ISwitchShowStructuredDataExplorerAttributesCommandAction extends IBasicAction {
+    readonly type: 'SwitchShowStructuredDataExplorerAttributesCommand'
 }
 
-export const switchShowStructuredDataExplorerAttributesCommand = (): SwitchShowStructuredDataExplorerAttributesCommandAction => ({
+export const switchShowStructuredDataExplorerAttributesCommand = (): ISwitchShowStructuredDataExplorerAttributesCommandAction => ({
     type: 'SwitchShowStructuredDataExplorerAttributesCommand'
 });
 
 
-interface SwitchPollForYetUnseenEventsCommandAction extends BasicAction {
-    type: 'SwitchPollForYetUnseenEventsCommand'
+interface ISwitchPollForYetUnseenEventsCommandAction extends IBasicAction {
+    readonly type: 'SwitchPollForYetUnseenEventsCommand'
 }
 
-export const switchPollForYetUnseenEventsCommand = (): SwitchPollForYetUnseenEventsCommandAction => ({
+export const switchPollForYetUnseenEventsCommand = (): ISwitchPollForYetUnseenEventsCommandAction => ({
     type: 'SwitchPollForYetUnseenEventsCommand'
 });
 
 
-interface RetrieveYetUnseenEventsStartedEventAction extends BasicAction {
-    type: 'RetrieveYetUnseenEventsStartedEvent'
+interface IRetrieveYetUnseenEventsStartedEventAction extends IBasicAction {
+    readonly type: 'RetrieveYetUnseenEventsStartedEvent'
 }
 
-const retrieveYetUnseenEventsStartedEvent = (): RetrieveYetUnseenEventsStartedEventAction => ({
+const retrieveYetUnseenEventsStartedEvent = (): IRetrieveYetUnseenEventsStartedEventAction => ({
     type: 'RetrieveYetUnseenEventsStartedEvent'
 });
 
 
-interface RetrieveYetUnseenEventsFailedEventAction extends ErrorAction {
-    type: 'RetrieveYetUnseenEventsFailedEvent'
+interface IRetrieveYetUnseenEventsFailedEventAction extends IErrorAction {
+    readonly type: 'RetrieveYetUnseenEventsFailedEvent'
 }
 
-const retrieveYetUnseenEventsFailedEvent = (errorMessage: string): RetrieveYetUnseenEventsFailedEventAction => ({
+const retrieveYetUnseenEventsFailedEvent = (errorMessage: string): IRetrieveYetUnseenEventsFailedEventAction => ({
     type: 'RetrieveYetUnseenEventsFailedEvent',
     errorMessage
 });
 
 
-interface RetrieveYetUnseenEventsSucceededEventAction extends BasicAction {
-    type: 'RetrieveYetUnseenEventsSucceededEvent',
-    yetUnseenEvents: Array<ServerEvent>
+interface IRetrieveYetUnseenEventsSucceededEventAction extends IBasicAction {
+    readonly type: 'RetrieveYetUnseenEventsSucceededEvent',
+    readonly yetUnseenEvents: Array<IServerEvent>
 }
 
-const retrieveYetUnseenEventsSucceededEvent = (yetUnseenEvents: Array<ServerEvent>): RetrieveYetUnseenEventsSucceededEventAction => ({
+const retrieveYetUnseenEventsSucceededEvent = (yetUnseenEvents: Array<IServerEvent>): IRetrieveYetUnseenEventsSucceededEventAction => ({
     type: 'RetrieveYetUnseenEventsSucceededEvent',
     yetUnseenEvents
 });
 
 
-export const retrieveYetUnseenEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const retrieveYetUnseenEventsCommand = () => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
 
     const repeat = () => {
         if (getState().activeServer.server.id !== null) {
@@ -258,57 +258,57 @@ export const retrieveYetUnseenEventsCommand = () => (dispatch: ThunkDispatch<Red
 };
 
 
-interface ChangeCurrentEventsResultPageCommandAction extends BasicAction {
-    type: 'ChangeCurrentEventsResultPageCommand',
-    page: number
+interface IChangeCurrentEventsResultPageCommandAction extends IBasicAction {
+    readonly type: 'ChangeCurrentEventsResultPageCommand',
+    readonly page: number
 }
 
-export const changeCurrentEventsResultPageCommand = (page: number): ChangeCurrentEventsResultPageCommandAction => ({
+export const changeCurrentEventsResultPageCommand = (page: number): IChangeCurrentEventsResultPageCommandAction => ({
     type: 'ChangeCurrentEventsResultPageCommand',
     page
 });
 
 
-interface LoadEventIntoStructuredDataExplorerCommandAction extends BasicAction {
-    type: 'LoadEventIntoStructuredDataExplorerCommand',
-    event: ServerEvent
+interface ILoadEventIntoStructuredDataExplorerCommandAction extends IBasicAction {
+    readonly type: 'LoadEventIntoStructuredDataExplorerCommand',
+    readonly event: IServerEvent
 }
 
-export const loadEventIntoStructuredDataExplorerCommand = (event: ServerEvent): LoadEventIntoStructuredDataExplorerCommandAction => ({
+export const loadEventIntoStructuredDataExplorerCommand = (event: IServerEvent): ILoadEventIntoStructuredDataExplorerCommandAction => ({
     type: 'LoadEventIntoStructuredDataExplorerCommand',
     event
 });
 
 
-interface CloseStructuredDataExplorerCommandAction extends BasicAction {
-    type: 'CloseStructuredDataExplorerCommand'
+interface ICloseStructuredDataExplorerCommandAction extends IBasicAction {
+    readonly type: 'CloseStructuredDataExplorerCommand'
 }
 
-export const closeStructuredDataExplorerCommand = (): CloseStructuredDataExplorerCommandAction => ({
+export const closeStructuredDataExplorerCommand = (): ICloseStructuredDataExplorerCommandAction => ({
     type: 'CloseStructuredDataExplorerCommand'
 });
 
 
-interface SelectActiveStructuredDataExplorerAttributeCommandAction extends BasicAction {
-    type: 'SelectActiveStructuredDataExplorerAttributeCommand',
-    byName: string,
-    byVal: string
+interface ISelectActiveStructuredDataExplorerAttributeCommandAction extends IBasicAction {
+    readonly type: 'SelectActiveStructuredDataExplorerAttributeCommand',
+    readonly byName: string,
+    readonly byVal: string
 }
 
-export const selectActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string): SelectActiveStructuredDataExplorerAttributeCommandAction => ({
+export const selectActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string): ISelectActiveStructuredDataExplorerAttributeCommandAction => ({
     type: 'SelectActiveStructuredDataExplorerAttributeCommand',
     byName,
     byVal
 });
 
 
-interface AddActiveStructuredDataExplorerAttributeCommandAction extends BasicAction {
-    type: 'AddActiveStructuredDataExplorerAttributeCommand',
-    byName: string,
-    byVal: string
+interface IAddActiveStructuredDataExplorerAttributeCommandAction extends IBasicAction {
+    readonly type: 'AddActiveStructuredDataExplorerAttributeCommand',
+    readonly byName: string,
+    readonly byVal: string
 }
 
-export const addActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string): AddActiveStructuredDataExplorerAttributeCommandAction => ({
+export const addActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string): IAddActiveStructuredDataExplorerAttributeCommandAction => ({
     type: 'AddActiveStructuredDataExplorerAttributeCommand',
     byName,
     byVal
@@ -316,7 +316,7 @@ export const addActiveStructuredDataExplorerAttributeCommand = (byName: string, 
 
 
 
-export const removeActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const removeActiveStructuredDataExplorerAttributeCommand = (byName: string, byVal: string) => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
     dispatch(removedActiveStructuredDataExplorerAttributeEvent(byName, byVal));
     if (getState().activeServer.activeStructuredDataExplorerAttributes.length === 0) {
         dispatch(resetStructuredDataExplorerEventsCommand());
@@ -326,59 +326,59 @@ export const removeActiveStructuredDataExplorerAttributeCommand = (byName: strin
 };
 
 
-interface RemovedActiveStructuredDataExplorerAttributeCommandAction extends BasicAction {
-    type: 'RemovedActiveStructuredDataExplorerAttributeCommand',
-    byName: string,
-    byVal: string
+interface IRemovedActiveStructuredDataExplorerAttributeCommandAction extends IBasicAction {
+    readonly type: 'RemovedActiveStructuredDataExplorerAttributeCommand',
+    readonly byName: string,
+    readonly byVal: string
 }
 
-const removedActiveStructuredDataExplorerAttributeEvent = (byName: string, byVal: string): RemovedActiveStructuredDataExplorerAttributeCommandAction => ({
+const removedActiveStructuredDataExplorerAttributeEvent = (byName: string, byVal: string): IRemovedActiveStructuredDataExplorerAttributeCommandAction => ({
     type: 'RemovedActiveStructuredDataExplorerAttributeCommand',
     byName,
     byVal
 });
 
 
-interface RetrieveStructuredDataExplorerEventsStartedEventAction extends BasicAction {
-    type: 'RetrieveStructuredDataExplorerEventsStartedEvent'
+interface IRetrieveStructuredDataExplorerEventsStartedEventAction extends IBasicAction {
+    readonly type: 'RetrieveStructuredDataExplorerEventsStartedEvent'
 }
 
-const retrieveStructuredDataExplorerEventsStartedEvent = (): RetrieveStructuredDataExplorerEventsStartedEventAction => ({
+const retrieveStructuredDataExplorerEventsStartedEvent = (): IRetrieveStructuredDataExplorerEventsStartedEventAction => ({
     type: 'RetrieveStructuredDataExplorerEventsStartedEvent'
 });
 
 
-interface RetrieveStructuredDataExplorerEventsFailedEventAction extends ErrorAction {
-    type: 'RetrieveStructuredDataExplorerEventsFailedEvent'
+interface IRetrieveStructuredDataExplorerEventsFailedEventAction extends IErrorAction {
+    readonly type: 'RetrieveStructuredDataExplorerEventsFailedEvent'
 }
 
-const retrieveStructuredDataExplorerEventsFailedEvent = (errorMessage: string): RetrieveStructuredDataExplorerEventsFailedEventAction => ({
+const retrieveStructuredDataExplorerEventsFailedEvent = (errorMessage: string): IRetrieveStructuredDataExplorerEventsFailedEventAction => ({
     type: 'RetrieveStructuredDataExplorerEventsFailedEvent',
     errorMessage
 });
 
 
-interface RetrieveStructuredDataExplorerEventsSucceededEventAction extends BasicAction {
-    type: 'RetrieveStructuredDataExplorerEventsSucceededEvent',
-    events: Array<ServerEvent>
+interface IRetrieveStructuredDataExplorerEventsSucceededEventAction extends IBasicAction {
+    readonly type: 'RetrieveStructuredDataExplorerEventsSucceededEvent',
+    readonly events: Array<IServerEvent>
 }
 
-const retrieveStructuredDataExplorerEventsSucceededEvent = (events: Array<ServerEvent>): RetrieveStructuredDataExplorerEventsSucceededEventAction => ({
+const retrieveStructuredDataExplorerEventsSucceededEvent = (events: Array<IServerEvent>): IRetrieveStructuredDataExplorerEventsSucceededEventAction => ({
     type: 'RetrieveStructuredDataExplorerEventsSucceededEvent',
     events
 });
 
 
-interface ResetStructuredDataExplorerEventsCommandAction extends BasicAction {
-    type: 'ResetStructuredDataExplorerEventsCommand'
+interface IResetStructuredDataExplorerEventsCommandAction extends IBasicAction {
+    readonly type: 'ResetStructuredDataExplorerEventsCommand'
 }
 
-export const resetStructuredDataExplorerEventsCommand = (): ResetStructuredDataExplorerEventsCommandAction => ({
+export const resetStructuredDataExplorerEventsCommand = (): IResetStructuredDataExplorerEventsCommandAction => ({
     type: 'ResetStructuredDataExplorerEventsCommand'
 });
 
 
-export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
 
     if (getState().activeServer.activeStructuredDataExplorerAttributes.length === 0) {
         console.error('Was asked to retrieve Structured Data Explorer events, but no attributes are set.');
@@ -431,36 +431,36 @@ export const retrieveStructuredDataExplorerEventsCommand = () => (dispatch: Thun
 };
 
 
-interface RetrieveEventsStartedEventAction extends BasicAction {
-    type: 'RetrieveEventsStartedEvent'
+interface IRetrieveEventsStartedEventAction extends IBasicAction {
+    readonly type: 'RetrieveEventsStartedEvent'
 }
 
-export const retrieveEventsStartedEvent = (): RetrieveEventsStartedEventAction => ({
+export const retrieveEventsStartedEvent = (): IRetrieveEventsStartedEventAction => ({
     type: 'RetrieveEventsStartedEvent'
 });
 
 
-interface RetrieveEventsFailedEventAction extends ErrorAction {
-    type: 'RetrieveEventsFailedEvent'
+interface IRetrieveEventsFailedEventAction extends IErrorAction {
+    readonly type: 'RetrieveEventsFailedEvent'
 }
 
-export const retrieveEventsFailedEvent = (errorMessage: string): RetrieveEventsFailedEventAction => ({
+export const retrieveEventsFailedEvent = (errorMessage: string): IRetrieveEventsFailedEventAction => ({
     type: 'RetrieveEventsFailedEvent',
     errorMessage
 });
 
 
-interface RetrieveEventsSucceededEventAction extends BasicAction {
-    type: 'RetrieveEventsSucceededEvent',
-    events: Array<ServerEvent>
+interface IRetrieveEventsSucceededEventAction extends IBasicAction {
+    readonly type: 'RetrieveEventsSucceededEvent',
+    readonly events: Array<IServerEvent>
 }
 
-const retrieveEventsSucceededEvent = (events: Array<ServerEvent>): RetrieveEventsSucceededEventAction => ({
+const retrieveEventsSucceededEvent = (events: Array<IServerEvent>): IRetrieveEventsSucceededEventAction => ({
     type: 'RetrieveEventsSucceededEvent',
     events
 });
 
-export const retrieveEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const retrieveEventsCommand = () => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
 
     dispatch(retrieveEventsStartedEvent());
 
@@ -499,36 +499,36 @@ export const retrieveEventsCommand = () => (dispatch: ThunkDispatch<ReduxState, 
 };
 
 
-interface RetrieveNumberOfEventsPerHourStartedEventAction extends BasicAction {
-    type: 'RetrieveNumberOfEventsPerHourStartedEvent'
+interface IRetrieveNumberOfEventsPerHourStartedEventAction extends IBasicAction {
+    readonly type: 'RetrieveNumberOfEventsPerHourStartedEvent'
 }
 
-export const retrieveNumberOfEventsPerHourStartedEvent = (): RetrieveNumberOfEventsPerHourStartedEventAction => ({
+export const retrieveNumberOfEventsPerHourStartedEvent = (): IRetrieveNumberOfEventsPerHourStartedEventAction => ({
     type: 'RetrieveNumberOfEventsPerHourStartedEvent'
 });
 
 
-interface RetrieveNumberOfEventsPerHourFailedEventAction extends ErrorAction {
-    type: 'RetrieveNumberOfEventsPerHourFailedEvent'
+interface IRetrieveNumberOfEventsPerHourFailedEventAction extends IErrorAction {
+    readonly type: 'RetrieveNumberOfEventsPerHourFailedEvent'
 }
 
-export const retrieveNumberOfEventsPerHourFailedEvent = (errorMessage: string): RetrieveNumberOfEventsPerHourFailedEventAction => ({
+export const retrieveNumberOfEventsPerHourFailedEvent = (errorMessage: string): IRetrieveNumberOfEventsPerHourFailedEventAction => ({
     type: 'RetrieveNumberOfEventsPerHourFailedEvent',
     errorMessage
 });
 
 
-interface RetrieveNumberOfEventsPerHourSucceededEventAction extends BasicAction {
-    type: 'RetrieveNumberOfEventsPerHourSucceededEvent',
-    numberOfEventsPerHour: Array<number>
+interface IRetrieveNumberOfEventsPerHourSucceededEventAction extends IBasicAction {
+    readonly type: 'RetrieveNumberOfEventsPerHourSucceededEvent',
+    readonly numberOfEventsPerHour: Array<number>
 }
 
-const retrieveNumberOfEventsPerHourSucceededEvent = (numberOfEventsPerHour: Array<number>): RetrieveNumberOfEventsPerHourSucceededEventAction => ({
+const retrieveNumberOfEventsPerHourSucceededEvent = (numberOfEventsPerHour: Array<number>): IRetrieveNumberOfEventsPerHourSucceededEventAction => ({
     type: 'RetrieveNumberOfEventsPerHourSucceededEvent',
     numberOfEventsPerHour
 });
 
-export const retrieveNumberOfEventsPerHourCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const retrieveNumberOfEventsPerHourCommand = () => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
 
     dispatch(retrieveNumberOfEventsPerHourStartedEvent());
 
@@ -566,63 +566,63 @@ export const retrieveNumberOfEventsPerHourCommand = () => (dispatch: ThunkDispat
 };
 
 
-interface SelectedTimelineIntervalsUpdatedEventAction extends BasicAction {
-    type: 'SelectedTimelineIntervalsUpdatedEvent',
-    selectedTimelineIntervalStart: Date,
-    selectedTimelineIntervalEnd: Date,
+interface ISelectedTimelineIntervalsUpdatedEventAction extends IBasicAction {
+    readonly type: 'SelectedTimelineIntervalsUpdatedEvent',
+    readonly selectedTimelineIntervalStart: Date,
+    readonly selectedTimelineIntervalEnd: Date,
 }
 
-export const selectedTimelineIntervalsUpdatedEvent = (selectedTimelineIntervalStart: Date, selectedTimelineIntervalEnd: Date): SelectedTimelineIntervalsUpdatedEventAction => ({
+export const selectedTimelineIntervalsUpdatedEvent = (selectedTimelineIntervalStart: Date, selectedTimelineIntervalEnd: Date): ISelectedTimelineIntervalsUpdatedEventAction => ({
     type: 'SelectedTimelineIntervalsUpdatedEvent',
     selectedTimelineIntervalStart,
     selectedTimelineIntervalEnd
 })
 
 
-export type ActiveServerAction =
-    | MadeServerActiveEventAction
-    | CloseActiveServerCommandAction
+export type TActiveServerAction =
+    | IMadeServerActiveEventAction
+    | ICloseActiveServerCommandAction
 
-    | AddActiveStructuredDataExplorerAttributeCommandAction
-    | SelectActiveStructuredDataExplorerAttributeCommandAction
-    | RemovedActiveStructuredDataExplorerAttributeCommandAction
+    | IAddActiveStructuredDataExplorerAttributeCommandAction
+    | ISelectActiveStructuredDataExplorerAttributeCommandAction
+    | IRemovedActiveStructuredDataExplorerAttributeCommandAction
 
-    | ChangeCurrentEventsResultPageCommandAction
+    | IChangeCurrentEventsResultPageCommandAction
 
-    | LoadEventIntoStructuredDataExplorerCommandAction
-    | ResetStructuredDataExplorerEventsCommandAction
-    | CloseStructuredDataExplorerCommandAction
+    | ILoadEventIntoStructuredDataExplorerCommandAction
+    | IResetStructuredDataExplorerEventsCommandAction
+    | ICloseStructuredDataExplorerCommandAction
 
-    | RetrieveEventsStartedEventAction
-    | RetrieveEventsFailedEventAction
-    | RetrieveEventsSucceededEventAction
+    | IRetrieveEventsStartedEventAction
+    | IRetrieveEventsFailedEventAction
+    | IRetrieveEventsSucceededEventAction
 
-    | RetrieveNumberOfEventsPerHourStartedEventAction
-    | RetrieveNumberOfEventsPerHourFailedEventAction
-    | RetrieveNumberOfEventsPerHourSucceededEventAction
+    | IRetrieveNumberOfEventsPerHourStartedEventAction
+    | IRetrieveNumberOfEventsPerHourFailedEventAction
+    | IRetrieveNumberOfEventsPerHourSucceededEventAction
 
-    | RetrieveYetUnseenEventsStartedEventAction
-    | RetrieveYetUnseenEventsFailedEventAction
-    | RetrieveYetUnseenEventsSucceededEventAction
+    | IRetrieveYetUnseenEventsStartedEventAction
+    | IRetrieveYetUnseenEventsFailedEventAction
+    | IRetrieveYetUnseenEventsSucceededEventAction
 
-    | RetrieveStructuredDataExplorerEventsStartedEventAction
-    | RetrieveStructuredDataExplorerEventsFailedEventAction
-    | RetrieveStructuredDataExplorerEventsSucceededEventAction
+    | IRetrieveStructuredDataExplorerEventsStartedEventAction
+    | IRetrieveStructuredDataExplorerEventsFailedEventAction
+    | IRetrieveStructuredDataExplorerEventsSucceededEventAction
 
-    | SelectedTimelineIntervalsUpdatedEventAction
+    | ISelectedTimelineIntervalsUpdatedEventAction
 
-    | CycleLogEventsPresentationModeCommandAction
+    | ICycleLogEventsPresentationModeCommandAction
 
-    | SwitchExamplePanelCommandAction
-    | SwitchInformationPanelCommandAction
+    | ISwitchExamplePanelCommandAction
+    | ISwitchInformationPanelCommandAction
 
-    | SwitchPollForYetUnseenEventsCommandAction
+    | ISwitchPollForYetUnseenEventsCommandAction
 
-    | SwitchShowEventPayloadCommandAction
-    | SwitchShowStructuredDataExplorerAttributesCommandAction;
+    | ISwitchShowEventPayloadCommandAction
+    | ISwitchShowStructuredDataExplorerAttributesCommandAction;
 
 
-const reducer = (state: ActiveServerState = initialState, action: ActiveServerAction | LogOutOfAccountSucceededEventAction): ActiveServerState => {
+const reducer = (state: IActiveServerState = initialState, action: TActiveServerAction | ILogOutOfAccountSucceededEventAction): IActiveServerState => {
 
     switch (action.type) {
 
@@ -652,7 +652,7 @@ const reducer = (state: ActiveServerState = initialState, action: ActiveServerAc
 
 
         case 'CycleLogEventsPresentationModeCommand': {
-            let newMode: LogEventsPresentationMode = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
+            let newMode: TLogEventsPresentationMode = LOG_EVENTS_PRESENTATION_MODE_DEFAULT;
             if (state.logEventsPresentationMode === LOG_EVENTS_PRESENTATION_MODE_DEFAULT) {
                 newMode = LOG_EVENTS_PRESENTATION_MODE_COMPACT;
             }

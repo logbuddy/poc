@@ -2,13 +2,13 @@ import React, { Fragment } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 // @ts-ignore
 import { JsonHelper } from 'herodot-shared';
-import { ReduxState } from '../redux/reducers/root';
-import { ServerEvent } from '../redux/reducers/servers';
+import { IReduxState } from '../redux/reducers/root';
+import { IServerEvent } from '../redux/reducers/servers';
 import {
     addActiveStructuredDataExplorerAttributeCommand, removeActiveStructuredDataExplorerAttributeCommand,
     retrieveStructuredDataExplorerEventsCommand,
     selectActiveStructuredDataExplorerAttributeCommand,
-    Server
+    IServer
 } from '../redux/reducers/activeServer';
 import { DashCircle, Disc, PlusCircle, X } from 'react-bootstrap-icons';
 import { format } from 'date-fns';
@@ -16,7 +16,7 @@ import DayzEventSkinPresentational from './eventSkins/dayz/DayzEventSkinPresenta
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 
-const getAttributesForEvent = (event: ServerEvent) => {
+const getAttributesForEvent = (event: IServerEvent) => {
     let parsedJson = null;
     let values: Array<string> = [];
     let keys: Array<string> = [];
@@ -46,9 +46,9 @@ const getAttributesForEvent = (event: ServerEvent) => {
 };
 
 const StructuredDataExplorerPresentational = ({ event, server, onCloseClicked }:
-                                                  { readonly event: ServerEvent, readonly server: Server, readonly onCloseClicked: () => any }) => {
+                                                  { readonly event: IServerEvent, readonly server: IServer, readonly onCloseClicked: () => any }) => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const values = getAttributesForEvent(event).values;

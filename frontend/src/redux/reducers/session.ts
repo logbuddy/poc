@@ -1,13 +1,13 @@
 import { apiFetch } from '../util';
-import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
+import { IBasicAction, IErrorAction, IOperation, IReduxState } from './root';
 import { ThunkDispatch } from 'redux-thunk';
 
 export interface SessionState {
     readonly isLoggedIn: boolean,
     readonly loggedInEmail: null | string,
     readonly webappApiKeyId: null | string,
-    readonly registrationOperation: Operation,
-    readonly loginOperation: Operation
+    readonly registrationOperation: IOperation,
+    readonly loginOperation: IOperation
 }
 
 const initialState: SessionState = {
@@ -27,39 +27,39 @@ const initialState: SessionState = {
 };
 
 
-interface RegisterAccountStartedEventAction extends BasicAction {
+interface IRegisterAccountStartedEventAction extends IBasicAction {
     readonly type: 'RegisterAccountStartedEvent'
 }
 
-const registerAccountStartedEvent = (): RegisterAccountStartedEventAction => ({
+const registerAccountStartedEvent = (): IRegisterAccountStartedEventAction => ({
     type: 'RegisterAccountStartedEvent'
 });
 
 
-interface RegisterAccountFailedEventAction extends ErrorAction {
-    type: 'RegisterAccountFailedEvent'
+interface IRegisterAccountFailedEventAction extends IErrorAction {
+    readonly type: 'RegisterAccountFailedEvent'
 }
 
-const registerAccountFailedEvent = (errorMessage: string): RegisterAccountFailedEventAction => ({
+const registerAccountFailedEvent = (errorMessage: string): IRegisterAccountFailedEventAction => ({
     type: 'RegisterAccountFailedEvent',
     errorMessage
 });
 
 
-interface RegisterAccountSucceededEventAction extends BasicAction {
-    type: 'RegisterAccountSucceededEvent',
+interface IRegisterAccountSucceededEventAction extends IBasicAction {
+    readonly type: 'RegisterAccountSucceededEvent',
     readonly userId: string,
     readonly email: string
 }
 
 
-const registerAccountSucceededEvent = (userId: string, email: string): RegisterAccountSucceededEventAction => ({
+const registerAccountSucceededEvent = (userId: string, email: string): IRegisterAccountSucceededEventAction => ({
     type: 'RegisterAccountSucceededEvent',
     userId,
     email
 });
 
-export const registerAccountCommand = (email: string, password: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>): void => {
+export const registerAccountCommand = (email: string, password: string) => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>): void => {
 
     dispatch(registerAccountStartedEvent());
 
@@ -88,38 +88,38 @@ export const registerAccountCommand = (email: string, password: string) => (disp
 };
 
 
-interface LogIntoAccountStartedEventAction extends BasicAction {
-    type: 'LogIntoAccountStartedEvent'
+interface ILogIntoAccountStartedEventAction extends IBasicAction {
+    readonly type: 'LogIntoAccountStartedEvent'
 }
 
-const logIntoAccountStartedEvent = (): LogIntoAccountStartedEventAction => ({
+const logIntoAccountStartedEvent = (): ILogIntoAccountStartedEventAction => ({
     type: 'LogIntoAccountStartedEvent'
 });
 
 
-interface LogIntoAccountFailedEventAction extends ErrorAction {
-    type: 'LogIntoAccountFailedEvent'
+interface ILogIntoAccountFailedEventAction extends IErrorAction {
+    readonly type: 'LogIntoAccountFailedEvent'
 }
 
-const logIntoAccountFailedEvent = (errorMessage: string): LogIntoAccountFailedEventAction => ({
+const logIntoAccountFailedEvent = (errorMessage: string): ILogIntoAccountFailedEventAction => ({
     type: 'LogIntoAccountFailedEvent',
     errorMessage
 });
 
 
-interface LogIntoAccountSucceededEventAction extends BasicAction {
+interface ILogIntoAccountSucceededEventAction extends IBasicAction {
     readonly type: 'LogIntoAccountSucceededEvent',
     readonly email: string,
     readonly webappApiKeyId: string
 }
 
-const logIntoAccountSucceededEvent = (webappApiKeyId: string, email: string): LogIntoAccountSucceededEventAction => ({
+const logIntoAccountSucceededEvent = (webappApiKeyId: string, email: string): ILogIntoAccountSucceededEventAction => ({
     type: 'LogIntoAccountSucceededEvent',
     webappApiKeyId,
     email
 });
 
-export const logIntoAccountCommand = (email: string, password: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>) => {
+export const logIntoAccountCommand = (email: string, password: string) => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>) => {
 
     dispatch(logIntoAccountStartedEvent());
 
@@ -148,24 +148,24 @@ export const logIntoAccountCommand = (email: string, password: string) => (dispa
 };
 
 
-interface LogOutOfAccountStartedEventAction extends BasicAction {
-    type: 'LogOutOfAccountStartedEvent'
+interface ILogOutOfAccountStartedEventAction extends IBasicAction {
+    readonly type: 'LogOutOfAccountStartedEvent'
 }
 
-const logOutOfAccountStartedEvent = (): LogOutOfAccountStartedEventAction => ({
+const logOutOfAccountStartedEvent = (): ILogOutOfAccountStartedEventAction => ({
     type: 'LogOutOfAccountStartedEvent'
 });
 
 
-export interface LogOutOfAccountSucceededEventAction extends BasicAction {
-    type: 'LogOutOfAccountSucceededEvent'
+export interface ILogOutOfAccountSucceededEventAction extends IBasicAction {
+    readonly type: 'LogOutOfAccountSucceededEvent'
 }
 
-const logOutOfAccountSucceededEvent = (): LogOutOfAccountSucceededEventAction => ({
+const logOutOfAccountSucceededEvent = (): ILogOutOfAccountSucceededEventAction => ({
     type: 'LogOutOfAccountSucceededEvent'
 });
 
-export const logOutOfAccountCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>): void => {
+export const logOutOfAccountCommand = () => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>): void => {
     dispatch(logOutOfAccountStartedEvent());
     document.cookie = `loggedInEmail=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
     document.cookie = `webappApiKeyId=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Lax`;
@@ -173,20 +173,20 @@ export const logOutOfAccountCommand = () => (dispatch: ThunkDispatch<ReduxState,
 };
 
 
-export type SessionAction =
-    | LogIntoAccountStartedEventAction
-    | LogIntoAccountFailedEventAction
-    | LogIntoAccountSucceededEventAction
+export type TSessionAction =
+    | ILogIntoAccountStartedEventAction
+    | ILogIntoAccountFailedEventAction
+    | ILogIntoAccountSucceededEventAction
 
-    | RegisterAccountStartedEventAction
-    | RegisterAccountFailedEventAction
-    | RegisterAccountSucceededEventAction
+    | IRegisterAccountStartedEventAction
+    | IRegisterAccountFailedEventAction
+    | IRegisterAccountSucceededEventAction
 
-    | LogOutOfAccountStartedEventAction
-    | LogOutOfAccountSucceededEventAction;
+    | ILogOutOfAccountStartedEventAction
+    | ILogOutOfAccountSucceededEventAction;
 
 
-const reducer = (state = initialState, action: SessionAction): SessionState => {
+const reducer = (state = initialState, action: TSessionAction): SessionState => {
     switch (action.type) {
         case 'RegisterAccountStartedEvent':
             return {

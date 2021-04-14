@@ -2,7 +2,7 @@ import React, { Fragment, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 // @ts-ignore
 import { DatetimeHelper } from 'herodot-shared';
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import {
     closeActiveServerCommand,
     closeStructuredDataExplorerCommand,
@@ -22,7 +22,7 @@ import StructuredDataExplorerPresentational from './StructuredDataExplorerPresen
 
 const ActiveServerPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     useEffect(() => {

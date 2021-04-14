@@ -1,7 +1,7 @@
 import { AnyAction, combineReducers } from 'redux';
-import session, { SessionAction, SessionState } from './session';
-import servers, { ServersAction, ServersState } from './servers';
-import activeServer, { ActiveServerAction, ActiveServerState } from './activeServer';
+import session, { TSessionAction, SessionState } from './session';
+import servers, { TServersAction, IServersState } from './servers';
+import activeServer, { TActiveServerAction, IActiveServerState } from './activeServer';
 
 export default combineReducers({
     session,
@@ -9,24 +9,24 @@ export default combineReducers({
     activeServer
 });
 
-export interface BasicAction extends AnyAction {
+export interface IBasicAction extends AnyAction {
     readonly type: string
 }
 
-export interface ErrorAction extends BasicAction {
+export interface IErrorAction extends IBasicAction {
     readonly errorMessage: string
 }
 
-export interface Operation {
+export interface IOperation {
     readonly isRunning: boolean,
     readonly justFinishedSuccessfully: boolean,
     readonly errorMessage: null | string
 }
 
-export interface ReduxState {
+export interface IReduxState {
     readonly session: SessionState,
-    readonly servers: ServersState,
-    readonly activeServer: ActiveServerState
+    readonly servers: IServersState,
+    readonly activeServer: IActiveServerState
 }
 
-export type ValidAction = SessionAction | ServersAction | ActiveServerAction;
+export type TValidAction = TSessionAction | TServersAction | TActiveServerAction;

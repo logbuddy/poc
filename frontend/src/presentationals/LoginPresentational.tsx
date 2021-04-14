@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import ErrorMessagePresentational from './ErrorMessagePresentational';
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import { logIntoAccountCommand } from '../redux/reducers/session';
 import { Redirect } from 'react-router-dom';
 
 const LoginPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const [email, setEmail] = useState('');

@@ -1,9 +1,9 @@
 import { apiFetch } from '../util';
-import { BasicAction, ErrorAction, Operation, ReduxState } from './root';
+import { IBasicAction, IErrorAction, IOperation, IReduxState } from './root';
 import { ThunkDispatch } from 'redux-thunk';
-import { LogOutOfAccountSucceededEventAction } from './session';
+import { ILogOutOfAccountSucceededEventAction } from './session';
 
-export interface ServerEvent {
+export interface IServerEvent {
     id: string,
     serverId: string,
     userId: string,
@@ -15,26 +15,26 @@ export interface ServerEvent {
     payload: string,
 }
 
-export interface Server {
+export interface IServer {
     id: string,
     type: string,
     title: string,
     userId: string,
     apiKeyId: string,
-    events: Array<ServerEvent>,
-    structuredDataExplorerEvents: Array<ServerEvent>,
+    events: Array<IServerEvent>,
+    structuredDataExplorerEvents: Array<IServerEvent>,
     latestEventSortValue: null | string,
     numberOfEventsPerHour: Array<number>
 }
 
-export interface ServersState {
+export interface IServersState {
     showEventPayload: boolean,
-    readonly retrieveServersOperation: Operation,
-    readonly createServerOperation: Operation,
-    servers: Array<Server>
+    readonly retrieveServersOperation: IOperation,
+    readonly createServerOperation: IOperation,
+    servers: Array<IServer>
 }
 
-const initialState: ServersState = {
+const initialState: IServersState = {
     showEventPayload: true,
     retrieveServersOperation: {
         isRunning: false,
@@ -50,37 +50,37 @@ const initialState: ServersState = {
 };
 
 
-interface RetrieveServersStartedEventAction extends BasicAction {
+interface IRetrieveServersStartedEventAction extends IBasicAction {
     type: 'RetrieveServersStartedEvent'
 }
 
-const retrieveServersStartedEvent = (): RetrieveServersStartedEventAction => ({
+const retrieveServersStartedEvent = (): IRetrieveServersStartedEventAction => ({
     type: 'RetrieveServersStartedEvent'
 });
 
 
-interface RetrieveServersFailedEventAction extends ErrorAction {
+interface IRetrieveServersFailedEventAction extends IErrorAction {
     type: 'RetrieveServersFailedEvent'
 }
 
-const retrieveServersFailedEvent = (errorMessage: string): RetrieveServersFailedEventAction => ({
+const retrieveServersFailedEvent = (errorMessage: string): IRetrieveServersFailedEventAction => ({
     type: 'RetrieveServersFailedEvent',
     errorMessage
 });
 
 
-interface RetrieveServersSucceededEventAction extends BasicAction {
+interface IRetrieveServersSucceededEventAction extends IBasicAction {
     type: 'RetrieveServersSucceededEvent',
-    servers: Array<Server>
+    servers: Array<IServer>
 }
 
-const retrieveServersSucceededEvent = (servers: Array<Server>): RetrieveServersSucceededEventAction => ({
+const retrieveServersSucceededEvent = (servers: Array<IServer>): IRetrieveServersSucceededEventAction => ({
     type: 'RetrieveServersSucceededEvent',
     servers
 });
 
 
-export const retrieveServersCommand = () => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const retrieveServersCommand = () => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
 
     dispatch(retrieveServersStartedEvent());
 
@@ -113,37 +113,37 @@ export const retrieveServersCommand = () => (dispatch: ThunkDispatch<ReduxState,
 };
 
 
-interface CreateServerStartedEventAction extends BasicAction {
+interface ICreateServerStartedEventAction extends IBasicAction {
     type: 'CreateServerStartedEvent'
 }
 
-const createServerStartedEvent = (): CreateServerStartedEventAction => ({
+const createServerStartedEvent = (): ICreateServerStartedEventAction => ({
     type: 'CreateServerStartedEvent'
 });
 
 
-interface CreateServerFailedEventAction extends ErrorAction {
+interface ICreateServerFailedEventAction extends IErrorAction {
     type: 'CreateServerFailedEvent'
 }
 
-const createServerFailedEvent = (errorMessage: string): CreateServerFailedEventAction => ({
+const createServerFailedEvent = (errorMessage: string): ICreateServerFailedEventAction => ({
     type: 'CreateServerFailedEvent',
     errorMessage
 });
 
 
-interface CreateServerSucceededEventAction extends BasicAction {
+interface ICreateServerSucceededEventAction extends IBasicAction {
     type: 'CreateServerSucceededEvent',
-    server: Server
+    server: IServer
 }
 
-const createServerSucceededEvent = (server: Server): CreateServerSucceededEventAction => ({
+const createServerSucceededEvent = (server: IServer): ICreateServerSucceededEventAction => ({
     type: 'CreateServerSucceededEvent',
     server
 });
 
 
-export const createServerCommand = (title: string) => (dispatch: ThunkDispatch<ReduxState, void, BasicAction>, getState: () => ReduxState) => {
+export const createServerCommand = (title: string) => (dispatch: ThunkDispatch<IReduxState, void, IBasicAction>, getState: () => IReduxState) => {
 
     dispatch(createServerStartedEvent());
 
@@ -173,17 +173,17 @@ export const createServerCommand = (title: string) => (dispatch: ThunkDispatch<R
 };
 
 
-export type ServersAction =
-    | CreateServerStartedEventAction
-    | CreateServerFailedEventAction
-    | CreateServerSucceededEventAction
+export type TServersAction =
+    | ICreateServerStartedEventAction
+    | ICreateServerFailedEventAction
+    | ICreateServerSucceededEventAction
 
-    | RetrieveServersStartedEventAction
-    | RetrieveServersFailedEventAction
-    | RetrieveServersSucceededEventAction;
+    | IRetrieveServersStartedEventAction
+    | IRetrieveServersFailedEventAction
+    | IRetrieveServersSucceededEventAction;
 
 
-const reducer = (state: ServersState = initialState, action: ServersAction | LogOutOfAccountSucceededEventAction): ServersState => {
+const reducer = (state: IServersState = initialState, action: TServersAction | ILogOutOfAccountSucceededEventAction): IServersState => {
 
     switch (action.type) {
 
@@ -197,7 +197,7 @@ const reducer = (state: ServersState = initialState, action: ServersAction | Log
             };
 
         case 'RetrieveServersSucceededEvent': {
-            const updateServers = (existingServers: Array<Server>, retrievedServers: Array<Server>): Array<Server> => {
+            const updateServers = (existingServers: Array<IServer>, retrievedServers: Array<IServer>): Array<IServer> => {
                 const updatedServers = [];
                 for (let server of retrievedServers) {
                     server.numberOfEventsPerHour = [];

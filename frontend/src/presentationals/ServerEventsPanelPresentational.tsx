@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import {
     changeCurrentEventsResultPageCommand,
     cycleLogEventsPresentationModeCommand,
@@ -8,7 +8,7 @@ import {
     LOG_EVENTS_PRESENTATION_MODE_DEFAULT,
     retrieveEventsCommand, switchPollForYetUnseenEventsCommand
 } from '../redux/reducers/activeServer';
-import { ServerEvent } from '../redux/reducers/servers';
+import { IServerEvent } from '../redux/reducers/servers';
 import ServerEventPresentational from './ServerEventPresentational';
 import PaginatorPresentational from './PaginatorPresentational';
 import { DiscFill } from 'react-bootstrap-icons';
@@ -39,7 +39,7 @@ const textMatchesSearchterm = (text: string, searchterm: string) => {
 
 const ServerEventsPanelPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const [filterText, setFilterText] = useState('');
@@ -52,7 +52,7 @@ const ServerEventsPanelPresentational = () => {
     const server = activeServer.server;
 
 
-    const filteredEvents = (events: Array<ServerEvent>) => events
+    const filteredEvents = (events: Array<IServerEvent>) => events
         .filter((event) =>
             textMatchesSearchterm(
                 `${event.createdAt} ${event.source} ${event.payload}`,
@@ -61,7 +61,7 @@ const ServerEventsPanelPresentational = () => {
         )
     ;
 
-    const filteredEventsForCurrentPage = (events: Array<ServerEvent>) => filteredEvents(events)
+    const filteredEventsForCurrentPage = (events: Array<IServerEvent>) => filteredEvents(events)
         .slice(
             (activeServer.currentEventsResultPage - 1) * itemsPerPage,
             (activeServer.currentEventsResultPage - 1) * itemsPerPage + itemsPerPage

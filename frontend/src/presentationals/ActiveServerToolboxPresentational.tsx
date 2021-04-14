@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import React, { Fragment } from 'react';
 import {
     switchShowEventPayloadCommand,
@@ -9,7 +9,7 @@ import { FileEarmarkCode, FileEarmarkCodeFill } from 'react-bootstrap-icons';
 
 const ActiveServerToolboxPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const activeServer = reduxState.activeServer;

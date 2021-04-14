@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk, { ThunkDispatch } from 'redux-thunk';
 import Cookies from 'universal-cookie';
-import root, { ReduxState, ValidAction } from './reducers/root';
+import root, { IReduxState, TValidAction } from './reducers/root';
 import { initialState as sessionInitialState } from './reducers/session';
 import { initialState as serversInitialState } from './reducers/servers';
 import { initialState as activeServerInitialState } from './reducers/activeServer';
@@ -22,7 +22,7 @@ if (   cookies.getAll().hasOwnProperty('loggedInEmail')
     preloadWebappApiKeyId = cookies.get('webappApiKeyId');
 }
 
-const preloadedState: ReduxState = {
+const preloadedState: IReduxState = {
     session: {
         ...sessionInitialState,
         isLoggedIn: preloadIsLoggedIn,
@@ -35,14 +35,14 @@ const preloadedState: ReduxState = {
 };
 
 export default function configureStore() {
-    return createStore<any, any, ReduxState, any> (
+    return createStore<any, any, IReduxState, any> (
         root,
         preloadedState,
         composeEnhancers(applyMiddleware(thunk)),
     );
 }
 
-export interface ConnectedComponentProps {
-    readonly reduxState: ReduxState,
-    readonly dispatch: ThunkDispatch<ReduxState, void, ValidAction>
+export interface IConnectedComponentProps {
+    readonly reduxState: IReduxState,
+    readonly dispatch: ThunkDispatch<IReduxState, void, TValidAction>
 }

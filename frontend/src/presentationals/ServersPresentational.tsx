@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import { createServerCommand, retrieveServersCommand } from '../redux/reducers/servers';
 import { Redirect } from 'react-router-dom';
 import ActiveServerPresentational from './ActiveServerPresentational';
@@ -10,7 +10,7 @@ import ErrorMessagePresentational from './ErrorMessagePresentational';
 
 const ServersPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const [createServerTitle, setCreateServerTitle] = useState('');

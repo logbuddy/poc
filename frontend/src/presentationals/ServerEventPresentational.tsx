@@ -5,13 +5,13 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { a11yDark } from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 import {
     LOG_EVENTS_PRESENTATION_MODE_COMPACT,
-    LOG_EVENTS_PRESENTATION_MODE_DEFAULT, LogEventsPresentationMode
+    LOG_EVENTS_PRESENTATION_MODE_DEFAULT, TLogEventsPresentationMode
 } from '../redux/reducers/activeServer';
-import { ServerEvent } from '../redux/reducers/servers';
+import { IServerEvent } from '../redux/reducers/servers';
 
 const ServerEventPresentational = (
     { event, serverType, showPayload, onClick, presentationMode }:
-        { event: ServerEvent, serverType: null | string, showPayload: boolean, onClick: () => any, presentationMode: LogEventsPresentationMode }) => {
+        { event: IServerEvent, serverType: null | string, showPayload: boolean, onClick: () => any, presentationMode: TLogEventsPresentationMode }) => {
 
     let createdAtUtc = null;
     if (event.hasOwnProperty('createdAtUtc')) {

@@ -1,13 +1,13 @@
 import React, { Fragment, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import ErrorMessagePresentational from './ErrorMessagePresentational';
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import { Redirect } from 'react-router-dom';
 import { registerAccountCommand } from '../redux/reducers/session';
 
 const RegistrationPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const [email, setEmail] = useState('');

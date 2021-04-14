@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
-import { ReduxState } from '../redux/reducers/root';
+import { IReduxState } from '../redux/reducers/root';
 import { NavLink, Route, Switch, useLocation } from 'react-router-dom';
 import { PersonCircle } from 'react-bootstrap-icons';
 import { logOutOfAccountCommand } from '../redux/reducers/session';
@@ -11,7 +11,7 @@ import ActiveServerPresentational from './ActiveServerPresentational';
 
 const AppPresentational = () => {
 
-    const reduxState = useSelector((state: ReduxState) => state);
+    const reduxState = useSelector((state: IReduxState) => state);
     const reduxDispatch = useDispatch();
 
     const [showLogoutCta, setShowLogoutCta] = useState(false);
