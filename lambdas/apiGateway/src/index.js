@@ -1,4 +1,4 @@
-import { DatetimeHelper } from '../../../shared/src/index';
+import { DatetimeHelper } from '../../../../shared/src/index';
 
 const AWS = require('aws-sdk');
 const {'v1': uuidv1, 'v4': uuidv4} = require('uuid');

@@ -1,4 +1,4 @@
-import { JsonHelper } from '../../../../shared/src/index';
+import { JsonHelper } from '../../../../../shared/src/index';
 import { AWSError } from 'aws-sdk';
 import { BatchWriteItemOutput } from 'aws-sdk/clients/dynamodb';
 
