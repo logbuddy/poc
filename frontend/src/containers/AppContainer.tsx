@@ -9,12 +9,12 @@ import {
 } from 'react-router-dom';
 import { PersonCircle } from 'react-bootstrap-icons';
 import RegisterContainer from './RegisterContainer';
-import LoginContainer from './LoginContainer';
 import ServersContainer from './ServersContainer';
 import { logOutOfAccountCommand } from '../redux/reducers/session';
 import ActiveServerContainer from './ActiveServerContainer';
 import { ReduxState } from '../redux/reducers/root';
 import { ConnectedComponentProps } from '../redux/store';
+import LoginPresentational from '../presentationals/LoginPresentational';
 
 const Navigation = (props: { reduxState: ReduxState }) => (
     <Fragment>
@@ -116,7 +116,7 @@ class AppContainer extends Component<ConnectedComponentProps, ReactState> {
 
                     <Switch>
                         <Route path='/login'>
-                            <LoginContainer />
+                            <LoginPresentational />
                         </Route>
                         <Route path='/register'>
                             <RegisterContainer />
